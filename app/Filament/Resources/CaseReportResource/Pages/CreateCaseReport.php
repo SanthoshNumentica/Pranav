@@ -39,10 +39,4 @@ class CreateCaseReport extends CreateRecord
             }
         }
     }
-
-    // ✅ Hide the "Create Another" checkbox (Filament v3)
-    public static function canCreateAnother(): bool
-    {
-        return false;
-    }
 }

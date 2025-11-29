@@ -29,269 +29,95 @@ class CaseReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-   public static function form(Form $form): Form
-{
-    return $form
-        ->schema([
-            Section::make()
-                ->schema([
-                    Grid::make(4)->schema([
-    Forms\Components\Select::make('patient_fk_id')
-        ->label('Patient')
-        ->relationship('patient', 'name')
-        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name}-{$record->patient_id}")
-        ->required()
-        ->searchable()
-        ->preload()
-        ->createOptionForm([
-            Grid::make(4)->schema([
-                Forms\Components\Select::make('title_fk_id')
-                    ->label('Title')
-                    ->placeholder('Select a title')
-                    ->relationship('title', 'title_name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make()
+                    ->schema([
+                        Grid::make(4)->schema([
+                            Forms\Components\Select::make('patient_fk_id')
+                                ->label('Patient')
+                                ->relationship('patient', 'name')
+                                ->getOptionLabelFromRecordUsing(fn($record) => "{$record->name}-{$record->patient_id} ({$record->mobile_no})")
+                                ->required()
+                                ->searchable()
+                                ->preload(),
 
-                Forms\Components\TextInput::make('name')
-                    ->label('Name')
-                    ->required(),
+                            Forms\Components\Select::make('doc_ref_fk_id')
+                                ->label('Referred Doctor')
+                                ->relationship('doctor', 'name')
+                                ->getOptionLabelFromRecordUsing(fn($record) => "{$record->name}-{$record->doctor_id} ({$record->mobile_no})")
+                                ->required()
+                                ->searchable()
+                                ->preload(),
 
-                Forms\Components\TextInput::make('father_name')
-                    ->label('Father Name')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('email_id')
-                    ->label('Email')
-                    ->required()
-                    ->email(),
-            ]),
-
-            Grid::make(4)->schema([
-                Forms\Components\DatePicker::make('dob')
-                    ->label('Date Of Birth')
-                    ->required(),
-
-               Forms\Components\TextInput::make('mobile_no')
-                    ->label('Phone Number')
-                    ->required()
-                    ->maxLength(10)
-                    ->inputMode('numeric'),
-
-                Forms\Components\TextInput::make('whatsapp_no')
-                        ->label('Whatsapp Number')
-                        ->maxLength(10)
-                        ->inputMode('numeric'),
-
-
-                Forms\Components\Select::make('gender_fk_id')
-                    ->label('Gender')
-                    ->placeholder('Select Gender')
-                    ->relationship('gender', 'gender_name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-            ]),
-
-            Grid::make(4)->schema([
-                Forms\Components\Select::make('blood_group_fk_id')
-                    ->label('Blood Group')
-                    ->placeholder('Select Blood Group')
-                    ->relationship('blood_group', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-
-                Forms\Components\TextInput::make('address')
-                    ->label('Address')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('street')
-                    ->label('Street')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('pincode')
-                    ->label('Pin Code')
-                    ->required()
-                    ->maxLength(255),
-            ]),
-
-            Grid::make(4)->schema([
-                Forms\Components\TextInput::make('city')
-                    ->label('City')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('remarks')
-                    ->label('Remarks')
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('patient_id')
-                    ->label('Patient ID')
-                    ->visibleOn('view')
-                    ->disabled(),
-            ]),
-        ]),
-
-                        Forms\Components\Select::make('doc_ref_fk_id')
-                            ->label('Referred Doctor')
-                            ->relationship('doctor', 'name')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->name}-{$record->doctor_id}")
-                            ->required()
-                            ->searchable()
-                            ->preload()
-                            ->createOptionForm([
-            Grid::make(4)->schema([
-                Forms\Components\Select::make('title_fk_id')
-                    ->label('Title')
-                    ->placeholder('Select a title')
-                    ->relationship('title', 'title_name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-
-                Forms\Components\TextInput::make('name')
-                    ->label('Full Name')
-                    ->required(),
-
-                Forms\Components\Select::make('gender_fk_id')
-                    ->label('Gender')
-                    ->placeholder('Select Gender')
-                    ->relationship('gender', 'gender_name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-
-               Forms\Components\Select::make('blood_group_fk_id')
-                    ->label('Blood Group')
-                    ->placeholder('Select Blood Group')
-                    ->relationship('blood_group', 'name')
-                    ->required()
-                    ->searchable()
-                    ->preload(),
-            ]),
-
-            Grid::make(4)->schema([
-                Forms\Components\DatePicker::make('dob')
-                    ->label('Date Of Birth')
-                    ->required(),
-
-               Forms\Components\TextInput::make('mobile_no')
-                    ->label('Phone Number')
-                    ->required()
-                    ->maxLength(10)
-                    ->inputMode('numeric'),
-
-                Forms\Components\TextInput::make('email_id')
-                        ->label('Email')
-                        ->maxLength(100), 
-                Forms\Components\TextInput::make('address')
-                    ->label('Address')
-                    ->required()
-                    ->maxLength(255),              
-            ]),
-
-            Grid::make(4)->schema([
-                
-
-                
-
-                Forms\Components\TextInput::make('street')
-                    ->label('Street')
-                    ->required()
-                    ->maxLength(255),
-
-                Forms\Components\TextInput::make('pincode')
-                    ->label('Pin Code')
-                    ->required()
-                    ->maxLength(255),
-                    Forms\Components\TextInput::make('city')
-                    ->label('City')
-                    ->required()
-                    ->maxLength(255),
-
-              
-            ]),
-
-            Grid::make(4)->schema([
-                
-
-                Forms\Components\TextInput::make('doctor_id')
-                    ->label('Doctor ID')
-                    ->visibleOn('view')
-                    ->disabled(),
-            ]),
-        ]),
-
-                        Textarea::make('description')->maxLength(255),
-                        Textarea::make('remarks')->maxLength(255),
-                        TextInput::make('case_id')->visibleOn('view')->disabled(),
-                        Forms\Components\Hidden::make('status')->default('pending'),
-                    ]),
-
-                    Repeater::make('items')
-                        ->relationship('items')
-                        ->label('Scan Reports')
-                        ->schema([
-                            Select::make('scan_type_id')->relationship('scanType', 'name')->required()->searchable()->preload(),
-                            Select::make('scan_id')->relationship('scan', 'name')->required()->searchable()->preload(),
+                            Textarea::make('description')->maxLength(255),
                             Textarea::make('remarks')->maxLength(255),
-                            FileUpload::make('documents')->multiple()->reorderable()->Label('Reports')->preserveFilenames()->directory('case-report-documents'),
-                        ])
-                        ->columns(3)
-                        ->createItemButtonLabel('Add Scan')
-                        ->saveRelationshipsUsing(function ($state, $record) {
-                            $existingItemIds = $record->items()->pluck('id')->toArray();
-                            $incomingItemIds = [];
-                            $hasDocuments = false;
+                            TextInput::make('case_id')->visibleOn('view')->disabled(),
+                            Forms\Components\Hidden::make('status')->default('pending'),
+                        ]),
 
-                            foreach ($state as $itemData) {
-                                if (!empty($itemData['id'])) {
-                                    // Update existing item
-                                    $item = $record->items()->find($itemData['id']);
-                                    if ($item) {
-                                        $item->update($itemData);
+                        Repeater::make('items')
+                            ->relationship('items')
+                            ->label('Scan Reports')
+                            ->schema([
+                                Select::make('scan_type_id')->relationship('scanType', 'name')->required()->searchable()->preload(),
+                                Select::make('scan_id')->relationship('scan', 'name')->required()->searchable()->preload(),
+                                Textarea::make('remarks')->maxLength(255),
+                                FileUpload::make('documents')->multiple()->reorderable()->Label('Reports')->preserveFilenames()->directory('case-report-documents'),
+                            ])
+                            ->columns(3)
+                            ->createItemButtonLabel('Add Scan')
+                            ->saveRelationshipsUsing(function ($state, $record) {
+                                $existingItemIds = $record->items()->pluck('id')->toArray();
+                                $incomingItemIds = [];
+                                $hasDocuments = false;
+
+                                foreach ($state as $itemData) {
+                                    if (!empty($itemData['id'])) {
+                                        // Update existing item
+                                        $item = $record->items()->find($itemData['id']);
+                                        if ($item) {
+                                            $item->update($itemData);
+                                            $incomingItemIds[] = $item->id;
+                                        }
+                                    } else {
+                                        // Create new item
+                                        $item = $record->items()->create($itemData);
                                         $incomingItemIds[] = $item->id;
                                     }
-                                } else {
-                                    // Create new item
-                                    $item = $record->items()->create($itemData);
-                                    $incomingItemIds[] = $item->id;
+
+                                    // Check if this item has documents
+                                    if (!empty($itemData['documents']) && is_array($itemData['documents']) && count(array_filter($itemData['documents'])) > 0) {
+                                        $hasDocuments = true;
+                                    }
+
+                                    Log::info('Scan Report Item Synced', [
+                                        'case_report_id' => $record->id,
+                                        'item' => $itemData,
+                                        'user_id' => auth()->id(),
+                                    ]);
                                 }
 
-                                // Check if this item has documents
-                                if (!empty($itemData['documents']) && is_array($itemData['documents']) && count(array_filter($itemData['documents'])) > 0) {
-                                    $hasDocuments = true;
+                                // Delete items that were removed in the form
+                                $itemsToDelete = array_diff($existingItemIds, $incomingItemIds);
+                                if (!empty($itemsToDelete)) {
+                                    $record->items()->whereIn('id', $itemsToDelete)->delete();
                                 }
 
-                                Log::info('Scan Report Item Synced', [
+                                // Update case report status based on documents presence
+                                $record->status = $hasDocuments ? 'closed' : 'pending';
+                                $record->save();
+
+                                \Log::info('Updating Scan Report status', [
                                     'case_report_id' => $record->id,
-                                    'item' => $itemData,
-                                    'user_id' => auth()->id(),
+                                    'status_to_set' => $record->status,
                                 ]);
-                            }
-
-                            // Delete items that were removed in the form
-                            $itemsToDelete = array_diff($existingItemIds, $incomingItemIds);
-                            if (!empty($itemsToDelete)) {
-                                $record->items()->whereIn('id', $itemsToDelete)->delete();
-                            }
-
-                            // Update case report status based on documents presence
-                            $record->status = $hasDocuments ? 'closed' : 'pending';
-                            $record->save();
-
-                            \Log::info('Updating Scan Report status', [
-                                'case_report_id' => $record->id,
-                                'status_to_set' => $record->status,
-                            ]);
-                        }),
-                ]),
-        ]);
-}
+                            }),
+                    ]),
+            ]);
+    }
 
 
     public static function table(Table $table): Table
@@ -305,14 +131,14 @@ class CaseReportResource extends Resource
                 Tables\Columns\TextColumn::make('doctor.name')->label('Doctor'),
                 Tables\Columns\TextColumn::make('description')->limit(30),
                 Tables\Columns\TextColumn::make('status')
-    ->label('Status')
-    ->badge()
-    ->color(fn ($state) => match ($state) {
-        'closed' => 'success',   // Green
-        'pending' => 'danger',   // Red
-        default => 'secondary', // Default gray
-    })
-    ->formatStateUsing(fn ($state) => $state === 'closed' ? 'Completed' : ucfirst($state)),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn($state) => match ($state) {
+                        'closed' => 'success',   // Green
+                        'pending' => 'danger',   // Red
+                        default => 'secondary', // Default gray
+                    })
+                    ->formatStateUsing(fn($state) => $state === 'closed' ? 'Completed' : ucfirst($state)),
 
                 Tables\Columns\TextColumn::make('created_at')->label('Created At')->date(),
             ])
