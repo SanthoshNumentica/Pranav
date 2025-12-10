@@ -1,18 +1,42 @@
-/.phpunit.cache
-/node_modules
-/public/build
-/public/hot
+/vendor/
+/node_modules/
+
+.env
+.env.*
+!.env.example
+
 /public/storage
 /storage/*.key
-/vendor
-.env.backup
-.env.production
+
+/public/hot
+/public/build
+/.phpunit.cache
 .phpunit.result.cache
+
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Laravel specific
 Homestead.json
 Homestead.yaml
 auth.json
-npm-debug.log
-yarn-error.log
-/.fleet
+
+# IDE / Tools
 /.idea
 /.vscode
+/.fleet
+
+# PHPStorm
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Laravel caches
+bootstrap/cache/*.php
+!bootstrap/cache/.gitignore
+
+# Composer
+composer.lock # optional—keep if you want reproducible builds
