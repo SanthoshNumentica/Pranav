@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->string('remarks');
             $table->enum('status', ['closed', 'pending'])->default('pending');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

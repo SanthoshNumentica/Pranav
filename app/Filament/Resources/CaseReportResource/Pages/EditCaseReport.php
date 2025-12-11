@@ -23,21 +23,21 @@ class EditCaseReport extends EditRecord
         return $data;
     }
 
-   protected function mutateFormDataBeforeSave(array $data): array
-{
-    $hasDocuments = $this->record->items->some(function ($item) {
-        return $item->documents && collect($item->documents)->isNotEmpty();
-    });
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $hasDocuments = $this->record->items->some(function ($item) {
+            return $item->documents && collect($item->documents)->isNotEmpty();
+        });
 
-    $data['status'] = $hasDocuments ? 'closed' : 'pending';
+        $data['status'] = $hasDocuments ? 'closed' : 'pending';
 
-    if ($hasDocuments) {
-        $whatsappController = app(\App\Http\Controllers\WhatsAppController::class);
-        $whatsappController->findCaseReportById($this->record->id);
+        if ($hasDocuments) {
+            $whatsappController = app(\App\Http\Controllers\WhatsAppController::class);
+            $whatsappController->findCaseReportById($this->record->id);
+        }
+
+        return $data;
     }
-
-    return $data;
-}
 
 
 

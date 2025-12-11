@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Doctor extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $guarded = [];
     public function title()
     {
@@ -17,7 +18,7 @@ class Doctor extends Model
     {
         return $this->belongsTo(Gender::class, 'gender_fk_id');
     }
-  
+
     protected static function booted()
     {
         static::creating(function ($model) {

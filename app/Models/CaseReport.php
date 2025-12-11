@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CaseReport extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-   protected $fillable = ['case_id', 'patient_fk_id', 'doc_ref_fk_id', 'description', 'remarks', 'status'];
-
-    
+    protected $fillable = ['case_id', 'patient_fk_id', 'doc_ref_fk_id', 'description', 'remarks', 'status'];
 
     // ✅ ADD THIS CASTING
     protected $casts = [
@@ -20,9 +19,9 @@ class CaseReport extends Model
     ];
 
     public function patient()
-{
-    return $this->belongsTo(Patient::class, 'patient_fk_id', 'id');
-}
+    {
+        return $this->belongsTo(Patient::class, 'patient_fk_id', 'id');
+    }
 
 
 
@@ -31,7 +30,7 @@ class CaseReport extends Model
         return $this->belongsTo(Doctor::class, 'doc_ref_fk_id');
     }
 
-     public function items()
+    public function items()
     {
         return $this->hasMany(CaseReportItem::class);
     }
@@ -44,7 +43,4 @@ class CaseReport extends Model
             $model->case_id = 'CAS' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
         });
     }
-   
-
-
 }

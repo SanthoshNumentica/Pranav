@@ -110,7 +110,7 @@ class CaseReportResource extends Resource
                                 $record->status = $hasDocuments ? 'closed' : 'pending';
                                 $record->save();
 
-                                \Log::info('Updating Scan Report status', [
+                                Log::info('Updating Scan Report status', [
                                     'case_report_id' => $record->id,
                                     'status_to_set' => $record->status,
                                 ]);
