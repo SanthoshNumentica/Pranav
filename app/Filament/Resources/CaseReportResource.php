@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Http;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use PhpParser\Node\Stmt\Label;
+use App\Services\WhatsAppService;
+
 
 class CaseReportResource extends Resource
 {
@@ -158,6 +160,43 @@ class CaseReportResource extends Resource
                 Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
                 Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
                 Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash'),
+                Tables\Actions\Action::make('testWhatsapp')
+    ->label('Test WhatsApp')
+    ->icon('heroicon-o-bolt')
+    ->color('warning')
+    ->action(function ($record) {
+        try {
+            $service = app(\App\Services\WhatsAppService::class);
+
+            $params = [
+                'mobile_no' => $record->patient->mobile_no,
+                'name' => $record->patient->name,
+            ];
+
+            $result = $service->sendTemplateMessage('case_report', $params);
+
+            if ($result['status']) {
+                Notification::make()
+                    ->title('TEST SUCCESS — WhatsApp API Working!')
+                    ->success()
+                    ->send();
+            } else {
+                Notification::make()
+                    ->title('TEST FAILED: ' . $result['response'])
+                    ->danger()
+                    ->send();
+            }
+
+        } catch (\Throwable $e) {
+            Notification::make()
+                ->title('ERROR: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        }
+
+        return null;
+    }),
+
                 Tables\Actions\Action::make('sendWhatsapp')
                     ->label('WhatsApp')
                     ->icon('heroicon-o-chat-bubble-left-right')
@@ -168,19 +207,39 @@ class CaseReportResource extends Resource
                     ->modalSubmitActionLabel('Send')
                     ->modalCancelActionLabel('Cancel')
                     ->action(function ($record, $livewire) {
-                        $livewire->dispatchBrowserEvent('whatsapp-loading-start');
+                        $livewire->dispatchBrowserEvent('whatsapp-debug', [
+                            'record_id' => $record->id,
+                            'mobile_no' => $record->patient->mobile_no,
+                            'name' => $record->patient->name,
+                        ]);
                         try {
-                            Http::post(route('send.whatsapp', $record->id));
-                            Notifications::make()
-                                ->title('WhatsApp message sent successfully.')
-                                ->success()
-                                ->send();
+                            $service = app(abstract: WhatsAppService::class);
+
+                            $params = [
+                                'mobile_no' => $record->patient->mobile_no,
+                                'name' => $record->patient->name,
+                            ];
+
+                            $result = $service->sendTemplateMessage('case_report', $params);
+
+                            if ($result['status']) {
+                                Notification::make()
+                                    ->title('WhatsApp message sent successfully.')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Failed to send WhatsApp message: ' . $result['response'])
+                                    ->danger()
+                                    ->send();
+                            }
                         } catch (\Throwable $e) {
-                            Notifications::make()
-                                ->title('Failed to send WhatsApp message.')
+                            Notification::make()
+                                ->title('Error sending WhatsApp message: ' . $e->getMessage())
                                 ->danger()
                                 ->send();
                         }
+
                         $livewire->dispatchBrowserEvent('whatsapp-loading-stop');
                         return null;
                     }),
