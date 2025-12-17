@@ -67,7 +67,7 @@ class CaseReportResource extends Resource
                                 Select::make('scan_type_id')->relationship('scanType', 'name')->required()->searchable()->preload(),
                                 Select::make('scan_id')->relationship('scan', 'name')->required()->searchable()->preload(),
                                 Textarea::make('remarks')->maxLength(255),
-                                FileUpload::make('documents')->multiple()->reorderable()->Label('Reports')->preserveFilenames()->directory('case-report-documents'),
+                                FileUpload::make('documents')->multiple()->reorderable()->Label('Reports')->preserveFilenames()->directory('case-report-documents')->panelLayout('grid')->columnSpanFull(),
                             ])
                             ->columns(3)
                             ->createItemButtonLabel('Add Scan')

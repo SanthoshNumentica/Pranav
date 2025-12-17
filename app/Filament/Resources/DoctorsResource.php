@@ -58,10 +58,10 @@ class DoctorsResource extends Resource
                                 ->label('Email')
                                 ->required()
                                 ->email(),
-                           
+
                         ]),
                         Grid::make(4)->schema([
-                            
+
                             Forms\Components\TextInput::make('mobile_no')
                                 ->label('Phone Number')
                                 ->required()
@@ -81,7 +81,7 @@ class DoctorsResource extends Resource
                         ]),
                         Grid::make(4)->schema([
 
-                            
+
                             Forms\Components\TextInput::make('city')
                                 ->label('City')
                                 ->required()
@@ -132,9 +132,10 @@ class DoctorsResource extends Resource
 
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
-                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
-                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash'),
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger'),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -156,7 +157,7 @@ class DoctorsResource extends Resource
             'index' => Pages\ListDoctors::route('/'),
             'create' => Pages\CreateDoctors::route('/create'),
             'edit' => Pages\EditDoctors::route('/{record}/edit'),
-            'view' => Pages\ViewDoctor::route('/{record}'), 
+            'view' => Pages\ViewDoctor::route('/{record}'),
         ];
     }
 }

@@ -176,9 +176,10 @@ class PatientResource extends Resource
                 }),
         ])
         ->actions([
-            Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
-            Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
-            Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash'),
+           Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
+Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger'),
+
         ])
         ->bulkActions([
             Tables\Actions\BulkActionGroup::make([
@@ -200,7 +201,7 @@ class PatientResource extends Resource
         'index' => Pages\ListPatients::route('/'),
         'create' => Pages\CreatePatient::route('/create'),
         'edit' => Pages\EditPatient::route('/{record}/edit'),
-        'view' => Pages\ViewPatient::route('/{record}'), // 👈 ADD THIS
+        'view' => Pages\ViewPatient::route('/{record}'), //  ADD THIS
     ];
 }
 }

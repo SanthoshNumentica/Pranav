@@ -20,7 +20,7 @@ class BloodGroupResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Master';
-   public static function getModelLabel(): string
+    public static function getModelLabel(): string
     {
         return 'Blood Group'; // Shown on tab, breadcrumb, etc.
     }
@@ -38,10 +38,10 @@ class BloodGroupResource extends Resource
         return $form
             ->schema([
                 Section::make()->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                  ])
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+                ])
             ]);
     }
 
@@ -55,14 +55,14 @@ class BloodGroupResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')->label("Created On")->searchable()
                     ->searchable(),
-                 Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->searchable()
+                Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->searchable()
                     ->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

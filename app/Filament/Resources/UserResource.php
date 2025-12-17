@@ -42,25 +42,25 @@ class UserResource extends Resource
             ->schema([
                 // Card Design
                 Section::make()->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\DateTimePicker::make('email_verified_at'),
-                // Password filed required only in the creation time not required in the update time
-                Forms\Components\TextInput::make('password')
-                    ->password()
-                    ->maxLength(255)
-                    ->required()
-                    ->hiddenOn('edit'),
-                Select::make('roles')
-                    ->multiple()
-                    ->relationship('roles','name') ->preload(),
-                    ])->columns(2) // Row(6+6)
-                    // Card Design End
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('email')
+                        ->email()
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\DateTimePicker::make('email_verified_at'),
+                    // Password filed required only in the creation time not required in the update time
+                    Forms\Components\TextInput::make('password')
+                        ->password()
+                        ->maxLength(255)
+                        ->required()
+                        ->hiddenOn('edit'),
+                    Select::make('roles')
+                        ->multiple()
+                        ->relationship('roles', 'name')->preload(),
+                ])->columns(2) // Row(6+6)
+                // Card Design End
             ]);
 
     }
@@ -71,15 +71,15 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()
                     ->searchable(),
-                    Tables\Columns\TextColumn::make('role')->searchable()
+                Tables\Columns\TextColumn::make('role')->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
-                ->dateTime('d-m-Y')
+                    ->dateTime('d-m-Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->sortable()
-                ->dateTime('d-m-Y')
+                    ->dateTime('d-m-Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
@@ -93,12 +93,12 @@ class UserResource extends Resource
             ->actions([
 
 
-                Tables\Actions\ViewAction::make()
-                ->visible(auth()->user()->can('User Read')),
-                Tables\Actions\EditAction::make()
-                ->visible(auth()->user()->can('User Edit')),
-                Tables\Actions\DeleteAction::make()
-                ->visible(auth()->user()->can('User Delete')),
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
+                // ->visible(auth()->user()->can('User Read')),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+                // ->visible(auth()->user()->can('User Edit')),
+                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger'),
+                // ->visible(auth()->user()->can('User Delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -126,12 +126,9 @@ class UserResource extends Resource
 
     public static function canCreate(): bool
     {
-        if(!auth()->user()->can('User Create'))
-        {
+        if (!auth()->user()->can('User Create')) {
             return false;
-        }
-        else
-        {
+        } else {
             return TRUE;
         }
 

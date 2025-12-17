@@ -34,9 +34,9 @@ class GenderResource extends Resource
         return 'Gender'; // Shown on tab, breadcrumb, etc.
     }
     public static function shouldRegisterNavigation(): bool
-{
-    return false;
-}
+    {
+        return false;
+    }
 
     public static function getPluralModelLabel(): string
     {
@@ -46,14 +46,15 @@ class GenderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                  Section::make()->schema([
-                Forms\Components\TextInput::make('gender_name')
-                    ->required()
-                    ->maxLength(255),
-                  ])
-            ]
-        );
+            ->schema(
+                [
+                    Section::make()->schema([
+                        Forms\Components\TextInput::make('gender_name')
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                ]
+            );
     }
 
     public static function table(Table $table): Table
@@ -66,15 +67,15 @@ class GenderResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')->label("Created On")->searchable()
                     ->searchable(),
-                 Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->searchable()
+                Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->searchable()
                     ->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
