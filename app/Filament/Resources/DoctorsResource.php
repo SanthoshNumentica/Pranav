@@ -99,8 +99,9 @@ class DoctorsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->searchable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('row_number')
+                    ->label('Id')
+                    ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('name')->label("Name")->formatStateUsing(fn($state, $record) => optional($record->title)->title_name . '. ' . $record->name)->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('doctor_id')->label("Doctor ID")->searchable()

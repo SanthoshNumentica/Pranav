@@ -59,7 +59,7 @@ class PatientResource extends Resource
                                 ->email(),
                         ]),
                         Grid::make(4)->schema([
-                            
+
                             Forms\Components\TextInput::make('mobile_no')
                                 ->label('Phone Number')
                                 ->required()
@@ -81,8 +81,8 @@ class PatientResource extends Resource
                         ]),
                         Grid::make(4)->schema([
 
-                            
-                            
+
+
                             Forms\Components\TextInput::make('street')
                                 ->label('Street')
                                 ->required()
@@ -91,7 +91,7 @@ class PatientResource extends Resource
                                 ->label('Pin Cdde')
                                 ->required()
                                 ->maxLength(255),
-                             Forms\Components\TextInput::make('city')
+                            Forms\Components\TextInput::make('city')
                                 ->label('City')
                                 ->required()
                                 ->maxLength(255),
@@ -101,7 +101,7 @@ class PatientResource extends Resource
                         ]),
                         Grid::make(4)->schema([
 
-                           
+
                             Forms\Components\TextInput::make('remarks')
                                 ->label('Remarks')
                                 ->maxLength(255),
@@ -114,49 +114,49 @@ class PatientResource extends Resource
             ]);
     }
 
-   public static function table(Table $table): Table
-{
-    return $table
-        ->columns([
-            Tables\Columns\TextColumn::make('id')
-                ->label('ID')
-                ->searchable(),
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('row_number')
+                    ->label('Id')
+                    ->state(fn($record, $rowLoop) => $rowLoop->iteration),
 
-            Tables\Columns\TextColumn::make('name')
-                ->label("Name")
-                ->formatStateUsing(function ($state, $record) {
-                    $title = optional($record->title)->title_name;
-                    $name = $record->name ?? '';
-                    return trim("{$title}. {$name}");
-                })
-                ->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->label("Name")
+                    ->formatStateUsing(function ($state, $record) {
+                        $title = optional($record->title)->title_name;
+                        $name = $record->name ?? '';
+                        return trim("{$title}. {$name}");
+                    })
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('patient_id')
-                ->label("Patient ID")
-                ->searchable(),
+                Tables\Columns\TextColumn::make('patient_id')
+                    ->label("Patient ID")
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('mobile_no')
-                ->label("Mobile No")
-                ->searchable(),
+                Tables\Columns\TextColumn::make('mobile_no')
+                    ->label("Mobile No")
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('email_id')
-                ->label("Email ID")
-                ->searchable(),
+                Tables\Columns\TextColumn::make('email_id')
+                    ->label("Email ID")
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('gender.gender_name')
-                ->label("Gender")
-                ->getStateUsing(fn($record) => $record->gender?->gender_name ?? '')
-                ->searchable(),
+                Tables\Columns\TextColumn::make('gender.gender_name')
+                    ->label("Gender")
+                    ->getStateUsing(fn($record) => $record->gender?->gender_name ?? '')
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('dob')
-                ->label("DOB")
-                ->date('d-m-Y')
-                ->searchable(),
+                Tables\Columns\TextColumn::make('dob')
+                    ->label("DOB")
+                    ->date('d-m-Y')
+                    ->searchable(),
 
-            Tables\Columns\TextColumn::make('address')
-                ->label("Address")
-                ->formatStateUsing(fn($state, $record) => trim("{$record->address}, {$record->city}"))
-                ->searchable(),
+                Tables\Columns\TextColumn::make('address')
+                    ->label("Address")
+                    ->formatStateUsing(fn($state, $record) => trim("{$record->address}, {$record->city}"))
+                    ->searchable(),
 
             Tables\Columns\TextColumn::make('updated_at')
                 ->label("Updated On")
@@ -195,6 +195,7 @@ Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->toolti
         ];
     }
 
+<<<<<<< HEAD
    public static function getPages(): array
 {
     return [
@@ -204,4 +205,15 @@ Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->toolti
         'view' => Pages\ViewPatient::route('/{record}'), //  ADD THIS
     ];
 }
+=======
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListPatients::route('/'),
+            'create' => Pages\CreatePatient::route('/create'),
+            'edit' => Pages\EditPatient::route('/{record}/edit'),
+            'view' => Pages\ViewPatient::route('/{record}'), // 👈 ADD THIS
+        ];
+    }
+>>>>>>> 8fabadf9326aa3a3beba721746ef6d013c6c96bf
 }

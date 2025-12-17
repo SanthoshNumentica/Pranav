@@ -61,8 +61,9 @@ class GenderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->searchable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('row_number')
+                    ->label('Id')
+                    ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('gender_name')->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')->label("Created On")->searchable()

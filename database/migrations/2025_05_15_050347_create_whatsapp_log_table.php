@@ -8,25 +8,34 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * @return void
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('whatsapp_log', function (Blueprint $table) {
             $table->id();
-            $table->string('from');
-            $table->string('to');
-            $table->string('message_type')->default('Plain Text');
-            $table->string('message');
-            $table->enum('status', ['Sent', 'Failed']);
-            $table->date('date');
+
+            // New structure
+            $table->text('message')->nullable();
+            $table->enum('message_type', ['whatsapp', 'sms']);
+            $table->enum('status', ['not_sent', 'sent', 'failed'])->default('not_sent');
+            $table->enum('resend', ['yes', 'no'])->default('no');
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->string('sender_mobile_no', 50)->nullable();
+            $table->string('recipient_mobile_no', 50)->nullable();
+            $table->text('response')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
     /**
      * Reverse the migrations.
+     *
+     * @return void
      */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('whatsapp_log');
     }

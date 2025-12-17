@@ -25,7 +25,9 @@ class WhatsappLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id'),
+                Tables\Columns\TextColumn::make('row_number')
+                    ->label('Id')
+                    ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('message_type')->label('Message Type'),

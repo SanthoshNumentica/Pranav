@@ -1,7 +1,31 @@
 body {
-    background-image: url('/storage/images/scan_bg.jpg'); /* Put your background image in public/images/login-bg.jpg */
+    background-image: url('/storage/images/scan_bg.jpg');
+    /* Put your background image in public/images/login-bg.jpg */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     min-height: 100vh;
+}
+
+/* === FIX FILAMENT DELETE / ACTION MODALS === */
+
+.fi-modal,
+.fi-modal-window {
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+    z-index: 99999 !important;
+}
+
+.fi-modal-overlay {
+    z-index: 99998 !important;
+}
+
+.fi-modal-window {
+    background-color: #ffffff !important;
+}
+
+.dark .fi-modal-window {
+    background-color: rgb(17 24 39) !important;
 }
