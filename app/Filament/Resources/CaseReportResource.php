@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CaseReportResource\Pages;
 use App\Models\CaseReport;
+use Exception;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -17,11 +18,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Livewire\Notifications;
-use Illuminate\Support\Facades\Http;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Stmt\Label;
 use App\Services\WhatsAppService;
 
 
@@ -136,7 +134,6 @@ class CaseReportResource extends Resource
                 Tables\Columns\TextColumn::make('patient.name')->label('Patient'),
                 Tables\Columns\TextColumn::make('patient.mobile_no')->label('Mobile No'),
                 Tables\Columns\TextColumn::make('doctor.name')->label('Doctor'),
-                Tables\Columns\TextColumn::make('description')->limit(30),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -162,10 +159,44 @@ class CaseReportResource extends Resource
                     }),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
-                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
-                Tables\Actions\DeleteAction::make()
-                    ->authorize(fn() => true),
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger'),
+                Tables\Actions\Action::make('sendWhatsApp')->icon('heroicon-o-paper-airplane')->label('')->tooltip('Send Whatsapp')
+                    ->requiresConfirmation()->modalHeading('Send WhatsApp')
+                    ->modalIcon('heroicon-o-exclamation-triangle')->color('success')
+                    ->action(function ($record) {
+                        try {
+                            $whatsAppData = [
+                                'reportId'    => $record->case_id,
+                                'patientName' => $record->patient->name,
+                                'doctorName'  => $record->doctor->name,
+                                'reportDate'  => $record->created_at->format('D, d M Y'),
+                                'mobile_no'   => $record->doctor->mobile_no,
+                                'shareLink'   => 'https://app.nandico.in/share/?link=YctI7TinEB',
+                            ];
+
+                            // Call the WhatsApp service to send the message
+                            $result = app(WhatsAppService::class)->send($whatsAppData, true, 1);
+
+                            // Decode the API response JSON
+                            $apiResponse = json_decode($result['response']['response'] ?? '{}', true);
+                            $toNumber = $apiResponse['data']['to'] ?? null;
+                            $statusCode   = $apiResponse['data']['status_code'] ?? null;
+
+                            if ($statusCode === 200) {
+                                // Show success notification
+                                Notification::make()->success()->title('WhatsApp message sent successfully')->body("Message sent to $toNumber")->send();
+                            } else {
+                                // Show failure notification with API error message
+                                Notification::make()->danger()->title('Failed to send WhatsApp message')->body($apiResponse['message_status'] ?? 'Unknown error')->send();
+                            }
+                        } catch (Exception $e) {
+                            // Log the error and show failure notification
+                            Log::error('WhatsApp send failed', ['error' => $e->getMessage(), 'record_id' => $record->id]);
+                            Notification::make()->danger()->title('Failed to send WhatsApp message')->body($e->getMessage())->send();
+                        }
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

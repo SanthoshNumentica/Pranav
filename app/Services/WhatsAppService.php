@@ -3,105 +3,138 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Models\WhatsappTemplate;
+use App\Models\WhatsappLog;
 
 class WhatsAppService
 {
+
     public function __construct() {}
 
     /**
-     * Send WhatsApp message
+     * Send a WhatsApp message or push it into a queue.
      */
-    public function sendTemplateMessage($event, $params = [], $toNumber = null)
+    public function send(array $data, bool $isSend = true, $templateId = null, bool $skipQueue = false): array
     {
-        // 1. Fetch template from whatsapp_templates table
-        $template = WhatsappTemplate::where('event_name', $event)
-            ->where('allow_to_send', 1)
-            ->first();
+        // case 1: Fresh send (no ID)
+        if (empty($data['id'])) {
+            $template = WhatsappTemplate::find($templateId);
+            if (! $template) {
+                return ['status' => false, 'message' => 'Template not found'];
+            }
 
-        if (! $template) {
-            return ['status' => false, 'message' => 'Template not found'];
+            $message = $this->replaceParameters($data, $template->template_content ?? '');
+            if (! $isSend) {
+                return ['status' => false, 'message' => 'WhatsApp sending skipped'];
+            }
+
+            // Normalize mobile number
+            $mobileNo = preg_replace('/\D/', '', $data['mobile_no']);
+            if (!str_starts_with($mobileNo, '91')) {
+                $mobileNo = '91' . $mobileNo;
+            }
+            // Convert escaped newlines to actual line breaks
+            $message = str_replace('\n', "\n", $message);
+
+            // Create notification record
+            $whatsappLog = new WhatsappLog();
+            $whatsappLog->fill([
+                'message'             => $message,
+                'message_type'        => 'whatsapp',
+                'status'              => 'not_sent',
+                'created_by'          => auth()->check() ? auth()->user()->id : null,
+                'recipient_mobile_no' => $mobileNo,
+            ]);
+            $whatsappLog->save();
+        }
+        // case 2: Resend (existing ID) 
+        else {
+            $whatsappLog = WhatsappLog::find($data['id']);
+            if (! $whatsappLog) {
+                return ['status' => false, 'message' => 'Whatsapp Log Data not found'];
+            }
+
+            $mobileNo = $whatsappLog->recipient_mobile_no;
+            $message  = $whatsappLog->message;
         }
 
-        // 2. Replace parameters in template
-        $message = $this->replaceParameters($template->template_content, $params);
+        // Send whatsapp message
+        $result = $this->sendWhatsAppMessage($mobileNo, $message);
+        $decoded = json_decode($result['response'] ?? '', true);
 
-        // 3. Normalize number
-        $mobileNo = $toNumber ?: $params['mobile_no'] ?? null;
-        if (!$mobileNo) return ['status' => false, 'message' => 'Mobile number missing'];
-        $mobileNo = preg_replace('/\D/', '', $mobileNo);
-        if (!str_starts_with($mobileNo, '91')) {
-            $mobileNo = '91' . $mobileNo;
+        $senderNumber = $decoded['data']['from'] ?? '';
+
+        if (isset($decoded['data']['status_code']) && (int)$decoded['data']['status_code'] === 200) {
+            $whatsappLog->status = 'sent';
+        } else {
+            $whatsappLog->status = 'failed';
         }
 
-        // 4. Send to WhatsApp API
-        $result = $this->sendWhatsAppApi($mobileNo, $message);
+        // update with sender number && API response
+        $whatsappLog->sender_mobile_no = $senderNumber;
+        $whatsappLog->response = $result['response'] ?? null;
+        $whatsappLog->save();
 
-        return $result;
+        return [
+            'status' => $whatsappLog->status === 'sent',
+            'message' => $whatsappLog->status === 'sent' ? 'Whatsapp message sent successfully' : 'Whatsapp Message failed to sent',
+            'response' => $result,
+        ];
     }
 
     /**
-     * Replace placeholders in template
+     * Send message directly to WhatsApp API
      */
-    private function replaceParameters($template, $params)
+    public function sendWhatsAppMessage($mobileNo, $message, $type = 'TEXT', $file = '', $templateId = ''): array
     {
-        foreach ($params as $key => $value) {
-            $template = str_replace('{$' . $key . '}', $value, $template);
+        if (config('app.env') !== 'production') {
+            $mobileNo = config('services.whatsapp.test_number', '919790124351');
         }
-        return $template;
-    }
 
-    /**
-     * Call WhatsApp API and log
-     */
-    private function sendWhatsAppApi($mobileNo, $message)
-    {
+        $payload = [
+            'appkey'  => config('services.whatsapp.appkey'),
+            'authkey' => config('services.whatsapp.authkey'),
+            'to'      => $mobileNo,
+            'message' => $message,
+        ];
+
         $url = config('services.whatsapp.api_url');
-        $appkey = config('services.whatsapp.appkey');
-        $authkey = config('services.whatsapp.authkey');
 
         try {
             $response = Http::withHeaders([
-                'Accept' => '*/*',
+                'Accept' => '/',
                 'Content-Type' => 'application/json',
-                'appkey' => $appkey,
-            ])->post($url, [
-                'appkey' => $appkey,
-                'authkey' => $authkey,
-                'to' => $mobileNo,
-                'message' => $message,
-            ]);
+                'appkey' => config('services.whatsapp.appkey'),
+            ])->withoutVerifying()->post($url, $payload);
 
             $body = trim($response->body());
             $success = str_contains(strtolower($body), 'true');
 
-            // 5. Log into whatsapp_log table
-            DB::table('whatsapp_log')->insert([
-                'from' => config('services.whatsapp.sender_number', 'DefaultSender'),
-                'to' => $mobileNo,
-                'message_type' => 'Plain Text',
-                'message' => $message,
-                'status' => $success ? 'Sent' : 'Failed',
-                'date' => now()->format('Y-m-d'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            return ['status' => $success, 'response' => $body];
+            return [
+                'status' => $success,
+                'response' => $body,
+            ];
         } catch (\Throwable $e) {
-            DB::table('whatsapp_log')->insert([
-                'from' => config('services.whatsapp.sender_number', 'DefaultSender'),
-                'to' => $mobileNo,
-                'message_type' => 'Plain Text',
-                'message' => $message,
-                'status' => 'Failed',
-                'date' => now()->format('Y-m-d'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            Log::error('WhatsApp send error: ' . $e->getMessage());
 
-            return ['status' => false, 'response' => $e->getMessage()];
+            return [
+                'status' => false,
+                'response' => $e->getMessage(),
+            ];
         }
+    }
+
+    /**
+     * Replace placeholders like {name}, {month}, etc.
+     */
+    private function replaceParameters(array $data, string $template): string
+    {
+        foreach ($data as $key => $value) {
+            $template = str_replace('{' . $key . '}', $value, $template);
+        }
+
+        return $template;
     }
 }
