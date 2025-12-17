@@ -34,9 +34,9 @@ class GenderResource extends Resource
         return 'Gender'; // Shown on tab, breadcrumb, etc.
     }
     public static function shouldRegisterNavigation(): bool
-{
-    return false;
-}
+    {
+        return false;
+    }
 
     public static function getPluralModelLabel(): string
     {
@@ -46,27 +46,29 @@ class GenderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                  Section::make()->schema([
-                Forms\Components\TextInput::make('gender_name')
-                    ->required()
-                    ->maxLength(255),
-                  ])
-            ]
-        );
+            ->schema(
+                [
+                    Section::make()->schema([
+                        Forms\Components\TextInput::make('gender_name')
+                            ->required()
+                            ->maxLength(255),
+                    ])
+                ]
+            );
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->searchable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('row_number')
+                    ->label('Id')
+                    ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('gender_name')->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')->label("Created On")->searchable()
                     ->searchable(),
-                 Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->searchable()
+                Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->searchable()
                     ->searchable(),
             ])
             ->filters([

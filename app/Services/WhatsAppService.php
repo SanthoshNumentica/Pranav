@@ -17,8 +17,8 @@ class WhatsAppService
     {
         // 1. Fetch template from whatsapp_templates table
         $template = WhatsappTemplate::where('event_name', $event)
-                                     ->where('allow_to_send', 1)
-                                     ->first();
+            ->where('allow_to_send', 1)
+            ->first();
 
         if (! $template) {
             return ['status' => false, 'message' => 'Template not found'];
@@ -32,7 +32,7 @@ class WhatsAppService
         if (!$mobileNo) return ['status' => false, 'message' => 'Mobile number missing'];
         $mobileNo = preg_replace('/\D/', '', $mobileNo);
         if (!str_starts_with($mobileNo, '91')) {
-            $mobileNo = '91'.$mobileNo;
+            $mobileNo = '91' . $mobileNo;
         }
 
         // 4. Send to WhatsApp API
@@ -47,7 +47,7 @@ class WhatsAppService
     private function replaceParameters($template, $params)
     {
         foreach ($params as $key => $value) {
-            $template = str_replace('{$'.$key.'}', $value, $template);
+            $template = str_replace('{$' . $key . '}', $value, $template);
         }
         return $template;
     }
@@ -89,7 +89,6 @@ class WhatsAppService
             ]);
 
             return ['status' => $success, 'response' => $body];
-
         } catch (\Throwable $e) {
             DB::table('whatsapp_log')->insert([
                 'from' => config('services.whatsapp.sender_number', 'DefaultSender'),

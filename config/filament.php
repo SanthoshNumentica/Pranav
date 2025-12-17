@@ -20,9 +20,6 @@ return [
         'secondary' => 'secondary',  // uses Tailwind 'secondary' color
     ],
 
-    // optionally, enable dark mode
-    'dark_mode' => false,
-
     'broadcasting' => [
 
         // 'echo' => [
@@ -63,6 +60,7 @@ return [
     |
     */
     'dark_mode' => true, // or false
+    'theme' => null,
     'assets_path' => null,
 
     /*

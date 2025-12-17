@@ -126,7 +126,12 @@ class CaseReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('Id'),
+                Tables\Columns\TextColumn::make('id')
+                    ->label('Id')
+                    ->state(
+                        fn($record, $livewire) => ($livewire->getTablePage() - 1) * $livewire->getTableRecordsPerPage()
+                            + $livewire->getTableRecords()->search($record) + 1
+                    ),
                 Tables\Columns\TextColumn::make('case_id')->label('Scan Report ID'),
                 Tables\Columns\TextColumn::make('patient.name')->label('Patient'),
                 Tables\Columns\TextColumn::make('patient.mobile_no')->label('Mobile No'),
@@ -159,90 +164,8 @@ class CaseReportResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
                 Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
-                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash'),
-                Tables\Actions\Action::make('testWhatsapp')
-    ->label('Test WhatsApp')
-    ->icon('heroicon-o-bolt')
-    ->color('warning')
-    ->action(function ($record) {
-        try {
-            $service = app(\App\Services\WhatsAppService::class);
-
-            $params = [
-                'mobile_no' => $record->patient->mobile_no,
-                'name' => $record->patient->name,
-            ];
-
-            $result = $service->sendTemplateMessage('case_report', $params);
-
-            if ($result['status']) {
-                Notification::make()
-                    ->title('TEST SUCCESS — WhatsApp API Working!')
-                    ->success()
-                    ->send();
-            } else {
-                Notification::make()
-                    ->title('TEST FAILED: ' . $result['response'])
-                    ->danger()
-                    ->send();
-            }
-
-        } catch (\Throwable $e) {
-            Notification::make()
-                ->title('ERROR: ' . $e->getMessage())
-                ->danger()
-                ->send();
-        }
-
-        return null;
-    }),
-
-                Tables\Actions\Action::make('sendWhatsapp')
-                    ->label('WhatsApp')
-                    ->icon('heroicon-o-chat-bubble-left-right')
-                    ->color('success')
-                    ->requiresConfirmation()
-                    ->modalHeading('Send WhatsApp')
-                    ->modalDescription('Are you sure you want to send the WhatsApp report message to the patient?')
-                    ->modalSubmitActionLabel('Send')
-                    ->modalCancelActionLabel('Cancel')
-                    ->action(function ($record, $livewire) {
-                        $livewire->dispatchBrowserEvent('whatsapp-debug', [
-                            'record_id' => $record->id,
-                            'mobile_no' => $record->patient->mobile_no,
-                            'name' => $record->patient->name,
-                        ]);
-                        try {
-                            $service = app(abstract: WhatsAppService::class);
-
-                            $params = [
-                                'mobile_no' => $record->patient->mobile_no,
-                                'name' => $record->patient->name,
-                            ];
-
-                            $result = $service->sendTemplateMessage('case_report', $params);
-
-                            if ($result['status']) {
-                                Notification::make()
-                                    ->title('WhatsApp message sent successfully.')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Failed to send WhatsApp message: ' . $result['response'])
-                                    ->danger()
-                                    ->send();
-                            }
-                        } catch (\Throwable $e) {
-                            Notification::make()
-                                ->title('Error sending WhatsApp message: ' . $e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-
-                        $livewire->dispatchBrowserEvent('whatsapp-loading-stop');
-                        return null;
-                    }),
+                Tables\Actions\DeleteAction::make()
+                    ->authorize(fn() => true),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

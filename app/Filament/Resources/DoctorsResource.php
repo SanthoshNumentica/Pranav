@@ -58,10 +58,10 @@ class DoctorsResource extends Resource
                                 ->label('Email')
                                 ->required()
                                 ->email(),
-                           
+
                         ]),
                         Grid::make(4)->schema([
-                            
+
                             Forms\Components\TextInput::make('mobile_no')
                                 ->label('Phone Number')
                                 ->required()
@@ -81,7 +81,7 @@ class DoctorsResource extends Resource
                         ]),
                         Grid::make(4)->schema([
 
-                            
+
                             Forms\Components\TextInput::make('city')
                                 ->label('City')
                                 ->required()
@@ -99,8 +99,9 @@ class DoctorsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->searchable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('row_number')
+                    ->label('Id')
+                    ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('name')->label("Name")->formatStateUsing(fn($state, $record) => optional($record->title)->title_name . '. ' . $record->name)->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('doctor_id')->label("Doctor ID")->searchable()
@@ -156,7 +157,7 @@ class DoctorsResource extends Resource
             'index' => Pages\ListDoctors::route('/'),
             'create' => Pages\CreateDoctors::route('/create'),
             'edit' => Pages\EditDoctors::route('/{record}/edit'),
-            'view' => Pages\ViewDoctor::route('/{record}'), 
+            'view' => Pages\ViewDoctor::route('/{record}'),
         ];
     }
 }
