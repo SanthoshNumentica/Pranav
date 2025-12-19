@@ -4,7 +4,12 @@ namespace App\Filament\Resources\CaseReportResource\Pages;
 
 use App\Filament\Resources\CaseReportResource;
 use Filament\Actions;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Notifications\Notification;
+use App\Services\OrthancService;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class EditCaseReport extends EditRecord
 {
@@ -14,6 +19,33 @@ class EditCaseReport extends EditRecord
     {
         return [
             Actions\DeleteAction::make(),
+
+            // Re Upload Case Report
+            Action::make('uploadReport')->label('OHIF Re-Upload')
+                ->icon('heroicon-o-paper-airplane')->color('info')->requiresConfirmation()
+                ->modalHeading('Reupload to OHIF Viewer')->modalWidth('xl')
+                ->modalContent(fn() => view(
+                    'filament.case-reports.upload-report-modal',
+                    ['record' => $this->record]
+                ))->action(function () {
+                    try {
+                        $caseId = $this->record->id;
+
+                        $studyUidRes = app(OrthancService::class)->uploadCaseReport($caseId);
+
+                        if ($studyUidRes) {
+                            // Show success notification
+                            Notification::make()->success()->title('Report upload successfully')->send();
+                        } else {
+                            // Show failure notification with API error message
+                            Notification::make()->danger()->title('Failed to upload report')->body('Unknown error')->send();
+                        }
+                    } catch (Exception $e) {
+                        // Log the error and show failure notification
+                        Log::error('Report Upload failed', ['error' => $e->getMessage(), 'record_id' => $this->record->id]);
+                        Notification::make()->danger()->title('Failed to upload report')->body($e->getMessage())->send();
+                    }
+                }),
         ];
     }
 
@@ -30,12 +62,6 @@ class EditCaseReport extends EditRecord
         });
 
         $data['status'] = $hasDocuments ? 'closed' : 'pending';
-
-        if ($hasDocuments) {
-            $whatsappController = app(\App\Http\Controllers\WhatsAppController::class);
-            $whatsappController->findCaseReportById($this->record->id);
-        }
-
         return $data;
     }
 

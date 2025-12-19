@@ -14,11 +14,16 @@ class CaseReport extends Model
     // Columns that can be mass assigned
     protected $fillable = [
         'case_id',
+        'study_instance_uid',
         'patient_fk_id',
         'doc_ref_fk_id',
         'description',
+        'documents',
         'remarks',
         'status',
+    ];
+    protected $casts = [
+        'documents' => 'array',
     ];
 
     /**

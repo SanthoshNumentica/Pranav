@@ -21,6 +21,8 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use App\Services\WhatsAppService;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Validation\ValidationException;
 
 
 class CaseReportResource extends Resource
@@ -35,37 +37,43 @@ class CaseReportResource extends Resource
             ->schema([
                 Section::make()
                     ->schema([
-                        Grid::make(4)->schema([
-                            Forms\Components\Select::make('patient_fk_id')
-                                ->label('Patient')
-                                ->relationship('patient', 'name')
-                                ->getOptionLabelFromRecordUsing(fn($record) => "{$record->name}-{$record->patient_id} ({$record->mobile_no})")
-                                ->required()
-                                ->searchable()
-                                ->preload(),
+                        Grid::make(3)->schema([
+                            TextInput::make('case_id')->visibleOn('view')->disabled(),
 
-                            Forms\Components\Select::make('doc_ref_fk_id')
-                                ->label('Referred Doctor')
-                                ->relationship('doctor', 'name')
+                            Select::make('patient_fk_id')->label('Patient')->relationship('patient', 'name')
+                                ->getOptionLabelFromRecordUsing(fn($record) => "{$record->name}-{$record->patient_id} ({$record->mobile_no})")
+                                ->required()->searchable()->preload(),
+
+                            Select::make('doc_ref_fk_id')->label('Referred Doctor')->relationship('doctor', 'name')
                                 ->getOptionLabelFromRecordUsing(fn($record) => "{$record->name}-{$record->doctor_id} ({$record->mobile_no})")
-                                ->required()
-                                ->searchable()
-                                ->preload(),
+                                ->required()->searchable()->preload(),
 
                             Textarea::make('description')->maxLength(255),
                             Textarea::make('remarks')->maxLength(255),
-                            TextInput::make('case_id')->visibleOn('view')->disabled(),
+
+                            FileUpload::make('documents')->label('Documents')->preserveFilenames()
+                                ->directory('case-report-documents')->enableDownload(),
+
                             Forms\Components\Hidden::make('status')->default('pending'),
                         ]),
 
-                        Repeater::make('items')
-                            ->relationship('items')
-                            ->label('Scan Reports')
+                        Repeater::make('items')->relationship('items')->label('Scan Reports')
                             ->schema([
                                 Select::make('scan_type_id')->relationship('scanType', 'name')->required()->searchable()->preload(),
                                 Select::make('scan_id')->relationship('scan', 'name')->required()->searchable()->preload(),
                                 Textarea::make('remarks')->maxLength(255),
-                                FileUpload::make('documents')->multiple()->reorderable()->Label('Reports')->preserveFilenames()->directory('case-report-documents'),
+                                FileUpload::make('documents')->multiple()->reorderable()->label('Reports')->required()->preserveFilenames()->directory('case-report-documents')
+                                    ->enableDownload()->maxSize(102400)
+                                    ->dehydrateStateUsing(function ($state) {
+                                        foreach ($state as $filePath) {
+                                            if (strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) !== 'dcm') {
+                                                throw \Illuminate\Validation\ValidationException::withMessages([
+                                                    'documents' => 'Only DICOM (.dcm) files are allowed.',
+                                                ]);
+                                            }
+                                        }
+                                        return $state;
+                                    })
                             ])
                             ->columns(3)
                             ->createItemButtonLabel('Add Scan')
@@ -76,19 +84,16 @@ class CaseReportResource extends Resource
 
                                 foreach ($state as $itemData) {
                                     if (!empty($itemData['id'])) {
-                                        // Update existing item
                                         $item = $record->items()->find($itemData['id']);
                                         if ($item) {
                                             $item->update($itemData);
                                             $incomingItemIds[] = $item->id;
                                         }
                                     } else {
-                                        // Create new item
                                         $item = $record->items()->create($itemData);
                                         $incomingItemIds[] = $item->id;
                                     }
 
-                                    // Check if this item has documents
                                     if (!empty($itemData['documents']) && is_array($itemData['documents']) && count(array_filter($itemData['documents'])) > 0) {
                                         $hasDocuments = true;
                                     }
@@ -100,15 +105,38 @@ class CaseReportResource extends Resource
                                     ]);
                                 }
 
-                                // Delete items that were removed in the form
+                                // Delete removed items
                                 $itemsToDelete = array_diff($existingItemIds, $incomingItemIds);
                                 if (!empty($itemsToDelete)) {
                                     $record->items()->whereIn('id', $itemsToDelete)->delete();
                                 }
 
-                                // Update case report status based on documents presence
                                 $record->status = $hasDocuments ? 'closed' : 'pending';
                                 $record->save();
+
+                                // Upload report to Orthanc
+                                try {
+                                    app(\App\Services\OrthancService::class)->uploadCaseReport($record->id);
+                                    // $orthancUrl = rtrim(config('services.ohif.url'), '/');
+                                    // $shareLink = !empty($record->study_instance_uid)
+                                    //     ? $orthancUrl . "/ohif/viewer?hangingprotocolId=mprAnd3DVolumeViewport&StudyInstanceUIDs={$record->study_instance_uid}"
+                                    //     : 'Report not uploaded properly in OHIF';
+
+                                    // $whatsAppData = [
+                                    //     'reportId'    => $record->case_id,
+                                    //     'patientName' => $record->patient->name,
+                                    //     'doctorName'  => $record->doctor->name,
+                                    //     'reportDate'  => $record->created_at->format('D, d M Y'),
+                                    //     'mobile_no'   => $record->doctor->mobile_no,
+                                    //     'shareLink'   => $shareLink,
+                                    // ];
+                                    // $result = app(WhatsAppService::class)->send($whatsAppData, true, 1);
+                                } catch (Exception $e) {
+                                    Log::error('Report Upload failed', [
+                                        'error' => $e->getMessage(),
+                                        'record_id' => $record->id,
+                                    ]);
+                                }
 
                                 Log::info('Updating Scan Report status', [
                                     'case_report_id' => $record->id,
@@ -124,8 +152,7 @@ class CaseReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('Id')
+                Tables\Columns\TextColumn::make('id')->label('Id')
                     ->state(
                         fn($record, $livewire) => ($livewire->getTablePage() - 1) * $livewire->getTableRecordsPerPage()
                             + $livewire->getTableRecords()->search($record) + 1
@@ -134,9 +161,7 @@ class CaseReportResource extends Resource
                 Tables\Columns\TextColumn::make('patient.name')->label('Patient'),
                 Tables\Columns\TextColumn::make('patient.mobile_no')->label('Mobile No'),
                 Tables\Columns\TextColumn::make('doctor.name')->label('Doctor'),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge()
+                Tables\Columns\TextColumn::make('status')->label('Status')->badge()
                     ->color(fn($state) => match ($state) {
                         'closed' => 'success',   // Green
                         'pending' => 'danger',   // Red
@@ -167,13 +192,18 @@ class CaseReportResource extends Resource
                     ->modalIcon('heroicon-o-exclamation-triangle')->color('success')
                     ->action(function ($record) {
                         try {
+                            if (empty($record->study_instance_uid)) {
+                                Notification::make()->danger()->title('Report not uploaded to OHIF yet.')->send();
+                                return;
+                            }
+                            $orthancUrl = rtrim(config('services.ohif.url'), '/');
                             $whatsAppData = [
                                 'reportId'    => $record->case_id,
                                 'patientName' => $record->patient->name,
                                 'doctorName'  => $record->doctor->name,
                                 'reportDate'  => $record->created_at->format('D, d M Y'),
                                 'mobile_no'   => $record->doctor->mobile_no,
-                                'shareLink'   => 'https://app.nandico.in/share/?link=YctI7TinEB',
+                                'shareLink'   => $orthancUrl . "/ohif/viewer?hangingprotocolId=mprAnd3DVolumeViewport&StudyInstanceUIDs={$record->study_instance_uid}",
                             ];
 
                             // Call the WhatsApp service to send the message
