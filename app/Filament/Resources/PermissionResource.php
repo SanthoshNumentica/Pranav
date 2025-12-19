@@ -26,10 +26,10 @@ class PermissionResource extends Resource
     protected static ?string $model = Permission::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-key';
-     public static function shouldRegisterNavigation(): bool
-{
-    return false;
-}
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     // Navication Order
     protected static ?int $navigationSort = 3;
 
@@ -45,18 +45,18 @@ class PermissionResource extends Resource
     {
         return $form
 
-        ->schema([
+            ->schema([
 
                 // Card Design
                 Section::make()
-                ->schema([
-                            TextInput::make('name')
+                    ->schema([
+                        TextInput::make('name')
                             ->minLength(2)
                             ->maxLength(255)
                             ->required()
                             ->unique(ignoreRecord: true)
-                        ])
-                    // Card Design End
+                    ])
+                // Card Design End
             ]);
     }
 
@@ -66,11 +66,11 @@ class PermissionResource extends Resource
             ->columns([
                 TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                ->dateTime('d-m-Y')
+                    ->dateTime('d-m-Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                ->dateTime('d-m-Y')
+                    ->dateTime('d-m-Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -79,12 +79,12 @@ class PermissionResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()
-                ->visible(auth()->user()->can('Permission Read')),
-                Tables\Actions\EditAction::make()
-                ->visible(auth()->user()->can('Permission Edit')),
-                Tables\Actions\DeleteAction::make()
-                ->visible(auth()->user()->can('Permission Delete')),
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary')
+                    ->visible(auth()->user()->can('Permission Read')),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary')
+                    ->visible(auth()->user()->can('Permission Edit')),
+                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger')
+                    ->visible(auth()->user()->can('Permission Delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -111,12 +111,9 @@ class PermissionResource extends Resource
 
     public static function canCreate(): bool
     {
-        if(!auth()->user()->can('Permission Create'))
-        {
+        if (!auth()->user()->can('Permission Create')) {
             return false;
-        }
-        else
-        {
+        } else {
             return TRUE;
         }
 

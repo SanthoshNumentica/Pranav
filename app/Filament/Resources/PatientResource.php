@@ -158,34 +158,35 @@ class PatientResource extends Resource
                     ->formatStateUsing(fn($state, $record) => trim("{$record->address}, {$record->city}"))
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label("Updated On")
-                    ->dateTime('d-m-Y H:i')
-                    ->searchable(),
-            ])
-            ->filters([
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        Forms\Components\DatePicker::make('from'),
-                        Forms\Components\DatePicker::make('until'),
-                    ])
-                    ->query(function ($query, array $data) {
-                        return $query
-                            ->when($data['from'], fn($q) => $q->whereDate('dob', '>=', $data['from']))
-                            ->when($data['until'], fn($q) => $q->whereDate('dob', '<=', $data['until']));
-                    }),
-            ])
-            ->actions([
-                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
-                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil'),
-                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+            Tables\Columns\TextColumn::make('updated_at')
+                ->label("Updated On")
+                ->dateTime('d-m-Y H:i')
+                ->searchable(),
+        ])
+        ->filters([
+            Tables\Filters\Filter::make('created_at')
+                ->form([
+                    Forms\Components\DatePicker::make('from'),
+                    Forms\Components\DatePicker::make('until'),
+                ])
+                ->query(function ($query, array $data) {
+                    return $query
+                        ->when($data['from'], fn($q) => $q->whereDate('dob', '>=', $data['from']))
+                        ->when($data['until'], fn($q) => $q->whereDate('dob', '<=', $data['until']));
+                }),
+        ])
+        ->actions([
+           Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
+Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger'),
+
+        ])
+        ->bulkActions([
+            Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]),
+        ]);
+}
 
     public static function getRelations(): array
     {
@@ -194,6 +195,17 @@ class PatientResource extends Resource
         ];
     }
 
+<<<<<<< HEAD
+   public static function getPages(): array
+{
+    return [
+        'index' => Pages\ListPatients::route('/'),
+        'create' => Pages\CreatePatient::route('/create'),
+        'edit' => Pages\EditPatient::route('/{record}/edit'),
+        'view' => Pages\ViewPatient::route('/{record}'), //  ADD THIS
+    ];
+}
+=======
     public static function getPages(): array
     {
         return [
@@ -203,4 +215,5 @@ class PatientResource extends Resource
             'view' => Pages\ViewPatient::route('/{record}'), // 👈 ADD THIS
         ];
     }
+>>>>>>> 8fabadf9326aa3a3beba721746ef6d013c6c96bf
 }

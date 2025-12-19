@@ -63,7 +63,7 @@ class CaseReportResource extends Resource
                                 Select::make('scan_id')->relationship('scan', 'name')->required()->searchable()->preload(),
                                 Textarea::make('remarks')->maxLength(255),
                                 FileUpload::make('documents')->multiple()->reorderable()->label('Reports')->required()->preserveFilenames()->directory('case-report-documents')
-                                    ->enableDownload()->maxSize(102400)
+                                    ->enableDownload()->maxSize(102400)->panelLayout('grid')->columnSpanFull()
                                     ->dehydrateStateUsing(function ($state) {
                                         foreach ($state as $filePath) {
                                             if (strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) !== 'dcm') {

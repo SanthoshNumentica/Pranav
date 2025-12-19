@@ -38,7 +38,15 @@ class WhatsappLogResource extends Resource
             ->filters([
                 // Add filters if needed
             ])
-            ->actions([]) // No row actions
+            ->actions([
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye'),
+    Tables\Actions\Action::make('resend')
+        ->label('Resend')
+        ->icon('heroicon-o-paper-airplane')
+        ->color('success')
+        ->requiresConfirmation()
+        ->action(fn (WhatsappLog $record) => $record->update(['status' => 'resent'])),
+            ]) // No row actions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([]), // No bulk actions
             ]);
@@ -53,6 +61,9 @@ class WhatsappLogResource extends Resource
     {
         return [
             'index' => Pages\ListWhatsappLogs::route('/'),
+            'create' => Pages\CreateWhatsappLog::route('/create'),
+            'view' => Pages\ViewWhatsappLogs::route('/{record}'), //  ADD THIS
+
         ];
     }
 }

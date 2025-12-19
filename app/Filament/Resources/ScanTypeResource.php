@@ -68,8 +68,8 @@ class ScanTypeResource extends Resource
                 Tables\Columns\TextColumn::make('updated_at')->label("Updated On")->dateTime()->sortable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary'),
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

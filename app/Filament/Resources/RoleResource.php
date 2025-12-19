@@ -74,11 +74,11 @@ class RoleResource extends Resource
             ])
             ->actions([
 
-                Tables\Actions\ViewAction::make()
+                Tables\Actions\ViewAction::make()->icon('heroicon-o-eye')->label('')->tooltip('view')->color('primary')
                     ->visible(auth()->user()->can('Role Read')),
-                Tables\Actions\EditAction::make()
+                Tables\Actions\EditAction::make()->icon('heroicon-o-pencil-square')->label('')->tooltip('edit')->color('secondary')
                     ->visible(auth()->user()->can('Role Edit')),
-                Tables\Actions\DeleteAction::make()
+                Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->tooltip('delete')->color('danger')
                     ->visible(auth()->user()->can('Role Delete')),
             ])
             ->bulkActions([
