@@ -61,7 +61,7 @@ class ScanTypeResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('row_number')
-                    ->label('Id')
+                    ->label('S.No')
                     ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('name')->label('Scan Type Name')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('created_at')->label("Created On")->dateTime()->sortable(),

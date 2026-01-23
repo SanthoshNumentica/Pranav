@@ -119,7 +119,7 @@ class PatientResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('row_number')
-                    ->label('Id')
+                    ->label('S.No')
                     ->state(fn($record, $rowLoop) => $rowLoop->iteration),
 
                 Tables\Columns\TextColumn::make('name')
@@ -195,7 +195,6 @@ Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->toolti
         ];
     }
 
-<<<<<<< HEAD
    public static function getPages(): array
 {
     return [
@@ -205,15 +204,4 @@ Tables\Actions\DeleteAction::make()->icon('heroicon-o-trash')->label('')->toolti
         'view' => Pages\ViewPatient::route('/{record}'), //  ADD THIS
     ];
 }
-=======
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListPatients::route('/'),
-            'create' => Pages\CreatePatient::route('/create'),
-            'edit' => Pages\EditPatient::route('/{record}/edit'),
-            'view' => Pages\ViewPatient::route('/{record}'), // 👈 ADD THIS
-        ];
-    }
->>>>>>> 8fabadf9326aa3a3beba721746ef6d013c6c96bf
 }

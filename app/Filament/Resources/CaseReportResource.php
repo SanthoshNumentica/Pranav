@@ -125,7 +125,7 @@ class CaseReportResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->label('Id')
+                    ->label('S.No')
                     ->state(
                         fn($record, $livewire) => ($livewire->getTablePage() - 1) * $livewire->getTableRecordsPerPage()
                             + $livewire->getTableRecords()->search($record) + 1

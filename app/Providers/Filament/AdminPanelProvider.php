@@ -35,9 +35,16 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Pranav Diagnostics')
             ->colors([
-                'primary' => Color::Sky,
+                'primary' => '#1dafa1',
             ])
+            ->sidebarWidth('150px')
+            ->renderHook(
+    'panels::head.end',
+    fn () => '<link rel="stylesheet" href="/css/filament-sidebar-icons.css">'
+)
+
             // Discover resources and pages on panel, NOT plugin
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -46,23 +53,23 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationItems([
                 NavigationItem::make('Users')
-                    ->url(fn (): string => UserResource::getUrl())
+                    ->url(fn(): string => UserResource::getUrl())
                     ->icon('heroicon-o-user-group')
                     ->group('Settings')
                     ->sort(1)
-                    ->visible(fn (): bool => auth()->user()->can('User List')),
+                    ->visible(fn(): bool => auth()->user()->can('User List')),
                 NavigationItem::make('Roles')
-                    ->url(fn (): string => RoleResource::getUrl())
+                    ->url(fn(): string => RoleResource::getUrl())
                     ->icon('heroicon-o-rectangle-stack')
                     ->group('Settings')
                     ->sort(2)
-                    ->visible(fn (): bool => auth()->user()->can('Role List')),
+                    ->visible(fn(): bool => auth()->user()->can('Role List')),
                 NavigationItem::make('Permissions')
-                    ->url(fn (): string => PermissionResource::getUrl())
+                    ->url(fn(): string => PermissionResource::getUrl())
                     ->icon('heroicon-o-key')
                     ->group('Settings')
                     ->sort(3)
-                    ->visible(fn (): bool => auth()->user()->can('Permission List')),
+                    ->visible(fn(): bool => auth()->user()->can('Permission List')),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([

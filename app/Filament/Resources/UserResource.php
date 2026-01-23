@@ -71,8 +71,8 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('role')->searchable()
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('role')->searchable()
+                //     ->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email_verified_at')

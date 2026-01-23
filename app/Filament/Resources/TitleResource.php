@@ -50,7 +50,7 @@ class TitleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('row_number')
-                    ->label('Id')
+                    ->label('S.No')
                     ->state(fn($record, $rowLoop) => $rowLoop->iteration),
                 Tables\Columns\TextColumn::make('title_name')->searchable()
                     ->searchable(),

@@ -37,7 +37,7 @@ class MonthlyPatientsChart extends ChartWidget
                 [
                     'label' => 'Patients',
                     'data' => $data->values()->toArray(),
-                    'backgroundColor' => '#3b82f6',
+                    'backgroundColor' => '#1dafa1',
                 ],
             ],
             'labels' => $data->keys()->toArray(),
@@ -79,7 +79,7 @@ class MonthlyDoctorsChart extends ChartWidget
                 [
                     'label' => 'Doctors',
                     'data' => $data->values()->toArray(),
-                    'backgroundColor' => '#10b981', // green color for doctors
+                    'backgroundColor' => '#1dafa1', // green color for doctors
                 ],
             ],
             'labels' => $data->keys()->toArray(),
@@ -120,7 +120,7 @@ class MonthlyCaseReportsChart extends ChartWidget
                 [
                     'label' => 'CaseReport',
                     'data' => $data->values()->toArray(),
-                    'backgroundColor' => '#10b981', // green color for CaseReport
+                    'backgroundColor' => '#1dafa1', // green color for CaseReport
                 ],
             ],
             'labels' => $data->keys()->toArray(),
@@ -161,7 +161,7 @@ class MonthlyWhatsapplogChart extends ChartWidget
                 [
                     'label' => 'WhatsappLog',
                     'data' => $data->values()->toArray(),
-                    'backgroundColor' => '#10b981', // green color for WhatsappLog
+                    'backgroundColor' => '#1dafa1', // green color for WhatsappLog
                 ],
             ],
             'labels' => $data->keys()->toArray(),
