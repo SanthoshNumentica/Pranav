@@ -5,31 +5,40 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Doctor extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $guarded = [];
-    public function title()
-    {
-        return $this->belongsTo(Title::class, 'title_fk_id');
-    }
+
+    protected $table = 'doctors';
+
+    protected $fillable = [
+        'doctor_id',
+        'title_fk_id',
+        'name',
+        'gender_fk_id',
+        'blood_group_fk_id',
+        'mobile_no',
+        'email_id',
+        'dob',
+        'address',
+        'street',
+        'pincode',
+        'city',
+    ];
+
+    protected $casts = [
+        'dob' => 'date',
+    ];
+
     public function gender()
     {
         return $this->belongsTo(Gender::class, 'gender_fk_id');
     }
 
-    protected static function booted()
+    public function caseReports(): HasMany
     {
-        static::creating(function ($model) {
-            // Get the last doctor_id from the database
-            $lastPatient = static::orderBy('doctor_id', 'desc')->first();
-
-            // Extract the numeric part and increment it by 1
-            $lastNumber = (int) str_replace('DOC', '', $lastPatient->doctor_id ?? 'DOC0000');
-
-            // Generate the new doctor_id with padding
-            $model->doctor_id = 'DOC' . str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        });
+        return $this->hasMany(CaseReport::class, 'doc_ref_fk_id');
     }
 }

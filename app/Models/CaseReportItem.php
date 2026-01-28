@@ -4,17 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CaseReportItem extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+
+    protected $table = 'case_report_items';
 
     protected $fillable = [
+        'case_report_id',
         'scan_type_id',
         'scan_id',
         'documents',
-        'case_report_id',
         'remarks',
     ];
 
@@ -22,18 +24,18 @@ class CaseReportItem extends Model
         'documents' => 'array',
     ];
 
-    public function caseReport()
+    public function caseReport(): BelongsTo
     {
-        return $this->belongsTo(CaseReport::class, 'case_report_id');
+        return $this->belongsTo(CaseReport::class);
     }
 
-    public function scanType()
+    public function scanType(): BelongsTo
     {
         return $this->belongsTo(ScanType::class);
     }
 
-    public function scan()
+    public function scan(): BelongsTo
     {
-        return $this->belongsTo(Scan::class, 'scan_id');
+        return $this->belongsTo(Scan::class);
     }
 }

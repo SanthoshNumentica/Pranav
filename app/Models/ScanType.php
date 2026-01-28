@@ -8,11 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 class ScanType extends Model
 {
     use HasFactory;
-    protected $guarded = [];
-    protected $fillable = ['name'];
+
+    protected $table = 'scan_types';
+
+    protected $fillable = [
+        'name',
+    ];
 
     public function scans()
     {
-        return $this->hasMany(Scan::class, 'scan_type_fk_id');
+        return $this->hasMany(Scan::class, 'scan_type_id');
     }
 }

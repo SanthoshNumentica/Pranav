@@ -2,26 +2,27 @@
 
 namespace App\Providers;
 
-use Filament\Facades\Filament;
 use Illuminate\Support\ServiceProvider;
-
+use Illuminate\Support\Facades\Schema;
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
+     *
+     * @return void
      */
-    public function register(): void
+    public function register()
     {
         //
     }
 
     /**
      * Bootstrap any application services.
+     *
+     * @return void
      */
-    public function boot(): void
+    public function boot()
     {
-        Filament::serving(function () {
-            Filament::registerRenderHook('body.end', fn () => view('partials.whatsapp-loader-script'));
-        });
+        Schema::defaultStringLength(191);
     }
 }

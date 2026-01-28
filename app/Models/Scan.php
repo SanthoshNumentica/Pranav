@@ -8,12 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Scan extends Model
 {
     use HasFactory;
-    protected $guarded=[];
-     protected $fillable = ['name', 'scan_type_fk_id'];
+
+    protected $table = 'scans';
+
+    protected $fillable = [
+        'scan_type_id',
+        'name',
+    ];
 
     public function scanType()
     {
-        return $this->belongsTo(ScanType::class, 'scan_type_fk_id');
+        return $this->belongsTo(ScanType::class, 'scan_type_id');
     }
-   
 }

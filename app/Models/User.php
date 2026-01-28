@@ -3,14 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-
-use Filament\Models\Contracts\FilamentUser;
-use Laravel\Sanctum\HasApiTokens;
-use Filament\Panel;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
@@ -25,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'status',
     ];
 
     /**
@@ -46,23 +45,4 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
-    // public function canAccessFilament(): bool
-    // {
-    //     return $this->hasRole('Admin');
-    // }
-
-    // public function canAccessPanel(Panel $panel): bool
-    // {
-    //     // if ($panel->getId() === 'admin') {
-    //     //     return str_ends_with($this->email, '@yourdomain.com') && $this->hasVerifiedEmail();
-    //     // }
-
-
-    //     return $this->hasRole('Admin');
-
-    //     // return 1;
-
-    // }
-
 }

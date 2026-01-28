@@ -21,6 +21,8 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                // Ensure RouteServiceProvider::HOME exists or use default
+                // Usually '/home' or '/admin'
                 return redirect(RouteServiceProvider::HOME);
             }
         }

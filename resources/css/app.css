@@ -1,31 +1,60 @@
-body {
-    background-image: url('/storage/images/scan_bg.jpg');
-    /* Put your background image in public/images/login-bg.jpg */
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 100vh;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --sidebar-background: 210 40% 98%; /* slate-50 */
+    --sidebar-foreground: 222.2 47.4% 11.2%; /* slate-900 */
+    --sidebar-primary: 199 89% 48%; /* sky-600 */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 199 89% 48%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 199 89% 48%;
+  }
+
+  .dark {
+    --sidebar-background: 222.2 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217.2 91.2% 59.8%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 224.3 76.3% 48%;
+  }
+
+  body {
+    @apply antialiased text-slate-900 bg-slate-50;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  .dark body {
+    @apply text-slate-100 bg-slate-950;
+  }
 }
 
-/* === FIX FILAMENT DELETE / ACTION MODALS === */
-
-.fi-modal,
-.fi-modal-window {
-    pointer-events: auto !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    z-index: 99999 !important;
+.sidebar-glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.fi-modal-overlay {
-    z-index: 99998 !important;
+.dark .sidebar-glass {
+  background: rgba(15, 23, 42, 0.7);
 }
 
-.fi-modal-window {
-    background-color: #ffffff !important;
+/* Custom transitions */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
-.dark .fi-modal-window {
-    background-color: rgb(17 24 39) !important;
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
 }
