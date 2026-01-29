@@ -1,11 +1,17 @@
 <template>
-  <header class="sticky top-0 z-40 h-16 w-full border-b backdrop-blur-md transition-all duration-300 bg-white/70 border-slate-200 shadow-sm">
+  <header
+    class="sticky top-0 z-40 h-16 w-full border-b backdrop-blur-md transition-all duration-300 bg-white border-slate-200 shadow-sm"
+  >
     <div class="flex h-full items-center justify-between px-6">
       <!-- Left Section: Search -->
       <div class="flex flex-1 items-center max-w-md">
         <div class="relative w-full group">
-          <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-            <SearchIcon class="h-4 w-4 transition-colors duration-200 text-slate-400 group-focus-within:text-primary" />
+          <div
+            class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none"
+          >
+            <SearchIcon
+              class="h-4 w-4 transition-colors duration-200 text-slate-400 group-focus-within:text-primary"
+            />
           </div>
           <input
             type="text"
@@ -19,14 +25,19 @@
       <div class="flex items-center gap-4">
         <!-- Notifications -->
         <button
+          @click="isNotificationOpen = true"
           class="relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 border group bg-white border-slate-200 text-slate-500 hover:text-primary hover:bg-slate-50 shadow-sm"
         >
-          <BellIcon class="h-5 w-5 transition-transform group-hover:scale-110" />
-          <!-- Pulse Badge -->
-          <span class="absolute top-2.5 right-2.5 flex h-2 w-2">
-            <span class="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-          </span>
+          <BellIcon
+            class="h-5 w-5 transition-transform group-hover:scale-110"
+          />
+          <!-- Count Badge -->
+          <div
+            v-if="whatsappCount > 0"
+            class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm border border-white"
+          >
+            {{ whatsappCount }}
+          </div>
         </button>
 
         <!-- User Dropdown -->
@@ -34,10 +45,15 @@
           <MenuButton
             class="flex items-center gap-3 pl-1 pr-3 py-1 rounded-xl transition-all duration-200 border bg-white border-slate-200 hover:border-slate-300 text-slate-700 hover:shadow-sm shadow-sm"
           >
-            <div class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0">
+            <div
+              class="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white font-bold text-xs shrink-0"
+            >
               {{ userInitials }}
             </div>
-            <span class="hidden sm:block text-sm font-semibold truncate max-w-[100px]">{{ user?.name || 'Admin' }}</span>
+            <span
+              class="hidden sm:block text-sm font-semibold truncate max-w-[100px]"
+              >{{ user?.name || "Admin" }}</span
+            >
             <ChevronDownIcon class="h-4 w-4 text-slate-400" />
           </MenuButton>
 
@@ -56,10 +72,12 @@
                 <MenuItem v-slot="{ active }">
                   <router-link
                     to="/profile"
-                    :class="cn(
-                      'group flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors',
-                      active ? 'bg-primary/10 text-primary font-medium' : ''
-                    )"
+                    :class="
+                      cn(
+                        'group flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors',
+                        active ? 'bg-primary/10 text-primary font-medium' : '',
+                      )
+                    "
                   >
                     <UserIcon class="h-4 w-4" />
                     Profile
@@ -70,10 +88,12 @@
                 <MenuItem v-slot="{ active }">
                   <button
                     @click="isConfirmOpen = true"
-                    :class="cn(
-                      'group flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors text-rose-500',
-                      active ? 'bg-rose-500/10' : ''
-                    )"
+                    :class="
+                      cn(
+                        'group flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors text-rose-500',
+                        active ? 'bg-rose-500/10' : '',
+                      )
+                    "
                   >
                     <LogOutIcon class="h-4 w-4" />
                     Logout
@@ -98,70 +118,93 @@
     @close="isConfirmOpen = false"
     @confirm="handleLogout"
   />
+
+  <!-- Notification Drawer -->
+  <NotificationSlideOver
+    :is-open="isNotificationOpen"
+    @close="isNotificationOpen = false"
+  />
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { 
-  Search as SearchIcon, 
-  Bell as BellIcon, 
+import { ref, computed, onMounted } from "vue";
+import {
+  Search as SearchIcon,
+  Bell as BellIcon,
   ChevronDown as ChevronDownIcon,
   User as UserIcon,
-  LogOut as LogOutIcon
-} from 'lucide-vue-next';
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
-import ConfirmationModal from './ConfirmationModal.vue';
+  LogOut as LogOutIcon,
+} from "lucide-vue-next";
+import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
+import ConfirmationModal from "./ConfirmationModal.vue";
+import NotificationSlideOver from "./NotificationSlideOver.vue";
 
 const router = useRouter();
 const isConfirmOpen = ref(false);
+const isNotificationOpen = ref(false);
 const isLoading = ref(false);
 const user = ref(null);
+const whatsappCount = ref(0);
 
 const userInitials = computed(() => {
-  if (!user.value?.name) return 'AD';
+  if (!user.value?.name) return "AD";
   return user.value.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
     .substring(0, 2)
     .toUpperCase();
 });
 
 const fetchUser = async () => {
   try {
-    const response = await axios.get('/api/v1/me');
+    const response = await axios.get("/api/v1/me");
     if (response.data.success) {
       user.value = response.data.data.user;
     }
   } catch (e) {
-    console.error('Header: Failed to fetch user info', e);
+    console.error("Header: Failed to fetch user info", e);
   }
 };
 
-onMounted(fetchUser);
+const fetchWhatsappCount = async () => {
+  try {
+    const response = await axios.get("/api/v1/whatsapp-logs/count");
+    if (response.data.success) {
+      whatsappCount.value = response.data.count;
+    }
+  } catch (e) {
+    console.error("Header: Failed to fetch whatsapp count", e);
+  }
+};
+
+onMounted(() => {
+  fetchUser();
+  fetchWhatsappCount();
+});
 
 // Utility for classes
 function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 const handleLogout = async () => {
-  console.log('Header: Initiating logout');
+  console.log("Header: Initiating logout");
   isLoading.value = true;
   try {
-    await axios.post('/api/v1/logout');
-    console.log('Header: Logout API success');
+    await axios.post("/api/v1/logout");
+    console.log("Header: Logout API success");
   } catch (e) {
-    console.error('Header: Logout API failed', e);
+    console.error("Header: Logout API failed", e);
   } finally {
-    console.log('Header: Clearing session and redirecting');
+    console.log("Header: Clearing session and redirecting");
     isLoading.value = false;
     isConfirmOpen.value = false;
-    localStorage.removeItem('auth_token');
-    delete axios.defaults.headers.common['Authorization'];
-    router.push('/login');
+    localStorage.removeItem("auth_token");
+    delete axios.defaults.headers.common["Authorization"];
+    router.push("/login");
   }
 };
 </script>

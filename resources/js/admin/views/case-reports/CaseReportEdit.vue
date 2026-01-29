@@ -56,23 +56,23 @@
           <div class="space-y-2">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Patient</label
+              >Patient <span class="text-rose-500">*</span></label
             >
             <div class="relative">
-              <select
-                v-model="form.patient_fk_id"
-                required
-                class="w-full appearance-none rounded-2xl py-3.5 pl-5 pr-12 text-sm border border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none cursor-pointer font-bold text-slate-700"
-              >
-                <option value="">Select Patient</option>
-                <option
-                  v-for="patient in patients"
-                  :key="patient.id"
-                  :value="patient.id"
-                >
-                  {{ patient.name }} ({{ patient.patient_id }})
-                </option>
-              </select>
+              <Select v-model="form.patient_fk_id" required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Patient" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="patient in patients"
+                    :key="patient.id"
+                    :value="patient.id.toString()"
+                  >
+                    {{ patient.name }} ({{ patient.patient_id }})
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <ChevronDownIcon
                 class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
               />
@@ -83,23 +83,23 @@
           <div class="space-y-2">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Referring Doctor</label
+              >Referring Doctor <span class="text-rose-500">*</span></label
             >
             <div class="relative">
-              <select
-                v-model="form.doc_ref_fk_id"
-                required
-                class="w-full appearance-none rounded-2xl py-3.5 pl-5 pr-12 text-sm border border-slate-200 bg-slate-50/50 hover:bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none cursor-pointer font-bold text-slate-700"
-              >
-                <option value="">Select Doctor</option>
-                <option
-                  v-for="doctor in doctors"
-                  :key="doctor.id"
-                  :value="doctor.id"
-                >
-                  {{ doctor.name }}
-                </option>
-              </select>
+              <Select v-model="form.doc_ref_fk_id" required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Doctor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="doctor in doctors"
+                    :key="doctor.id"
+                    :value="doctor.id.toString()"
+                  >
+                    {{ doctor.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <ChevronDownIcon
                 class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
               />
@@ -242,7 +242,7 @@
                   <div class="space-y-2">
                     <label
                       class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                      >Scan Type</label
+                      >Scan Type <span class="text-rose-500">*</span></label
                     >
                     <div class="relative group/select">
                       <div
@@ -250,20 +250,20 @@
                       >
                         <ActivityIcon class="h-4 w-4" />
                       </div>
-                      <select
-                        v-model="item.scan_type_id"
-                        required
-                        class="w-full appearance-none rounded-2xl py-3 pl-10 pr-10 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-slate-700 cursor-pointer hover:border-slate-300"
-                      >
-                        <option value="">Select Type</option>
-                        <option
-                          v-for="type in scanTypes"
-                          :key="type.id"
-                          :value="type.id"
-                        >
-                          {{ type.name }}
-                        </option>
-                      </select>
+                      <Select v-model="item.scan_type_id" required>
+                        <SelectTrigger class="pl-10">
+                          <SelectValue placeholder="Select Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            v-for="type in scanTypes"
+                            :key="type.id"
+                            :value="type.id.toString()"
+                          >
+                            {{ type.name }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                       <ChevronDownIcon
                         class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-hover/select:text-primary transition-colors"
                       />
@@ -273,7 +273,7 @@
                   <div class="space-y-2">
                     <label
                       class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                      >Specific Scan</label
+                      >Specific Scan <span class="text-rose-500">*</span></label
                     >
                     <div class="relative group/select">
                       <div
@@ -281,21 +281,24 @@
                       >
                         <ActivityIcon class="h-4 w-4" />
                       </div>
-                      <select
+                      <Select
                         v-model="item.scan_id"
                         required
                         :disabled="!item.scan_type_id"
-                        class="w-full appearance-none rounded-2xl py-3 pl-10 pr-10 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all disabled:opacity-50 font-bold text-slate-700 cursor-pointer hover:border-slate-300"
                       >
-                        <option value="">Select Scan</option>
-                        <option
-                          v-for="scan in getScans(item.scan_type_id)"
-                          :key="scan.id"
-                          :value="scan.id"
-                        >
-                          {{ scan.name }}
-                        </option>
-                      </select>
+                        <SelectTrigger class="pl-10">
+                          <SelectValue placeholder="Select Scan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            v-for="scan in getScans(item.scan_type_id)"
+                            :key="scan.id"
+                            :value="scan.id.toString()"
+                          >
+                            {{ scan.name }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                       <ChevronDownIcon
                         class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-hover/select:text-primary transition-colors"
                       />
@@ -304,82 +307,89 @@
                 </div>
 
                 <!-- File Collection -->
-                <div class="space-y-2">
-                  <label
-                    class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                    >DICOM Files (.dcm)</label
-                  >
-                  <div
-                    class="relative h-[112px] rounded-2xl border-2 border-dashed border-slate-200 bg-white flex flex-col items-center justify-center p-4 transition-all hover:border-primary/50 group/upload overflow-hidden"
-                    @dragover.prevent
-                    @drop.prevent="handleDrop($event, index)"
-                  >
-                    <input
-                      type="file"
-                      multiple
-                      accept=".dcm"
-                      class="absolute inset-0 opacity-0 cursor-pointer"
-                      @change="handleFiles($event, index)"
-                    />
+                <div class="space-y-4">
+                  <div class="space-y-2">
+                    <label
+                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                      >DICOM Files (.dcm)</label
+                    >
                     <div
-                      class="flex flex-col items-center gap-2 pointer-events-none"
+                      class="relative h-[112px] rounded-2xl border-2 border-dashed border-slate-200 bg-white flex flex-col items-center justify-center p-4 transition-all hover:border-primary/50 group/upload overflow-hidden"
+                      @dragover.prevent
+                      @drop.prevent="handleDrop($event, index)"
+                    >
+                      <input
+                        type="file"
+                        multiple
+                        accept=".dcm"
+                        class="absolute inset-0 opacity-0 cursor-pointer"
+                        @change="handleFiles($event, index)"
+                      />
+                      <div
+                        class="flex flex-col items-center gap-2 pointer-events-none"
+                      >
+                        <div
+                          class="p-2 rounded-xl bg-slate-50 group-hover/upload:bg-primary/10 transition-colors"
+                        >
+                          <UploadIcon
+                            v-if="!item.processing"
+                            class="h-5 w-5 text-slate-400 group-hover/upload:text-primary"
+                          />
+                          <Loader2Icon
+                            v-else
+                            class="h-5 w-5 text-primary animate-spin"
+                          />
+                        </div>
+                        <span
+                          class="text-[11px] font-bold text-slate-500 group-hover/upload:text-primary"
+                        >
+                          {{
+                            item.processing
+                              ? "Analyzing files..."
+                              : "Click or drag DICOM files"
+                          }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- File List Preview -->
+                    <div
+                      v-if="item.documents.length > 0"
+                      class="mt-3 flex flex-wrap gap-2"
                     >
                       <div
-                        class="p-2 rounded-xl bg-slate-50 group-hover/upload:bg-primary/10 transition-colors"
+                        v-for="(doc, dIdx) in item.documents"
+                        :key="dIdx"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] font-bold text-emerald-600 animate-in zoom-in-95 duration-200"
                       >
-                        <UploadIcon
-                          v-if="!item.processing"
-                          class="h-5 w-5 text-slate-400 group-hover/upload:text-primary"
-                        />
-                        <Loader2Icon
-                          v-else
-                          class="h-5 w-5 text-primary animate-spin"
-                        />
+                        <CheckCircleIcon class="h-3 w-3" />
+                        <span class="truncate max-w-[100px]">{{
+                          getFileName(doc.path)
+                        }}</span>
+                        <button
+                          @click="removeDoc(index, dIdx)"
+                          class="hover:text-rose-500"
+                        >
+                          <XIcon class="h-3 w-3" />
+                        </button>
                       </div>
-                      <span
-                        class="text-[11px] font-bold text-slate-500 group-hover/upload:text-primary"
-                      >
-                        {{
-                          item.processing
-                            ? "Analyzing files..."
-                            : "Click or drag DICOM files"
-                        }}
-                      </span>
                     </div>
                   </div>
 
-                  <!-- File List Preview -->
-                  <div
-                    v-if="item.documents.length > 0"
-                    class="mt-3 flex flex-wrap gap-2"
-                  >
-                    <div
-                      v-for="(doc, dIdx) in item.documents"
-                      :key="dIdx"
-                      class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] font-bold text-emerald-600 animate-in zoom-in-95 duration-200"
+                  <!-- Remarks Field -->
+                  <div class="space-y-2">
+                    <label
+                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                      >Remarks</label
                     >
-                      <CheckCircleIcon class="h-3 w-3" />
-                      <span class="truncate max-w-[100px]">{{
-                        getFileName(doc.path)
-                      }}</span>
-                      <button
-                        @click="removeDoc(index, dIdx)"
-                        class="hover:text-rose-500"
-                      >
-                        <XIcon class="h-3 w-3" />
-                      </button>
-                    </div>
+                    <textarea
+                      v-model="item.remarks"
+                      rows="2"
+                      class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300 resize-none font-medium text-slate-600"
+                      placeholder="Special instructions or notes for this scan..."
+                    ></textarea>
                   </div>
                 </div>
-              </div>
-
-              <!-- Item Remarks -->
-              <div class="mt-6">
-                <input
-                  v-model="item.remarks"
-                  placeholder="Additional remarks for this scan..."
-                  class="w-full bg-transparent border-b border-slate-200 py-2 text-sm focus:border-primary outline-none transition-all italic font-medium"
-                />
               </div>
             </div>
           </div>
@@ -436,6 +446,13 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import axios from "axios";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import {
   User as UserIcon,
   Activity as ActivityIcon,
   Plus as PlusIcon,
@@ -451,6 +468,7 @@ import {
 
 const router = useRouter();
 const route = useRoute();
+const { addToast } = useToast();
 const loading = ref(false);
 const fetching = ref(true);
 const error = ref(null);
@@ -467,7 +485,6 @@ const form = reactive({
   patient_fk_id: "",
   doc_ref_fk_id: "",
   description: "",
-  remarks: "",
   documents: [], // General documents
   items: [],
 });
@@ -475,9 +492,9 @@ const form = reactive({
 onMounted(async () => {
   try {
     const [pRes, dRes, sRes, cRes] = await Promise.all([
-      axios.get("/api/v1/masters/patients"),
-      axios.get("/api/v1/masters/doctors"),
-      axios.get("/api/v1/masters/scan-types"),
+      axios.get("/api/v1/masters/patients?status=active&nopaginate=1"),
+      axios.get("/api/v1/masters/doctors?status=active&nopaginate=1"),
+      axios.get("/api/v1/masters/scan-types?status=active&nopaginate=1"),
       axios.get(`/api/v1/case-reports/${route.params.id}`),
     ]);
 
@@ -492,14 +509,13 @@ onMounted(async () => {
     form.patient_fk_id = data.patient_fk_id;
     form.doc_ref_fk_id = data.doc_ref_fk_id;
     form.description = data.description || "";
-    form.remarks = data.remarks || "";
     form.documents = (data.documents || []).map((path) => ({ path }));
 
     form.items = data.items.map((item) => ({
       scan_type_id: item.scan_type_id,
       scan_id: item.scan_id,
-      remarks: item.remarks || "",
       documents: (item.documents || []).map((path) => ({ path })),
+      remarks: item.remarks || "",
       processing: false,
     }));
   } catch (err) {
@@ -525,8 +541,8 @@ const addItem = () => {
   form.items.push({
     scan_type_id: "",
     scan_id: "",
-    remarks: "",
     documents: [],
+    remarks: "",
     processing: false,
   });
 };
@@ -624,13 +640,12 @@ const handleSubmit = async () => {
       patient_fk_id: form.patient_fk_id,
       doc_ref_fk_id: form.doc_ref_fk_id,
       description: form.description,
-      remarks: form.remarks,
       documents: form.documents.map((d) => d.path),
       items: form.items.map((item) => ({
         scan_type_id: item.scan_type_id,
         scan_id: item.scan_id,
-        remarks: item.remarks,
         documents: item.documents.map((d) => d.path),
+        remarks: item.remarks,
       })),
     };
 
@@ -640,12 +655,22 @@ const handleSubmit = async () => {
     );
 
     if (response.data.success) {
+      addToast({
+        title: "Success",
+        description: "Case report updated successfully.",
+        variant: "success",
+      });
       router.push("/case-reports");
     }
   } catch (err) {
     console.error("Save failed", err);
     error.value =
       err.response?.data?.message || "Failed to update case report.";
+    addToast({
+      title: "Error",
+      description: error.value,
+      variant: "error",
+    });
   } finally {
     loading.value = false;
   }

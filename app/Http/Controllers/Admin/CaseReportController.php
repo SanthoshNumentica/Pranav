@@ -22,7 +22,7 @@ class CaseReportController extends Controller
     {
         $caseReports = $this->caseReportService->listCaseReports(
             $request->only(['status', 'search']),
-            $request->get('limit', 15)
+            $request->get('limit', 10)
         );
 
         return response()->json([
@@ -53,15 +53,14 @@ class CaseReportController extends Controller
             'patient_fk_id' => ['required', 'exists:patients,id'],
             'doc_ref_fk_id' => ['required', 'exists:doctors,id'],
             'description' => ['nullable', 'string'],
-            'remarks' => ['nullable', 'string'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required', 'string'], // Pre-uploaded paths
             'items' => ['required', 'array', 'min:1'],
             'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
             'items.*.scan_id' => ['required', 'exists:scans,id'],
-            'items.*.remarks' => ['nullable', 'string'],
             'items.*.documents' => ['required', 'array'],
             'items.*.documents.*' => ['required', 'string'], // Pre-uploaded paths
+            'items.*.remarks' => ['nullable', 'string'],
         ]);
 
         $caseReport = $this->caseReportService->createCaseReport($data);
@@ -82,15 +81,14 @@ class CaseReportController extends Controller
             'patient_fk_id' => ['required', 'exists:patients,id'],
             'doc_ref_fk_id' => ['required', 'exists:doctors,id'],
             'description' => ['nullable', 'string'],
-            'remarks' => ['nullable', 'string'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
             'items.*.scan_id' => ['required', 'exists:scans,id'],
-            'items.*.remarks' => ['nullable', 'string'],
             'items.*.documents' => ['required', 'array'],
             'items.*.documents.*' => ['required', 'string'],
+            'items.*.remarks' => ['nullable', 'string'],
         ]);
 
         $caseReport = $this->caseReportService->updateCaseReport($id, $data);
@@ -108,7 +106,7 @@ class CaseReportController extends Controller
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'status' => ['required', 'in:pending,closed'],
+            'status' => ['required', 'in:pending,available,expired,deleted'],
         ]);
 
         $caseReport = $this->caseReportService->getCaseReport($id);
@@ -119,6 +117,45 @@ class CaseReportController extends Controller
             'success' => true,
             'message' => 'Status updated successfully.',
             'data' => $updatedCaseReport,
+        ]);
+    }
+
+    /**
+     * Remove the specified case report from storage.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $this->caseReportService->deleteCaseReport($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Case report deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Send WhatsApp notification for the case report.
+     */
+    public function notifyWhatsApp(int $id): JsonResponse
+    {
+        $result = $this->caseReportService->sendWhatsAppNotification($id);
+
+        return response()->json([
+            'success' => $result['status'],
+            'message' => $result['message'],
+        ]);
+    }
+
+    /**
+     * Get a public case report by sharing_token.
+     */
+    public function showPublic(string $token): JsonResponse
+    {
+        $data = $this->caseReportService->getPublicCaseReport($token);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
         ]);
     }
 }

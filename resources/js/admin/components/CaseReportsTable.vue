@@ -39,77 +39,138 @@
             Created At
           </th>
           <th
+            class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+          >
+            Expires On
+          </th>
+          <th
             class="px-4 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
             Action
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100 italic">
-        <tr
-          v-for="(report, index) in reports"
-          :key="report.id"
-          class="group hover:bg-primary/5 transition-colors duration-300"
-        >
-          <td class="px-4 py-4 text-sm text-slate-500">
-            {{ index + 1 }}
-          </td>
-          <td class="px-4 py-4 text-sm font-semibold text-slate-900">
-            {{ report.case_id }}
-          </td>
-          <td class="px-4 py-4">
-            <span class="text-sm font-medium text-slate-900">{{
-              report.patient?.name || "N/A"
-            }}</span>
-          </td>
-          <td class="px-4 py-4 text-sm text-slate-600">
-            {{ report.patient?.mobile_no || "N/A" }}
-          </td>
-          <td class="px-4 py-4 text-sm text-slate-600">
-            {{ report.doctor?.name || "N/A" }}
-          </td>
-          <td class="px-4 py-4">
-            <span
-              :class="
-                cn(
-                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-colors duration-200',
-                  statusStyles[report.status.toLowerCase()] ||
-                    'bg-slate-100 text-slate-800',
-                )
-              "
-            >
-              {{ report.status }}
-            </span>
-          </td>
-          <td class="px-4 py-4 text-sm text-slate-500">
-            {{ new Date(report.created_at).toLocaleDateString() }}
-          </td>
-          <td class="px-4 py-4 text-right">
-            <div
-              class="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            >
-              <button
-                @click="$emit('view-info', report)"
-                class="flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-500/10 hover:text-blue-600 transition-all duration-200"
-                title="View Info"
+      <tbody class="divide-y divide-slate-100">
+        <!-- Skeleton Loading State -->
+        <template v-if="loading">
+          <tr v-for="i in 5" :key="i" class="animate-pulse">
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-8"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-32"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-40"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-28"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-36"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-6 bg-slate-100 rounded-full w-20"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
+            </td>
+            <td class="px-4 py-4 text-right">
+              <div class="h-8 bg-slate-100 rounded-lg w-28 ml-auto"></div>
+            </td>
+          </tr>
+        </template>
+
+        <template v-else>
+          <tr
+            v-for="(report, index) in reports"
+            :key="report.id"
+            class="group hover:bg-primary/5 transition-colors duration-300"
+          >
+            <td class="px-4 py-4 text-sm text-slate-500">
+              {{ index + 1 }}
+            </td>
+            <td class="px-4 py-4 text-sm font-semibold text-slate-900">
+              {{ report.case_id }}
+            </td>
+            <td class="px-4 py-4">
+              <span class="text-sm font-medium text-slate-900">{{
+                report.patient?.name || "N/A"
+              }}</span>
+            </td>
+            <td class="px-4 py-4 text-sm text-slate-600">
+              {{ report.patient?.mobile_no || "N/A" }}
+            </td>
+            <td class="px-4 py-4 text-sm text-slate-600">
+              {{ report.doctor?.name || "N/A" }}
+            </td>
+            <td class="px-4 py-4">
+              <span
+                :class="
+                  cn(
+                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-colors duration-200',
+                    statusStyles[(report.status || 'pending').toLowerCase()] ||
+                      'bg-slate-100 text-slate-800',
+                  )
+                "
               >
-                <Eye class="h-4 w-4" />
-              </button>
-              <button
-                @click="$router.push(`/case-reports/${report.id}/edit`)"
-                class="flex h-8 w-8 items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all duration-200"
-                title="Edit Case"
+                {{ report.status }}
+              </span>
+            </td>
+            <td class="px-4 py-4 text-sm text-slate-500">
+              {{ formatDate(report.created_at) }}
+            </td>
+            <td class="px-4 py-4 text-sm font-medium">
+              <span v-if="report.expires_at" class="text-rose-500">
+                {{ formatDate(report.expires_at) }}
+              </span>
+              <span v-else class="text-slate-400">---</span>
+            </td>
+            <td class="px-4 py-4 text-right">
+              <div
+                class="flex justify-end gap-1.5 transition-opacity duration-200"
               >
-                <Edit class="h-4 w-4" />
-              </button>
-            </div>
-          </td>
-        </tr>
+                <button
+                  @click="$emit('view-info', report)"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-blue-500 hover:bg-blue-500/10 hover:text-blue-600 transition-all duration-200"
+                  title="View Info"
+                >
+                  <Eye class="h-4 w-4" />
+                </button>
+                <button
+                  @click="$emit('send-whatsapp', report)"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all duration-200"
+                  title="Send via WhatsApp"
+                >
+                  <MessageSquare class="h-4 w-4" />
+                </button>
+                <button
+                  @click="router.push(`/case-reports/${report.id}/edit`)"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-emerald-500 hover:bg-emerald-500/10 hover:text-emerald-600 transition-all duration-200"
+                  title="Edit Case"
+                >
+                  <Edit class="h-4 w-4" />
+                </button>
+                <button
+                  v-if="report.status !== 'deleted'"
+                  @click="$emit('delete', report)"
+                  class="flex h-8 w-8 items-center justify-center rounded-lg text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 transition-all duration-200"
+                  title="Delete Case"
+                >
+                  <Trash2 class="h-4 w-4" />
+                </button>
+              </div>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
 
     <div
-      v-if="reports.length === 0"
+      v-if="!loading && reports.length === 0"
       class="text-center py-20 animate-in fade-in duration-500"
     >
       <div
@@ -117,7 +178,7 @@
       >
         <FileTextIcon class="h-6 w-6 text-slate-400" />
       </div>
-      <p class="text-sm font-medium text-slate-500 dark:text-slate-400 italic">
+      <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
         No case reports found.
       </p>
     </div>
@@ -125,33 +186,41 @@
 </template>
 
 <script setup>
-import { Eye, Edit, FileText as FileTextIcon } from "lucide-vue-next";
+import {
+  Eye,
+  Edit,
+  Trash2,
+  FileText as FileTextIcon,
+  MessageSquare,
+} from "lucide-vue-next";
 import { useRouter } from "vue-router";
+import { formatDate } from "../utils/format";
 
 const props = defineProps({
   reports: {
     type: Array,
     required: true,
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const router = useRouter();
 
-defineEmits(["view-info"]);
+defineEmits(["view-info", "delete", "send-whatsapp"]);
 
 const statusStyles = {
   pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  closed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  available: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  expired: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+  deleted: "bg-slate-500/10 text-slate-500 border-slate-500/20",
 };
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
-
-const capitalize = (str) => {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
 </script>
 
 <style scoped>

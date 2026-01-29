@@ -1,4 +1,4 @@
-# Benny Cards Admin Panel
+# Pranav Diagnostics Centre Admin Panel
 
 An Order Management Admin Panel built with **Laravel 10** and **Vue 3**.  
 Designed to integrate with an existing database, following strict architectural patterns.
@@ -7,7 +7,7 @@ Designed to integrate with an existing database, following strict architectural 
 
 - **Backend**: Laravel 10, PHP 8.1+
 - **Frontend**: Vue 3, Tailwind CSS, Vite
-- **Database**: MySQL (Existing Schema)
+- **Database**: MySQL
 - **Auth**: Laravel Sanctum (Token-based)
 - **ACL**: Spatie Laravel-Permission
 

@@ -19,9 +19,10 @@ class CaseReport extends Model
         'patient_fk_id',
         'doc_ref_fk_id',
         'description',
-        'remarks',
         'documents',
         'status',
+        'expires_at',
+        'sharing_token',
     ];
 
     protected $casts = [

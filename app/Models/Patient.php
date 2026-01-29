@@ -28,7 +28,8 @@ class Patient extends Model
         'street',
         'pincode',
         'city',
-        'remarks'
+        'remarks',
+        'status'
     ];
 
     protected $casts = [
@@ -38,6 +39,11 @@ class Patient extends Model
     public function gender()
     {
         return $this->belongsTo(Gender::class, 'gender_fk_id');
+    }
+
+    public function bloodGroup()
+    {
+        return $this->belongsTo(BloodGroup::class, 'blood_group_fk_id');
     }
 
     public function caseReports()

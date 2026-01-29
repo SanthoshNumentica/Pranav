@@ -1,32 +1,58 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center p-4 bg-slate-50 text-slate-900 overflow-hidden relative">
+  <div
+    class="min-h-screen flex items-center justify-center p-4 bg-slate-50 text-slate-900 overflow-hidden relative"
+  >
     <!-- Abstract Background Ornaments -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] bg-primary/5 opacity-40" />
-      <div class="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full blur-[120px] bg-primary/5 opacity-40" />
+      <div
+        class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] bg-primary/5 opacity-40"
+      />
+      <div
+        class="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full blur-[120px] bg-primary/5 opacity-40"
+      />
     </div>
 
-    <div class="w-full max-w-[440px] relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+    <div
+      class="w-full max-w-[440px] relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700"
+    >
       <!-- Login Card -->
-      <div class="rounded-[32px] border p-8 md:p-10 shadow-soft-xl bg-white/80 backdrop-blur-xl border-slate-200/60 transition-all duration-500">
+      <div
+        class="rounded-[32px] border p-8 md:p-10 shadow-soft-xl bg-white/80 backdrop-blur-xl border-slate-200/60 transition-all duration-500"
+      >
         <div class="flex flex-col items-center mb-10">
-          <div class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 mb-6 group transition-transform hover:scale-105 duration-300">
+          <div
+            class="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 mb-6 group transition-transform hover:scale-105 duration-300"
+          >
             <ActivityIcon class="h-8 w-8 text-white" />
           </div>
-          <h1 class="text-3xl font-bold tracking-tight text-slate-900 text-center mb-2">Pranav Scan Center</h1>
-          <p class="text-slate-500 text-center text-sm font-medium">Diagnostic Management Portal</p>
+          <h1
+            class="text-3xl font-bold tracking-tight text-slate-900 text-center mb-2"
+          >
+            Pranav Diagnostics Centre
+          </h1>
+          <p class="text-slate-500 text-center text-sm font-medium">
+            Management Portal
+          </p>
         </div>
 
         <form @submit.prevent="handleLogin" class="space-y-5">
-          <div v-if="errorMessage" class="bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-bold py-3 px-4 rounded-xl text-center animate-in fade-in slide-in-from-top-2 flex items-center justify-center gap-2">
+          <div
+            v-if="errorMessage"
+            class="bg-rose-500/10 border border-rose-500/20 text-rose-600 text-[11px] font-bold py-3 px-4 rounded-xl text-center animate-in fade-in slide-in-from-top-2 flex items-center justify-center gap-2"
+          >
             <AlertCircleIcon class="h-3.5 w-3.5" />
             {{ errorMessage }}
           </div>
 
           <div class="space-y-2">
-            <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Email Address</label>
+            <label
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+              >Email Address <span class="text-rose-500">*</span></label
+            >
             <div class="relative group">
-              <MailIcon class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <MailIcon
+                class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"
+              />
               <input
                 v-model="form.email"
                 type="email"
@@ -39,10 +65,15 @@
 
           <div class="space-y-2">
             <div class="flex justify-between items-center ml-1">
-              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Password</label>
+              <label
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400"
+                >Password <span class="text-rose-500">*</span></label
+              >
             </div>
             <div class="relative group">
-              <LockIcon class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <LockIcon
+                class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"
+              />
               <input
                 v-model="form.password"
                 type="password"
@@ -60,14 +91,16 @@
               class="w-full bg-primary hover:bg-primary-700 text-white h-14 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
             >
               <Loader2Icon v-if="loading" class="h-5 w-5 animate-spin" />
-              <span>{{ loading ? 'Authenticating...' : 'Sign In' }}</span>
+              <span>{{ loading ? "Authenticating..." : "Sign In" }}</span>
             </button>
           </div>
         </form>
 
         <!-- Footer -->
         <div class="mt-10 text-center">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <p
+            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+          >
             &copy; 2026 Scan Center. All rights reserved.
           </p>
         </div>
@@ -77,28 +110,28 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-import { 
-  Activity as ActivityIcon, 
-  Mail as MailIcon, 
+import { reactive, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+import {
+  Activity as ActivityIcon,
+  Mail as MailIcon,
   Lock as LockIcon,
   Loader2 as Loader2Icon,
-  AlertCircle as AlertCircleIcon
-} from 'lucide-vue-next';
+  AlertCircle as AlertCircleIcon,
+} from "lucide-vue-next";
 
 const router = useRouter();
 const loading = ref(false);
 const errorMessage = ref(null);
 
 const form = reactive({
-  email: '',
-  password: ''
+  email: "",
+  password: "",
 });
 
 onMounted(() => {
-    document.documentElement.classList.remove('dark');
+  document.documentElement.classList.remove("dark");
 });
 
 const handleLogin = async () => {
@@ -106,19 +139,22 @@ const handleLogin = async () => {
   errorMessage.value = null;
 
   try {
-    await axios.get('/sanctum/csrf-cookie');
-    const response = await axios.post('/api/v1/login', form);
+    await axios.get("/sanctum/csrf-cookie");
+    const response = await axios.post("/api/v1/login", form);
 
     if (response.data.success) {
-      localStorage.setItem('auth_token', response.data.data.token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.data.token}`;
-      router.push('/case-reports');
+      localStorage.setItem("auth_token", response.data.data.token);
+      axios.defaults.headers.common["Authorization"] =
+        `Bearer ${response.data.data.token}`;
+      router.push("/case-reports");
     }
   } catch (error) {
     if (error.response?.status === 401) {
-      errorMessage.value = 'Invalid credentials. Please try again.';
+      errorMessage.value = "Invalid credentials. Please try again.";
     } else {
-      errorMessage.value = error.response?.data?.message || 'Login failed. Please check your connection.';
+      errorMessage.value =
+        error.response?.data?.message ||
+        "Login failed. Please check your connection.";
     }
   } finally {
     loading.value = false;

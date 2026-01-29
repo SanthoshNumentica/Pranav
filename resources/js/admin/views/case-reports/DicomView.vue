@@ -387,6 +387,8 @@ import {
   h,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
+import { formatDate } from "../../utils/format";
 import * as lucide from "lucide-vue-next";
 const {
   ArrowLeft: ArrowLeftIcon,
@@ -412,6 +414,8 @@ const {
   FlipVertical: FlipVerticalIcon,
   Contrast: ContrastIcon,
   ArrowRight: ArrowIcon,
+  Contrast,
+  Target,
 } = lucide;
 
 // Cornerstone imports
@@ -439,7 +443,7 @@ const ToolButton = defineComponent({
           ],
         },
         [
-          h(lucide[props.icon], { class: "h-5 w-5" }),
+          h(props.icon, { class: "h-5 w-5" }),
           !props.active &&
             h(
               "span",
@@ -526,20 +530,25 @@ const currentOrientation = ref("Axial");
 const currentSeries = ref("Series 01");
 
 const mainTools = [
-  { name: "Wwwc", icon: "ContrastIcon", label: "Windowing" },
-  { name: "Pan", icon: "MousePointer2Icon", label: "Pan" },
-  { name: "Zoom", icon: "ZoomInIcon", label: "Zoom" },
-  { name: "Length", icon: "RulerIcon", label: "Ruler" },
-  { name: "Angle", icon: "TriangleIcon", label: "Angle" },
-  { name: "RectRoi", icon: "SquareIcon", label: "Rectangle ROI" },
-  { name: "EllipticalRoi", icon: "CircleIcon", label: "Ellipse ROI" },
-  { name: "FreehandRoi", icon: "PenToolIcon", label: "Freehand ROI" },
-  { name: "Probe", icon: "TargetIcon", label: "HU Probe" },
+  { name: "Wwwc", icon: Contrast, label: "Windowing" },
+  { name: "Pan", icon: MousePointer2Icon, label: "Pan" },
+  { name: "Zoom", icon: ZoomInIcon, label: "Zoom" },
+  { name: "Length", icon: RulerIcon, label: "Length" },
+  { name: "Probe", icon: Target, label: "Probe" },
+  { name: "EllipticalRoi", icon: CircleIcon, label: "Ellipse" },
+  { name: "RectangleRoi", icon: SquareIcon, label: "Rectangle" },
 ];
 
 const markupTools = [
-  { name: "ArrowAnnotate", icon: "ArrowRight", label: "Arrow" },
-  { name: "TextMarker", icon: "TypeIcon", label: "Text" },
+  { name: "ArrowAnnotate", icon: ArrowIcon, label: "Arrow" },
+  { name: "TextMarker", icon: TypeIcon, label: "Text" },
+];
+
+const actionTools = [
+  { action: "rotate", icon: RefreshCwIcon, label: "Rotate" },
+  { action: "flipH", icon: FlipHorizontalIcon, label: "Flip H" },
+  { action: "flipV", icon: FlipVerticalIcon, label: "Flip V" },
+  { action: "reset", icon: RotateCcwIcon, label: "Reset" },
 ];
 
 let initialized = false;
@@ -634,77 +643,28 @@ const setActiveTool = (toolName) => {
   cornerstoneTools.setToolActive(toolName, { mouseButtonMask: 1 });
 };
 
-const loadImage = async (path) => {
-  if (!path || !dicomElement.value) return;
+const loadImages = async (paths) => {
+  if (!paths || !paths.length || !dicomElement.value) return;
   loading.value = true;
   error.value = null;
 
-  // Normalize path (convert backslashes to forward slashes)
-  const normalizedPath = path.replace(/\\/g, "/");
-  fileName.value = normalizedPath.split("/").pop();
-
   try {
-    // Construct full URL to avoid path issues
     const baseUrl = window.location.origin;
-    let cleanPath = normalizedPath.replace(/\\/g, "/");
-
-    // Remove 'public/' if it exists at the start or mid-path (mis-configuration)
-    if (cleanPath.includes("public/")) {
-      cleanPath = cleanPath.split("public/").pop();
-    }
-
-    cleanPath = cleanPath.startsWith("/") ? cleanPath.substring(1) : cleanPath;
-    const fullUrl = `${baseUrl}/${cleanPath}`;
-
-    console.log("Diagnostic: Final URL:", fullUrl);
-
-    // Step 1: Pre-fetch check and diagnostic parse
-    try {
-      const resp = await fetch(fullUrl);
-      if (!resp.ok) {
-        throw new Error(
-          `Resource unavailable: ${resp.status} ${resp.statusText}`,
-        );
+    const preparedImageIds = paths.map((p) => {
+      const normalizedPath = p.replace(/\\/g, "/");
+      let cleanPath = normalizedPath;
+      if (cleanPath.includes("public/")) {
+        cleanPath = cleanPath.split("public/").pop();
       }
+      cleanPath = cleanPath.startsWith("/")
+        ? cleanPath.substring(1)
+        : cleanPath;
+      return `wadouri:${baseUrl}/${cleanPath}`;
+    });
 
-      const arrayBuffer = await resp.arrayBuffer();
-      console.log(
-        `Diagnostic: Data received (${(arrayBuffer.byteLength / 1024).toFixed(2)} KB)`,
-      );
-
-      try {
-        const dataSet = dicomParser.parseDicom(new Uint8Array(arrayBuffer));
-        const modality = dataSet.string("x00080060");
-        const transferSyntax = dataSet.string("x00020010");
-        const rows = dataSet.uint16("x00280010");
-        const cols = dataSet.uint16("x00280011");
-
-        console.log(`Diagnostic: DICOM Header Parsed:
-          - Modality: ${modality || "Unknown"}
-          - Transfer Syntax: ${transferSyntax || "Unknown"}
-          - Resolution: ${cols}x${rows}`);
-
-        if (!rows || !cols) {
-          console.warn(
-            "Diagnostic: No pixel dimensions found. This might not be a viewable image (e.g., Structured Report or KOS).",
-          );
-        }
-      } catch (parseErr) {
-        console.error(
-          "Diagnostic: DICOM Parser failed - file might be invalid or missing preamble:",
-          parseErr,
-        );
-      }
-    } catch (fetchErr) {
-      console.error("Diagnostic: Fetch failed:", fetchErr);
-      throw fetchErr;
-    }
-
-    const imageId = `wadouri:${fullUrl}`;
-    console.log("Cornerstone: Prepared Image ID:", imageId);
-
-    imageIds.value = [imageId];
+    imageIds.value = preparedImageIds;
     totalImages.value = imageIds.value.length;
+    fileName.value = paths[0].replace(/\\/g, "/").split("/").pop();
 
     cornerstone.enable(dicomElement.value);
 
@@ -716,16 +676,12 @@ const loadImage = async (path) => {
     cornerstoneTools.addStackStateManager(dicomElement.value, ["stack"]);
     cornerstoneTools.addToolState(dicomElement.value, "stack", stack);
 
-    // Step 2: Load with timeout
-    const loadPromise = cornerstone.loadAndCacheImage(imageId);
+    // Load first image with timeout
+    const firstImageId = imageIds.value[0];
+    const loadPromise = cornerstone.loadAndCacheImage(firstImageId);
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(
-        () =>
-          reject(
-            new Error(
-              "Cornerstone load timeout (60s). This usually happens with large files or compressed (JPEG2000) DICOMs that require heavy decoding.",
-            ),
-          ),
+        () => reject(new Error("Cornerstone load timeout (60s).")),
         60000,
       ),
     );
@@ -825,7 +781,11 @@ const prevImage = () => {
 };
 
 const scrollToIndex = (index) => {
-  cornerstone.loadAndCacheImage(imageIds.value[index]).then((image) => {
+  const imageId = imageIds.value[index];
+  // Extract filename from wadouri path
+  fileName.value = imageId.split("/").pop() || "Image " + (index + 1);
+
+  cornerstone.loadAndCacheImage(imageId).then((image) => {
     cornerstone.displayImage(dicomElement.value, image);
   });
 };
@@ -848,9 +808,50 @@ watch(cineFps, (newFps) => {
 
 const goBack = () => router.back();
 
+const fetchByToken = async (token) => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const response = await axios.get(`/api/v1/public/case-reports/${token}`);
+    if (response.data.success) {
+      const data = response.data.data;
+      const report = data.report;
+
+      patientName.value = report.patient?.name || "ANONYMOUS";
+      patientId.value = report.patient?.patient_id || report.case_id;
+      studyDate.value = formatDate(report.created_at);
+
+      if (data.dicom_paths && data.dicom_paths.length > 0) {
+        await loadImages(data.dicom_paths);
+      } else {
+        error.value = "No DICOM files found for this case report.";
+      }
+    } else {
+      error.value =
+        response.data.message || "Failed to fetch case report details.";
+    }
+  } catch (err) {
+    console.error("Failed to fetch public report:", err);
+    error.value =
+      "Failed to load report data. Please check the link or try again later.";
+  } finally {
+    loading.value = false;
+  }
+};
+
 onMounted(() => {
   initCornerstone();
-  if (route.query.path) loadImage(route.query.path);
+  if (route.query.token) {
+    fetchByToken(route.query.token);
+  } else if (route.query.caseId) {
+    // Keep support for legacy caseId if needed, but primarily use token
+    // fetchByCaseId is now fetchByToken, let's just use token
+  } else if (route.query.paths) {
+    const pathsArray = route.query.paths.split(",");
+    loadImages(pathsArray);
+  } else if (route.query.path) {
+    loadImages([route.query.path]);
+  }
 });
 
 onBeforeUnmount(() => {

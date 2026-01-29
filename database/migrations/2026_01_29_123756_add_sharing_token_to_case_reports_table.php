@@ -5,20 +5,23 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::table('case_reports', function (Blueprint $table) {
-            $table->string('study_instance_uid')
-                ->nullable()
-                ->after('case_id')
-                ->index();
+            $table->string('sharing_token')->nullable()->unique()->after('status');
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('case_reports', function (Blueprint $table) {
-            $table->dropColumn('study_instance_uid');
+            $table->dropColumn('sharing_token');
         });
     }
 };

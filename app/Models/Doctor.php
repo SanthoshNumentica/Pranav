@@ -26,6 +26,7 @@ class Doctor extends Model
         'street',
         'pincode',
         'city',
+        'status',
     ];
 
     protected $casts = [
@@ -35,6 +36,11 @@ class Doctor extends Model
     public function gender()
     {
         return $this->belongsTo(Gender::class, 'gender_fk_id');
+    }
+
+    public function bloodGroup()
+    {
+        return $this->belongsTo(BloodGroup::class, 'blood_group_fk_id');
     }
 
     public function caseReports(): HasMany

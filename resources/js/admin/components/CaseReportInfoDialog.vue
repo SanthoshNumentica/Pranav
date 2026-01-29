@@ -29,11 +29,11 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200"
+              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-3xl border border-slate-200 flex flex-col h-[90vh] sm:h-[85vh]"
             >
-              <!-- Header/Banner -->
+              <!-- Header/Banner - Fixed -->
               <div
-                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden"
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
               >
                 <div
                   class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
@@ -63,6 +63,15 @@
                         >
                           {{ report?.status }}
                         </span>
+                        <template v-if="report?.expires_at">
+                          <span class="h-1 w-1 rounded-full bg-white/50"></span>
+                          <span
+                            class="text-[10px] font-bold uppercase tracking-wider bg-rose-500/40 px-2 py-0.5 rounded-full border border-white/20"
+                          >
+                            Expires:
+                            {{ formatDate(report.expires_at) }}
+                          </span>
+                        </template>
                       </div>
                     </div>
                   </div>
@@ -75,7 +84,7 @@
                       Edit Case
                     </button>
                     <button
-                      @click="$emit('close')"
+                      @click.stop="close"
                       class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                     >
                       <XIcon class="h-5 w-5" />
@@ -84,7 +93,10 @@
                 </div>
               </div>
 
-              <div class="p-6 sm:p-10 space-y-8">
+              <!-- Content - Scrollable -->
+              <div
+                class="p-6 sm:p-10 space-y-8 overflow-y-auto flex-grow custom-scrollbar"
+              >
                 <!-- Patient & Doctor Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <!-- Patient Section -->
@@ -106,8 +118,7 @@
                       class="space-y-3 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100 flex-grow"
                     >
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Name</span
                         >
                         <span class="text-sm font-bold text-slate-900">{{
@@ -115,8 +126,7 @@
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Patient ID</span
                         >
                         <span class="text-sm font-medium text-primary">{{
@@ -124,8 +134,7 @@
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Mobile</span
                         >
                         <span class="text-sm font-medium text-slate-700">{{
@@ -133,8 +142,7 @@
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Gender</span
                         >
                         <span class="text-sm font-medium text-slate-700">{{
@@ -163,8 +171,7 @@
                       class="space-y-3 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100 flex-grow"
                     >
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Name</span
                         >
                         <span class="text-sm font-bold text-slate-900">{{
@@ -172,8 +179,7 @@
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Doctor ID</span
                         >
                         <span class="text-sm font-medium text-primary">{{
@@ -181,8 +187,7 @@
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
-                        <span
-                          class="text-xs font-semibold text-slate-500 italic"
+                        <span class="text-xs font-semibold text-slate-500"
                           >Mobile</span
                         >
                         <span class="text-sm font-medium text-slate-700">{{
@@ -193,12 +198,9 @@
                   </div>
                 </div>
 
-                <!-- Case Details & Documents Grid -->
-                <div
-                  v-if="report?.description || report?.documents?.length"
-                  class="grid grid-cols-1 md:grid-cols-2 gap-8"
-                >
-                  <!-- Case Description -->
+                <!-- Case History and Documents Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <!-- Case History -->
                   <div
                     v-if="report?.description"
                     class="space-y-4 flex flex-col"
@@ -216,7 +218,7 @@
                       </h4>
                     </div>
                     <div
-                      class="p-6 bg-slate-50/50 rounded-[32px] border border-slate-100 text-sm text-slate-600 leading-relaxed italic flex-grow min-h-[140px]"
+                      class="p-6 bg-slate-50/50 rounded-[32px] border border-slate-100 text-sm text-slate-600 leading-relaxed flex-grow min-h-[100px]"
                     >
                       {{ report.description }}
                     </div>
@@ -241,7 +243,7 @@
                     </div>
 
                     <div
-                      class="grid grid-cols-2 gap-4 p-4 bg-slate-50/50 rounded-[32px] border border-slate-100 flex-grow"
+                      class="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-slate-50/50 rounded-[32px] border border-slate-100 flex-grow"
                     >
                       <div
                         v-for="(doc, idx) in report.documents"
@@ -309,7 +311,7 @@
                   </div>
 
                   <div
-                    class="overflow-hidden rounded-3xl border border-slate-200"
+                    class="overflow-x-auto custom-scrollbar rounded-3xl border border-slate-200"
                   >
                     <table class="w-full text-left">
                       <thead class="bg-slate-50/50">
@@ -325,6 +327,11 @@
                             Specific Scan
                           </th>
                           <th
+                            class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500"
+                          >
+                            Remarks
+                          </th>
+                          <th
                             class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center"
                           >
                             Files
@@ -336,7 +343,7 @@
                           </th>
                         </tr>
                       </thead>
-                      <tbody class="divide-y divide-slate-100 italic">
+                      <tbody class="divide-y divide-slate-100">
                         <tr v-for="item in report?.items" :key="item.id">
                           <td
                             class="px-4 py-3 text-sm font-medium text-slate-900"
@@ -345,6 +352,11 @@
                           </td>
                           <td class="px-4 py-3 text-sm text-slate-600">
                             {{ item.scan?.name || "N/A" }}
+                          </td>
+                          <td
+                            class="px-4 py-3 text-sm text-slate-500/80 italic"
+                          >
+                            {{ item.remarks || "---" }}
                           </td>
                           <td class="px-4 py-3 text-sm text-center">
                             <span
@@ -356,7 +368,7 @@
                           <td class="px-4 py-3 text-sm text-right">
                             <button
                               v-if="item.documents?.length"
-                              @click="viewFile(item.documents[0])"
+                              @click="viewFile(item.documents)"
                               class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary text-[10px] font-bold hover:bg-primary/20 transition-all active:scale-95"
                             >
                               <FileSearchIcon class="h-3 w-3" />
@@ -364,14 +376,14 @@
                             </button>
                             <span
                               v-else
-                              class="text-[10px] font-bold text-slate-400 italic"
+                              class="text-[10px] font-bold text-slate-400"
                               >No files</span
                             >
                           </td>
                         </tr>
                         <tr v-if="!report?.items?.length">
                           <td
-                            colspan="4"
+                            colspan="5"
                             class="px-4 py-10 text-center text-sm text-slate-400"
                           >
                             No scan items listed.
@@ -383,18 +395,27 @@
                 </div>
               </div>
 
+              <!-- Footer - Fixed -->
               <div
-                class="bg-slate-50 px-6 py-4 sm:px-10 flex flex-col sm:flex-row justify-between items-center gap-4"
+                class="bg-slate-50 px-6 py-4 sm:px-10 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0 border-t border-slate-200 rounded-b-[32px]"
               >
-                <span
-                  class="text-[10px] font-bold text-slate-400 uppercase tracking-widest italic"
-                  >Created on
-                  {{
-                    report?.created_at
-                      ? new Date(report.created_at).toLocaleString()
-                      : "N/A"
-                  }}</span
+                <div
+                  class="flex flex-col items-center sm:items-start text-center sm:text-left"
                 >
+                  <span
+                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                  >
+                    Created on
+                    {{ formatDate(report?.created_at) }}
+                  </span>
+                  <span
+                    v-if="report?.expires_at"
+                    class="text-[10px] font-bold text-rose-400 uppercase tracking-widest"
+                  >
+                    Files Expire on
+                    {{ formatDate(report?.expires_at) }}
+                  </span>
+                </div>
                 <button
                   type="button"
                   class="inline-flex w-full justify-center rounded-xl bg-white px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto transition-all active:scale-95"
@@ -409,6 +430,17 @@
       </div>
     </Dialog>
   </TransitionRoot>
+
+  <!-- Expired Case Modal -->
+  <ConfirmationModal
+    :is-open="isExpiredModalOpen"
+    title="Case Files Expired"
+    description="This case report has expired and the files are no longer accessible directly. Would you like to go to the Edit page to re-upload or update scan items?"
+    confirm-label="Go to Edit Page"
+    :icon="ClockIcon"
+    @close="isExpiredModalOpen = false"
+    @confirm="handleReupload"
+  />
 </template>
 
 <script setup>
@@ -431,10 +463,13 @@ import {
   Download as DownloadIcon,
   MessageSquare as MessageSquareIcon,
   Edit as EditIcon,
+  Clock as ClockIcon,
 } from "lucide-vue-next";
 import { useRouter } from "vue-router";
+import { formatDate } from "../utils/format";
+import ConfirmationModal from "./ConfirmationModal.vue";
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false,
@@ -450,20 +485,37 @@ const emit = defineEmits(["close"]);
 const router = useRouter();
 
 const close = () => {
+  if (!props.isOpen) return;
   emit("close");
 };
 
-const viewFile = (path) => {
-  if (!path) return;
+const isExpiredModalOpen = ref(false);
 
-  const ext = path.split(".").pop().toLowerCase();
+const handleReupload = () => {
+  isExpiredModalOpen.value = false;
+  router.push(`/case-reports/${props.report.id}/edit`);
+};
+
+const viewFile = (pathOrPaths) => {
+  if (!pathOrPaths) return;
+
+  const paths = Array.isArray(pathOrPaths) ? pathOrPaths : [pathOrPaths];
+  const firstPath = paths[0];
+  const ext = firstPath.split(".").pop().toLowerCase();
+
   if (ext === "dcm") {
+    // Check if expired status
+    if (props.report?.status === "expired") {
+      isExpiredModalOpen.value = true;
+      return;
+    }
+
     router.push({
       name: "DicomView",
-      query: { path: path },
+      query: { paths: paths.join(",") },
     });
   } else {
-    window.open("/" + path, "_blank");
+    window.open("/" + firstPath, "_blank");
   }
 };
 

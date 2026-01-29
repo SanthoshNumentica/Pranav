@@ -58,6 +58,26 @@ const routes = [
                 component: () => import('../views/masters/ScanTypeList.vue')
             },
             {
+                path: 'masters/genders',
+                name: 'Genders',
+                component: () => import('../views/masters/GenderList.vue')
+            },
+            {
+                path: 'masters/blood-groups',
+                name: 'BloodGroups',
+                component: () => import('../views/masters/BloodGroupList.vue')
+            },
+            {
+                path: 'masters/titles',
+                name: 'Titles',
+                component: () => import('../views/masters/TitleList.vue')
+            },
+            {
+                path: 'reports/patients',
+                name: 'PatientReports',
+                component: () => import('../views/reports/PatientReport.vue')
+            },
+            {
                 path: 'reports/payments',
                 name: 'PaymentReports',
                 component: PlaceholderView
@@ -75,10 +95,14 @@ const routes = [
         ]
     },
     {
+        path: '/view-report/:token',
+        name: 'PublicReportView',
+        component: () => import('../views/case-reports/PublicReportView.vue')
+    },
+    {
         path: '/case-reports/view-dicom',
         name: 'DicomView',
-        component: () => import('../views/case-reports/DicomView.vue'),
-        meta: { requiresAuth: true }
+        component: () => import('../views/case-reports/DicomView.vue')
     },
     {
         // Default redirect
