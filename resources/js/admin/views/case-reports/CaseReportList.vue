@@ -51,7 +51,7 @@
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Statuses</SelectItem>
+              <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="available">Available</SelectItem>
               <SelectItem value="expired">Expired</SelectItem>
@@ -74,14 +74,10 @@
         @delete="confirmDelete"
       />
 
-      <!-- WhatsApp Confirmation Modal -->
-      <ConfirmationModal
+      <!-- WhatsApp Recipient Selection Modal -->
+      <WhatsAppRecipientModal
         :is-open="isWhatsappModalOpen"
-        title="Send WhatsApp Notification"
-        description="Are you sure you want to send the WhatsApp notification to the doctor/patient for this case report? This will use the default template."
-        confirm-label="Send WhatsApp"
-        variant="success"
-        :icon="MessageSquareIcon"
+        :report="reportForWhatsapp"
         :loading="sendingWhatsapp"
         @close="isWhatsappModalOpen = false"
         @confirm="handleSendWhatsApp"
@@ -130,6 +126,7 @@ import { debounce } from "lodash";
 import CaseReportsTable from "../../components/CaseReportsTable.vue";
 import CaseReportInfoDialog from "../../components/CaseReportInfoDialog.vue";
 import ConfirmationModal from "../../components/ConfirmationModal.vue";
+import WhatsAppRecipientModal from "../../components/WhatsAppRecipientModal.vue";
 import Pagination from "../../components/Pagination.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../../composables/useToast";
@@ -150,7 +147,7 @@ const isInfoOpen = ref(false);
 const selectedReport = ref(null);
 const filters = reactive({
   search: "",
-  status: "",
+  status: "all",
 });
 
 const isWhatsappModalOpen = ref(false);
@@ -160,8 +157,12 @@ const reportForWhatsapp = ref(null);
 const fetchReports = async (page = 1) => {
   loading.value = true;
   try {
+    const params = { ...filters, page };
+    if (params.status === "all") {
+      delete params.status;
+    }
     const response = await axios.get("/api/v1/case-reports", {
-      params: { ...filters, page },
+      params,
     });
     if (response.data.success) {
       reports.value = response.data.data.data;
@@ -224,54 +225,22 @@ const handleDelete = async () => {
 };
 
 const confirmWhatsApp = (report) => {
-  // 1. Check for sharing token
-  if (!report.sharing_token) {
-    addToast({
-      title: "Cannot Send WhatsApp",
-      description: "Sharing token is missing for this case report.",
-      variant: "error",
-    });
-    return;
-  }
-
-  // 2. Check for expired status
-  if (report.status?.toLowerCase() === "expired") {
-    addToast({
-      title: "Cannot Send WhatsApp",
-      description: "This case report has expired and cannot be shared.",
-      variant: "error",
-    });
-    return;
-  }
-
-  // 3. Check for DICOM files
-  const hasDicom = report.items?.some((item) =>
-    item.documents?.some((doc) => doc.toLowerCase().endsWith(".dcm")),
-  );
-
-  if (!hasDicom) {
-    addToast({
-      title: "Cannot Send WhatsApp",
-      description: "No DICOM files found in this case report.",
-      variant: "error",
-    });
-    return;
-  }
-
   reportForWhatsapp.value = report;
   isWhatsappModalOpen.value = true;
 };
 
-const handleSendWhatsApp = async () => {
+const handleSendWhatsApp = async (recipients) => {
   if (!reportForWhatsapp.value) return;
 
   sendingWhatsapp.value = true;
   try {
     const response = await axios.post(
       `/api/v1/case-reports/${reportForWhatsapp.value.id}/whatsapp`,
+      { recipients },
     );
     if (response.data.success) {
       isWhatsappModalOpen.value = false;
+      fetchReports(); // Refresh to show updated expiry/status
       addToast({
         title: "Success",
         description:

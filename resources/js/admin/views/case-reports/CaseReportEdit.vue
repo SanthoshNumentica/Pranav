@@ -438,13 +438,24 @@
       <Loader2Icon class="h-12 w-12 text-primary animate-spin" />
       <p class="text-slate-500 font-bold">Loading case specifics...</p>
     </div>
+
+    <!-- WhatsApp Recipient Selection Modal -->
+    <WhatsAppRecipientModal
+      :is-open="isWhatsappModalOpen"
+      :report="reportForWhatsapp"
+      :loading="sendingWhatsapp"
+      @close="handleModalClose"
+      @confirm="handleSendWhatsApp"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useToast } from "../../composables/useToast";
 import axios from "axios";
+import WhatsAppRecipientModal from "../../components/WhatsAppRecipientModal.vue";
 import {
   Select,
   SelectContent,
@@ -479,6 +490,10 @@ const scanTypes = ref([]);
 
 const processingGeneral = ref(false);
 
+const isWhatsappModalOpen = ref(false);
+const reportForWhatsapp = ref(null);
+const sendingWhatsapp = ref(false);
+
 const form = reactive({
   id: null,
   case_id: "",
@@ -506,14 +521,14 @@ onMounted(async () => {
     const data = cRes.data.data;
     form.id = data.id;
     form.case_id = data.case_id;
-    form.patient_fk_id = data.patient_fk_id;
-    form.doc_ref_fk_id = data.doc_ref_fk_id;
+    form.patient_fk_id = data.patient_fk_id?.toString() || "";
+    form.doc_ref_fk_id = data.doc_ref_fk_id?.toString() || "";
     form.description = data.description || "";
     form.documents = (data.documents || []).map((path) => ({ path }));
 
     form.items = data.items.map((item) => ({
-      scan_type_id: item.scan_type_id,
-      scan_id: item.scan_id,
+      scan_type_id: item.scan_type_id?.toString() || "",
+      scan_id: item.scan_id?.toString() || "",
       documents: (item.documents || []).map((path) => ({ path })),
       remarks: item.remarks || "",
       processing: false,
@@ -660,7 +675,10 @@ const handleSubmit = async () => {
         description: "Case report updated successfully.",
         variant: "success",
       });
-      router.push("/case-reports");
+
+      // Open WhatsApp modal instead of direct redirect
+      reportForWhatsapp.value = response.data.data;
+      isWhatsappModalOpen.value = true;
     }
   } catch (err) {
     console.error("Save failed", err);
@@ -674,5 +692,40 @@ const handleSubmit = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleSendWhatsApp = async (recipients) => {
+  if (!reportForWhatsapp.value) return;
+
+  sendingWhatsapp.value = true;
+  try {
+    const response = await axios.post(
+      `/api/v1/case-reports/${reportForWhatsapp.value.id}/whatsapp`,
+      { recipients },
+    );
+    if (response.data.success) {
+      addToast({
+        title: "Success",
+        description: "WhatsApp notification sent successfully.",
+        variant: "success",
+      });
+      handleModalClose();
+    }
+  } catch (err) {
+    console.error("WhatsApp failed", err);
+    addToast({
+      title: "Error",
+      description:
+        err.response?.data?.message || "Failed to send notification.",
+      variant: "error",
+    });
+  } finally {
+    sendingWhatsapp.value = false;
+  }
+};
+
+const handleModalClose = () => {
+  isWhatsappModalOpen.value = false;
+  router.push("/case-reports");
 };
 </script>

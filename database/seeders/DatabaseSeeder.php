@@ -20,11 +20,13 @@ class DatabaseSeeder extends Seeder
         $user1 = User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',
+            'password' => bcrypt('admin@123'),
         ]);
 
         $user = User::factory()->create([
             'name' => 'Test',
             'email' => 'test@gmail.com',
+            'password' => bcrypt('test@123'),
         ]);
         $this->call([
             BloodGroupSeeder::class,

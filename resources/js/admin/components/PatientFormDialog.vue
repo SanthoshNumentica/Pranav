@@ -439,7 +439,11 @@ watch(
   (newVal) => {
     if (newVal) {
       Object.keys(initialForm).forEach((key) => {
-        form[key] = newVal[key] || "";
+        let value = newVal[key];
+        if (key.endsWith("_fk_id") && value !== null && value !== undefined) {
+          value = value.toString();
+        }
+        form[key] = value || "";
       });
       // Format date for input
       if (newVal.dob) {

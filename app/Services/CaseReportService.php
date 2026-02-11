@@ -21,7 +21,7 @@ class CaseReportService
 
         return CaseReport::query()
             ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])
-            ->when(isset($filters['status']), function (Builder $query) use ($filters) {
+            ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
                     $query->onlyTrashed();
@@ -43,7 +43,14 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        return CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])->findOrFail($id);
+
+        // Auto-expire if needed before returning
+        if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
+            $caseReport->update(['status' => 'expired']);
+        }
+
+        return $caseReport;
     }
 
     /**
@@ -79,7 +86,7 @@ class CaseReportService
                 'documents' => $generalDocPaths,
                 'status' => 'available',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
-                'expires_at' => now()->addDays(30),
+                'expires_at' => now()->addDays(10),
             ]);
 
             // 3. Process Items
@@ -99,7 +106,7 @@ class CaseReportService
             }
 
             // 3. Update Status and Expiry
-            // 3. Status and Expiry are already set to available/30 days by default.
+            // 3. Status and Expiry are already set to available/10 days by default.
             // If documents exist, they are already covered. 
             // If No documents exist, it stays available as per default request.
 
@@ -231,7 +238,7 @@ class CaseReportService
     /**
      * Send WhatsApp notification for the case report.
      */
-    public function sendWhatsAppNotification(int $id): array
+    public function sendWhatsAppNotification(int $id, array $recipients = ['doctor']): array
     {
         $caseReport = $this->getCaseReport($id);
         $whatsAppService = app(WhatsAppService::class);
@@ -241,9 +248,11 @@ class CaseReportService
             return ['status' => false, 'message' => 'WhatsApp template not found'];
         }
 
-        // Prepare data for template
-        $data = [
-            'mobile_no' => $caseReport->doctor->mobile_no ?? $caseReport->patient->mobile_no,
+        $results = [];
+        $overAllSuccess = true;
+
+        // 2. Prepare common data
+        $commonData = [
             'doctorName' => $caseReport->doctor->name ?? 'Doctor',
             'patientName' => $caseReport->patient->name ?? 'Patient',
             'reportId' => $caseReport->case_id,
@@ -251,7 +260,49 @@ class CaseReportService
             'shareLink' => config('app.url') . '/case-reports/view-dicom?token=' . $caseReport->sharing_token,
         ];
 
-        return $whatsAppService->send($data, true, $template->id);
+        // 3. Send to each recipient
+        $anySuccess = false;
+        foreach ($recipients as $type) {
+            $mobileNo = null;
+            if ($type === 'doctor') {
+                $mobileNo = $caseReport->doctor->mobile_no ?? null;
+            } elseif ($type === 'patient') {
+                $mobileNo = $caseReport->patient->whatsapp_no ?? $caseReport->patient->mobile_no ?? null;
+            }
+
+            if ($mobileNo) {
+                $data = array_merge($commonData, ['mobile_no' => $mobileNo]);
+                $res = $whatsAppService->send($data, true, $template->id);
+                $results[] = [
+                    'recipient' => $type,
+                    'status' => $res['status'],
+                    'message' => $res['message']
+                ];
+                if ($res['status']) {
+                    $anySuccess = true;
+                } else {
+                    $overAllSuccess = false;
+                }
+            }
+        }
+
+        if (empty($results)) {
+            return ['status' => false, 'message' => 'No valid recipients selected or mobile numbers missing.'];
+        }
+
+        // 4. Update expiry and status ONLY if at least one message was sent successfully
+        if ($anySuccess) {
+            $caseReport->update([
+                'expires_at' => now()->addDays(10),
+                'status' => 'available'
+            ]);
+        }
+
+        return [
+            'status' => $overAllSuccess,
+            'message' => $overAllSuccess ? 'WhatsApp notification sent successfully.' : 'Some notifications failed.',
+            'results' => $results
+        ];
     }
 
     /**
@@ -262,6 +313,20 @@ class CaseReportService
         $caseReport = CaseReport::where('sharing_token', $token)
             ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])
             ->firstOrFail();
+
+        // Auto-expire if needed
+        if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
+            $caseReport->update(['status' => 'expired']);
+            $caseReport->status = 'expired'; // Reflect in current model instance
+        }
+
+        if ($caseReport->status === 'expired') {
+            abort(403, 'This case report has expired and is no longer available for viewing.');
+        }
+
+        if ($caseReport->status === 'deleted') {
+            abort(404, 'The requested case report could not be found.');
+        }
 
         $dicomPaths = [];
         foreach ($caseReport->items as $item) {

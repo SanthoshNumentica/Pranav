@@ -16,8 +16,9 @@ return new class extends Migration {
             $table->foreignId('patient_fk_id')->constrained('patients')->onDelete('cascade');
             $table->foreignId('doc_ref_fk_id')->constrained('doctors')->onDelete('cascade');
             $table->string('description');
-            $table->string('remarks');
-            $table->enum('status', ['closed', 'pending'])->default('pending');
+            $table->enum('status', ['pending', 'available', 'expired', 'deleted'])->default('pending');
+            $table->timestamp('expires_at')->nullable();
+            $table->string('sharing_token')->unique()->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

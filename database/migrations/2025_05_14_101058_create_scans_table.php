@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,7 +15,9 @@ return new class extends Migration
             $table->unsignedBigInteger('scan_type_fk_id');
             $table->foreign('scan_type_fk_id')->references('id')->on('scan_types')->onDelete('cascade');
             $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

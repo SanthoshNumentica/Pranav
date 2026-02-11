@@ -420,6 +420,15 @@
         </div>
       </div>
     </form>
+
+    <!-- WhatsApp Recipient Selection Modal -->
+    <WhatsAppRecipientModal
+      :is-open="isWhatsappModalOpen"
+      :report="reportForWhatsapp"
+      :loading="sendingWhatsapp"
+      @close="handleModalClose"
+      @confirm="handleSendWhatsApp"
+    />
   </div>
 </template>
 
@@ -428,6 +437,7 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../../composables/useToast";
 import axios from "axios";
+import WhatsAppRecipientModal from "../../components/WhatsAppRecipientModal.vue";
 import {
   Select,
   SelectContent,
@@ -459,6 +469,10 @@ const doctors = ref([]);
 const scanTypes = ref([]);
 
 const processingGeneral = ref(false);
+
+const isWhatsappModalOpen = ref(false);
+const reportForWhatsapp = ref(null);
+const sendingWhatsapp = ref(false);
 
 const form = reactive({
   patient_fk_id: "",
@@ -622,7 +636,10 @@ const handleSubmit = async () => {
         description: "Case report created successfully.",
         variant: "success",
       });
-      router.push("/case-reports");
+
+      // Open WhatsApp modal instead of direct redirect
+      reportForWhatsapp.value = response.data.data;
+      isWhatsappModalOpen.value = true;
     }
   } catch (err) {
     console.error("Save failed", err);
@@ -635,5 +652,40 @@ const handleSubmit = async () => {
   } finally {
     loading.value = false;
   }
+};
+
+const handleSendWhatsApp = async (recipients) => {
+  if (!reportForWhatsapp.value) return;
+
+  sendingWhatsapp.value = true;
+  try {
+    const response = await axios.post(
+      `/api/v1/case-reports/${reportForWhatsapp.value.id}/whatsapp`,
+      { recipients },
+    );
+    if (response.data.success) {
+      addToast({
+        title: "Success",
+        description: "WhatsApp notification sent successfully.",
+        variant: "success",
+      });
+      handleModalClose();
+    }
+  } catch (err) {
+    console.error("WhatsApp failed", err);
+    addToast({
+      title: "Error",
+      description:
+        err.response?.data?.message || "Failed to send notification.",
+      variant: "error",
+    });
+  } finally {
+    sendingWhatsapp.value = false;
+  }
+};
+
+const handleModalClose = () => {
+  isWhatsappModalOpen.value = false;
+  router.push("/case-reports");
 };
 </script>

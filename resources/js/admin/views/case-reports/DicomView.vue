@@ -832,8 +832,17 @@ const fetchByToken = async (token) => {
     }
   } catch (err) {
     console.error("Failed to fetch public report:", err);
-    error.value =
-      "Failed to load report data. Please check the link or try again later.";
+    if (err.response && err.response.status === 403) {
+      error.value =
+        err.response.data.message ||
+        "This case report has expired and is no longer available for viewing.";
+    } else if (err.response && err.response.status === 404) {
+      error.value =
+        "The requested case report could not be found or has been removed.";
+    } else {
+      error.value =
+        "Failed to load report data. Please check the link or try again later.";
+    }
   } finally {
     loading.value = false;
   }

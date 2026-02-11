@@ -136,13 +136,19 @@ class CaseReportController extends Controller
     /**
      * Send WhatsApp notification for the case report.
      */
-    public function notifyWhatsApp(int $id): JsonResponse
+    public function notifyWhatsApp(Request $request, int $id): JsonResponse
     {
-        $result = $this->caseReportService->sendWhatsAppNotification($id);
+        $request->validate([
+            'recipients' => ['required', 'array', 'min:1'],
+            'recipients.*' => ['required', 'in:doctor,patient'],
+        ]);
+
+        $result = $this->caseReportService->sendWhatsAppNotification($id, $request->recipients);
 
         return response()->json([
             'success' => $result['status'],
             'message' => $result['message'],
+            'results' => $result['results'] ?? null,
         ]);
     }
 
