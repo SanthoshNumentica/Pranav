@@ -300,7 +300,10 @@ const navMaster = [
   { title: "Titles", url: "/masters/titles", icon: CaseSensitiveIcon },
 ];
 
-const navSystem = [{ title: "Settings", url: "/profile", icon: SettingsIcon }];
+const navSystem = [
+  { title: "Users", url: "/users", icon: UserIcon },
+  { title: "Settings", url: "/profile", icon: SettingsIcon },
+];
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
