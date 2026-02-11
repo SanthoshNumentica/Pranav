@@ -5,11 +5,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ScanType;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class MasterController extends Controller
 {
+    public function roles(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'data' => Role::all(),
+        ]);
+    }
+
     public function scans(): JsonResponse
     {
         return response()->json([

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CaseReportController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DoctorController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\FileController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PatientController;
@@ -62,6 +63,14 @@ Route::prefix('v1')->group(function () {
         Route::delete('doctors/{id}', [DoctorController::class, 'destroy']);
         Route::post('doctors/{id}/status', [DoctorController::class, 'updateStatus']);
 
+        // Users
+        Route::get('users', [UserController::class, 'index']);
+        Route::post('users', [UserController::class, 'store']);
+        Route::get('users/{id}', [UserController::class, 'show']);
+        Route::put('users/{id}', [UserController::class, 'update']);
+        Route::delete('users/{id}', [UserController::class, 'destroy']);
+        Route::post('users/{id}/status', [UserController::class, 'updateStatus']);
+
         // WhatsApp Logs
         Route::get('whatsapp-logs/count', [WhatsappController::class, 'count']);
         Route::get('whatsapp-logs', [WhatsappController::class, 'index']);
@@ -95,5 +104,7 @@ Route::prefix('v1')->group(function () {
         Route::put('masters/titles/{id}', [MasterController::class, 'updateTitle']);
         Route::delete('masters/titles/{id}', [MasterController::class, 'destroyTitle']);
         Route::post('masters/titles/{id}/status', [MasterController::class, 'updateTitleStatus']);
+
+        Route::get('masters/roles', [MasterController::class, 'roles']);
     });
 });
