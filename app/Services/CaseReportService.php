@@ -20,7 +20,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         return CaseReport::query()
-            ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])
+            ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedBy', 'modifiedBy'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -43,7 +43,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedBy', 'modifiedBy'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
@@ -87,6 +87,7 @@ class CaseReportService
                 'status' => 'available',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
                 'expires_at' => now()->addDays(10),
+                'added_by' => auth()->id(),
             ]);
 
             // 3. Process Items
@@ -147,6 +148,7 @@ class CaseReportService
                 'doc_ref_fk_id' => $data['doc_ref_fk_id'],
                 'description' => $data['description'] ?? null,
                 'documents' => $generalDocPaths,
+                'modified_by' => auth()->id(),
             ]);
 
             // 3. Refresh Items

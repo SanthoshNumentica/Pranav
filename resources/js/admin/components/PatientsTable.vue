@@ -23,11 +23,7 @@
           >
             Mobile No
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
-            Email ID
-          </th>
+
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
@@ -71,9 +67,7 @@
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-28"></div>
             </td>
-            <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-36"></div>
-            </td>
+
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-16"></div>
             </td>
@@ -112,9 +106,7 @@
             <td class="px-3 py-4 text-sm text-slate-600">
               {{ patient.mobile_no || "N/A" }}
             </td>
-            <td class="px-3 py-4 text-sm text-slate-600 truncate max-w-[120px]">
-              {{ patient.email_id || "N/A" }}
-            </td>
+
             <td class="px-3 py-4 text-sm text-slate-600">
               {{ patient.gender?.gender_name || "N/A" }}
             </td>

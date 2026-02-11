@@ -89,8 +89,8 @@
                       Personal Information
                     </h4>
 
-                    <div class="grid grid-cols-1 gap-6">
-                      <div class="space-y-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div class="md:col-span-2 space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
                           >Title & Name
@@ -120,19 +120,15 @@
                           />
                         </div>
                       </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Guardian / Father Name
-                          <span class="text-rose-500">*</span></label
+                          >Guardian / Father Name</label
                         >
                         <input
                           v-model="form.father_name"
                           type="text"
-                          required
                           placeholder="Guardian Name"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -141,11 +137,31 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Date of Birth</label
+                          >Age <span class="text-rose-500">*</span></label
+                        >
+                        <input
+                          v-model="age"
+                          type="number"
+                          placeholder="Age"
+                          min="0"
+                          max="120"
+                          required
+                          @input="handleAgeInput"
+                          class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+                        />
+                      </div>
+
+                      <div class="space-y-2">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Date of Birth
+                          <span class="text-rose-500">*</span></label
                         >
                         <input
                           v-model="form.dob"
                           type="date"
+                          required
+                          @change="handleDobChange"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
                       </div>
@@ -234,13 +250,11 @@
                       <div class="md:col-span-2 space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Email Address
-                          <span class="text-rose-500">*</span></label
+                          >Email Address</label
                         >
                         <input
                           v-model="form.email_id"
                           type="email"
-                          required
                           placeholder="email@example.com"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -301,12 +315,11 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Pincode <span class="text-rose-500">*</span></label
+                          >Pincode</label
                         >
                         <input
                           v-model="form.pincode"
                           type="text"
-                          required
                           placeholder="6-digit Pincode"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -434,6 +447,8 @@ const fetchMasters = async () => {
 
 onMounted(fetchMasters);
 
+const age = ref("");
+
 watch(
   () => props.patient,
   (newVal) => {
@@ -448,13 +463,54 @@ watch(
       // Format date for input
       if (newVal.dob) {
         form.dob = newVal.dob.split("T")[0];
+        calculateAgeFromDob(form.dob);
       }
     } else {
       Object.assign(form, initialForm);
+      age.value = "";
     }
   },
   { immediate: true },
 );
+
+watch(
+  () => form.mobile_no,
+  (newVal, oldVal) => {
+    if (!form.whatsapp_no) {
+      form.whatsapp_no = newVal;
+    } else if (form.whatsapp_no === oldVal) {
+      form.whatsapp_no = newVal;
+    }
+  },
+);
+
+const handleAgeInput = () => {
+  if (!age.value) return;
+  const today = new Date();
+  const birthDate = new Date(
+    today.getFullYear() - age.value,
+    today.getMonth(),
+    today.getDate(),
+  );
+  form.dob = birthDate.toISOString().split("T")[0];
+};
+
+const handleDobChange = () => {
+  if (!form.dob) return;
+  calculateAgeFromDob(form.dob);
+};
+
+const calculateAgeFromDob = (dob) => {
+  if (!dob) return;
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    calculatedAge--;
+  }
+  age.value = calculatedAge;
+};
 
 const close = () => {
   if (!props.isOpen) return;

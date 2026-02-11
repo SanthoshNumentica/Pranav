@@ -23,6 +23,8 @@ class CaseReport extends Model
         'status',
         'expires_at',
         'sharing_token',
+        'added_by',
+        'modified_by'
     ];
 
     protected $casts = [
@@ -42,5 +44,15 @@ class CaseReport extends Model
     public function items(): HasMany
     {
         return $this->hasMany(CaseReportItem::class, 'case_report_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function modifiedBy()
+    {
+        return $this->belongsTo(User::class, 'modified_by');
     }
 }

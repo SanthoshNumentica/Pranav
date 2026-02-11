@@ -90,14 +90,14 @@
                     </h4>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div class="space-y-2">
+                      <div class="md:col-span-2 space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
                           >Title & Name
                           <span class="text-rose-500">*</span></label
                         >
                         <div class="flex gap-2">
-                          <Select v-model="form.title_fk_id" required>
+                          <Select v-model="form.title_fk_id">
                             <SelectTrigger class="w-24">
                               <SelectValue placeholder="Title" />
                             </SelectTrigger>
@@ -124,9 +124,9 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Gender <span class="text-rose-500">*</span></label
+                          >Gender</label
                         >
-                        <Select v-model="form.gender_fk_id" required>
+                        <Select v-model="form.gender_fk_id">
                           <SelectTrigger>
                             <SelectValue placeholder="Select Gender" />
                           </SelectTrigger>
@@ -166,11 +166,28 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Age</label
+                        >
+                        <input
+                          v-model="age"
+                          type="number"
+                          placeholder="Age"
+                          min="0"
+                          max="120"
+                          @input="handleAgeInput"
+                          class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+                        />
+                      </div>
+
+                      <div class="space-y-2">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
                           >Date of Birth</label
                         >
                         <input
                           v-model="form.dob"
                           type="date"
+                          @change="handleDobChange"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
                       </div>
@@ -204,13 +221,11 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Email Address
-                          <span class="text-rose-500">*</span></label
+                          >Email Address</label
                         >
                         <input
                           v-model="form.email_id"
                           type="email"
-                          required
                           placeholder="doctor@hospital.com"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -231,13 +246,11 @@
                       <div class="md:col-span-2 space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Address Line
-                          <span class="text-rose-500">*</span></label
+                          >Address Line</label
                         >
                         <input
                           v-model="form.address"
                           type="text"
-                          required
                           placeholder="Clinic Name, Building, Area"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -245,12 +258,11 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Street <span class="text-rose-500">*</span></label
+                          >Street</label
                         >
                         <input
                           v-model="form.street"
                           type="text"
-                          required
                           placeholder="Street Name"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -258,12 +270,11 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >City <span class="text-rose-500">*</span></label
+                          >City</label
                         >
                         <input
                           v-model="form.city"
                           type="text"
-                          required
                           placeholder="City"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -271,12 +282,11 @@
                       <div class="space-y-2">
                         <label
                           class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                          >Pincode <span class="text-rose-500">*</span></label
+                          >Pincode</label
                         >
                         <input
                           v-model="form.pincode"
                           type="text"
-                          required
                           placeholder="Pincode"
                           class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                         />
@@ -388,6 +398,8 @@ const fetchMasters = async () => {
 
 onMounted(fetchMasters);
 
+const age = ref("");
+
 watch(
   () => props.doctor,
   (newVal) => {
@@ -402,13 +414,43 @@ watch(
       // Format date for input
       if (newVal.dob) {
         form.dob = newVal.dob.split("T")[0];
+        calculateAgeFromDob(form.dob);
       }
     } else {
       Object.assign(form, initialForm);
+      age.value = "";
     }
   },
   { immediate: true },
 );
+
+const handleAgeInput = () => {
+  if (!age.value) return;
+  const today = new Date();
+  const birthDate = new Date(
+    today.getFullYear() - age.value,
+    today.getMonth(),
+    today.getDate(),
+  );
+  form.dob = birthDate.toISOString().split("T")[0];
+};
+
+const handleDobChange = () => {
+  if (!form.dob) return;
+  calculateAgeFromDob(form.dob);
+};
+
+const calculateAgeFromDob = (dob) => {
+  if (!dob) return;
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    calculatedAge--;
+  }
+  age.value = calculatedAge;
+};
 
 const close = () => {
   if (!props.isOpen) return;

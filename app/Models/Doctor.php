@@ -27,6 +27,8 @@ class Doctor extends Model
         'pincode',
         'city',
         'status',
+        'added_by',
+        'modified_by'
     ];
 
     protected $casts = [
@@ -46,5 +48,15 @@ class Doctor extends Model
     public function caseReports(): HasMany
     {
         return $this->hasMany(CaseReport::class, 'doc_ref_fk_id');
+    }
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function modifiedBy()
+    {
+        return $this->belongsTo(User::class, 'modified_by');
     }
 }

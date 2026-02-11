@@ -35,15 +35,15 @@ class DoctorController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'title_fk_id' => 'required|exists:titles,id',
+            'title_fk_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
-            'email_id' => 'required|email|unique:doctors,email_id',
+            'email_id' => 'nullable|email|unique:doctors,email_id',
             'mobile_no' => 'required|string',
-            'gender_fk_id' => 'required|exists:genders,id',
-            'address' => 'required|string',
-            'street' => 'required|string',
-            'pincode' => 'required|string',
-            'city' => 'required|string',
+            'gender_fk_id' => 'nullable|exists:genders,id',
+            'address' => 'nullable|string',
+            'street' => 'nullable|string',
+            'pincode' => 'nullable|string',
+            'city' => 'nullable|string',
             'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
             'dob' => 'nullable|date',
         ]);
@@ -75,15 +75,15 @@ class DoctorController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'title_fk_id' => 'sometimes|required|exists:titles,id',
+            'title_fk_id' => 'sometimes|nullable|exists:titles,id',
             'name' => 'sometimes|required|string|max:255',
-            'email_id' => 'sometimes|required|email|unique:doctors,email_id,' . $id,
+            'email_id' => 'sometimes|nullable|email|unique:doctors,email_id,' . $id,
             'mobile_no' => 'sometimes|required|string',
-            'gender_fk_id' => 'sometimes|required|exists:genders,id',
-            'address' => 'sometimes|required|string',
-            'street' => 'sometimes|required|string',
-            'pincode' => 'sometimes|required|string',
-            'city' => 'sometimes|required|string',
+            'gender_fk_id' => 'sometimes|nullable|exists:genders,id',
+            'address' => 'sometimes|nullable|string',
+            'street' => 'sometimes|nullable|string',
+            'pincode' => 'sometimes|nullable|string',
+            'city' => 'sometimes|nullable|string',
             'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
             'dob' => 'nullable|date',
         ]);
