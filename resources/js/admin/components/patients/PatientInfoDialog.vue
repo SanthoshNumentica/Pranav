@@ -195,6 +195,8 @@ const detailedInfo = computed(() => {
     City: props.patient.city,
     Pincode: props.patient.pincode,
     Remarks: props.patient.remarks,
+    "Added By": props.patient.added_by_user?.name || "N/A",
+    "Modified By": props.patient.modified_by_user?.name || "N/A",
   };
 });
 </script>

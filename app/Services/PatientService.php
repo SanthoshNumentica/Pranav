@@ -14,7 +14,7 @@ class PatientService
     public function listPatients(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return Patient::query()
-            ->with(['gender', 'bloodGroup', 'addedBy', 'modifiedBy'])
+            ->with(['gender', 'bloodGroup', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['search']), function (Builder $query) use ($filters) {
                 $query->where(function ($q) use ($filters) {
                     $q->where('name', 'like', "%{$filters['search']}%")
@@ -52,7 +52,6 @@ class PatientService
     {
         $data['patient_id'] = $this->generatePatientId();
         $data['status'] = 'active';
-        $data['added_by'] = auth()->id();
         return Patient::create($data);
     }
 
@@ -62,7 +61,6 @@ class PatientService
     public function updatePatient(int $id, array $data): Patient
     {
         $patient = Patient::findOrFail($id);
-        $data['modified_by'] = auth()->id();
         $patient->update($data);
         return $patient;
     }

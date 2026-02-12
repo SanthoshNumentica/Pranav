@@ -4,8 +4,13 @@ namespace App\Models;
 
 use Spatie\Permission\Models\Role as SpatieRole;
 
+use App\Traits\HasAudit;
+
 class Role extends SpatieRole
 {
+    use HasAudit;
+
+    protected $fillable = ['name', 'guard_name', 'added_by', 'modified_by'];
     /**
      * Override guard names to allow matching with both 'web' and 'sanctum'.
      * This makes the role guard-agnostic for permission syncing.

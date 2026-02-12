@@ -405,8 +405,19 @@
                   <span
                     class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
                   >
-                    Created on
-                    {{ formatDate(report?.created_at) }}
+                    Created on {{ formatDate(report?.created_at) }}
+                    <template v-if="report?.added_by_user">
+                      by {{ report.added_by_user.name }}
+                    </template>
+                  </span>
+                  <span
+                    v-if="
+                      report?.modified_by_user &&
+                      report?.modified_by !== report?.added_by
+                    "
+                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                  >
+                    Last modified by {{ report.modified_by_user.name }}
                   </span>
                   <span
                     v-if="report?.expires_at"

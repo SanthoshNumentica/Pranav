@@ -98,9 +98,30 @@
       <!-- Created Date Cell -->
       <template #cell-created_at="{ item: role }">
         <div class="flex flex-col">
-          <span class="text-xs text-gray-600">{{
+          <span class="text-xs text-slate-600">{{
             formatDate(role.created_at)
           }}</span>
+          <span v-if="role.added_by_user" class="text-[10px] text-slate-400">
+            by {{ role.added_by_user?.name || "Unknown" }}
+          </span>
+        </div>
+      </template>
+
+      <!-- Modified Date Cell -->
+      <template #cell-updated_at="{ item: role }">
+        <div class="flex flex-col">
+          <span class="text-xs text-slate-600">{{
+            formatDate(role.updated_at)
+          }}</span>
+          <span v-if="role.modified_by_user" class="text-[10px] text-slate-400">
+            by {{ role.modified_by_user?.name || "Unknown" }}
+          </span>
+          <span
+            v-else-if="role.added_by_user"
+            class="text-[10px] text-slate-400"
+          >
+            by {{ role.added_by_user?.name || "Unknown" }}
+          </span>
         </div>
       </template>
 
@@ -188,6 +209,7 @@ const columns = [
   { key: "name", label: "Role Name", sortable: true },
   { key: "permissions", label: "Permissions" },
   { key: "created_at", label: "Created" },
+  { key: "updated_at", label: "Modified" },
   { key: "actions", label: "Actions", align: "right" },
 ];
 

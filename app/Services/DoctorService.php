@@ -14,7 +14,7 @@ class DoctorService
     public function listDoctors(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return Doctor::query()
-            ->with(['gender', 'bloodGroup', 'addedBy', 'modifiedBy'])
+            ->with(['gender', 'bloodGroup', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['search']), function (Builder $query) use ($filters) {
                 $query->where(function ($q) use ($filters) {
                     $q->where('name', 'like', "%{$filters['search']}%")
@@ -50,7 +50,6 @@ class DoctorService
     {
         $data['doctor_id'] = $this->generateDoctorId();
         $data['status'] = 'active';
-        $data['added_by'] = auth()->id();
         return Doctor::create($data);
     }
 
@@ -60,7 +59,6 @@ class DoctorService
     public function updateDoctor(int $id, array $data): Doctor
     {
         $doctor = Doctor::findOrFail($id);
-        $data['modified_by'] = auth()->id();
         $doctor->update($data);
         return $doctor;
     }

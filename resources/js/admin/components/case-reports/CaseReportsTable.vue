@@ -36,7 +36,12 @@
           <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Created At
+            Created
+          </th>
+          <th
+            class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+          >
+            Modified
           </th>
           <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -71,6 +76,9 @@
             </td>
             <td class="px-4 py-4">
               <div class="h-6 bg-slate-100 rounded-full w-20"></div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
             </td>
             <td class="px-4 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-24"></div>
@@ -120,8 +128,37 @@
                 {{ report.status }}
               </span>
             </td>
-            <td class="px-4 py-4 text-sm text-slate-500">
-              {{ formatDate(report.created_at) }}
+            <td class="px-4 py-4">
+              <div class="flex flex-col">
+                <span class="text-xs text-slate-600">{{
+                  formatDate(report.created_at)
+                }}</span>
+                <span
+                  v-if="report.added_by_user"
+                  class="text-[10px] text-slate-400"
+                >
+                  by {{ report.added_by_user?.name || "Unknown" }}
+                </span>
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <div class="flex flex-col">
+                <span class="text-xs text-slate-600">{{
+                  formatDate(report.updated_at)
+                }}</span>
+                <span
+                  v-if="report.modified_by_user"
+                  class="text-[10px] text-slate-400"
+                >
+                  by {{ report.modified_by_user?.name || "Unknown" }}
+                </span>
+                <span
+                  v-else-if="report.added_by_user"
+                  class="text-[10px] text-slate-400"
+                >
+                  by {{ report.added_by_user?.name || "Unknown" }}
+                </span>
+              </div>
             </td>
             <td class="px-4 py-4 text-sm font-medium">
               <span v-if="report.expires_at" class="text-rose-500">

@@ -11,9 +11,11 @@ use Laravel\Sanctum\HasApiTokens;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Traits\HasAudit;
+
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, \Spatie\Permission\Traits\HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasAudit, \Spatie\Permission\Traits\HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +28,8 @@ class User extends Authenticatable
         'password',
         'role_id',
         'status',
+        'added_by',
+        'modified_by'
     ];
 
     /**

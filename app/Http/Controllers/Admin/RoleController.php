@@ -14,7 +14,7 @@ class RoleController extends Controller
         $currentUser = auth()->user();
         $isSuperAdmin = $currentUser->role && strtolower($currentUser->role->name) === 'super-admin';
 
-        $roles = Role::with(['permissions.module', 'permissions.action'])
+        $roles = Role::with(['permissions.module', 'permissions.action', 'addedByUser', 'modifiedByUser'])
             ->when(!$isSuperAdmin, function ($query) use ($currentUser) {
                 $query->where('id', $currentUser->role_id);
             })
@@ -44,7 +44,7 @@ class RoleController extends Controller
 
     public function show($id)
     {
-        $role = Role::with(['permissions.module', 'permissions.action'])->find($id);
+        $role = Role::with(['permissions.module', 'permissions.action', 'addedByUser', 'modifiedByUser'])->find($id);
 
         return response()->json([
             'role' => $role,

@@ -217,18 +217,22 @@ const props = defineProps({
   isOpen: Boolean,
   report: Object,
   loading: Boolean,
+  initialRecipients: {
+    type: Array,
+    default: () => ["doctor"],
+  },
 });
 
 const emit = defineEmits(["close", "confirm"]);
 
-const selectedRecipients = ref(["doctor"]);
+const selectedRecipients = ref([...props.initialRecipients]);
 
 // Reset selection when modal opens
 watch(
   () => props.isOpen,
   (newVal) => {
     if (newVal) {
-      selectedRecipients.value = ["doctor"];
+      selectedRecipients.value = [...props.initialRecipients];
     }
   },
 );

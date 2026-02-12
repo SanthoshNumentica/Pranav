@@ -192,6 +192,8 @@ const detailedInfo = computed(() => {
     Street: props.doctor.street,
     City: props.doctor.city,
     Pincode: props.doctor.pincode,
+    "Added By": props.doctor.added_by_user?.name || "N/A",
+    "Modified By": props.doctor.modified_by_user?.name || "N/A",
   };
 });
 </script>

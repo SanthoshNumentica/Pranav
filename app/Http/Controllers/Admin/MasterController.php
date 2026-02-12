@@ -28,7 +28,7 @@ class MasterController extends Controller
     }
     public function scanTypes(Request $request): JsonResponse
     {
-        $query = ScanType::with('scans')->orderBy('name');
+        $query = ScanType::with(['scans', 'addedByUser', 'modifiedByUser'])->orderBy('name');
 
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
@@ -144,7 +144,7 @@ class MasterController extends Controller
 
     public function patients(Request $request): JsonResponse
     {
-        $query = \App\Models\Patient::orderBy('name');
+        $query = \App\Models\Patient::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
                 $query->withTrashed()->where('status', 'inactive');
@@ -161,7 +161,7 @@ class MasterController extends Controller
 
     public function doctors(Request $request): JsonResponse
     {
-        $query = \App\Models\Doctor::orderBy('name');
+        $query = \App\Models\Doctor::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
                 $query->withTrashed()->where('status', 'inactive');
@@ -180,13 +180,13 @@ class MasterController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => User::all(),
+            'data' => User::with(['addedByUser', 'modifiedByUser'])->all(),
         ]);
     }
 
     public function genders(Request $request): JsonResponse
     {
-        $query = \App\Models\Gender::orderBy('gender_name');
+        $query = \App\Models\Gender::with(['addedByUser', 'modifiedByUser'])->orderBy('gender_name');
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
                 $query->withTrashed()->where('status', 'inactive');
@@ -248,7 +248,7 @@ class MasterController extends Controller
 
     public function bloodGroups(Request $request): JsonResponse
     {
-        $query = \App\Models\BloodGroup::orderBy('name');
+        $query = \App\Models\BloodGroup::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
                 $query->withTrashed()->where('status', 'inactive');
@@ -310,7 +310,7 @@ class MasterController extends Controller
 
     public function titles(Request $request): JsonResponse
     {
-        $query = \App\Models\Title::orderBy('title_name');
+        $query = \App\Models\Title::with(['addedByUser', 'modifiedByUser'])->orderBy('title_name');
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
                 $query->withTrashed()->where('status', 'inactive');

@@ -141,9 +141,16 @@ class CaseReportController extends Controller
         $request->validate([
             'recipients' => ['required', 'array', 'min:1'],
             'recipients.*' => ['required', 'in:doctor,patient'],
+            'custom_numbers' => ['nullable', 'array'],
+            'custom_numbers.doctor' => ['nullable', 'string'],
+            'custom_numbers.patient' => ['nullable', 'string'],
         ]);
 
-        $result = $this->caseReportService->sendWhatsAppNotification($id, $request->recipients);
+        $result = $this->caseReportService->sendWhatsAppNotification(
+            $id,
+            $request->recipients,
+            $request->get('custom_numbers', [])
+        );
 
         return response()->json([
             'success' => $result['status'],

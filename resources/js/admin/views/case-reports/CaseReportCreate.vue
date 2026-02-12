@@ -42,56 +42,122 @@
           </div>
 
           <!-- Patient Selection -->
-          <div class="space-y-2">
-            <label
-              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Patient <span class="text-rose-500">*</span></label
-            >
-            <div class="relative">
-              <Select v-model="form.patient_fk_id" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Patient" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="patient in patients"
-                    :key="patient.id"
-                    :value="patient.id.toString()"
-                  >
-                    {{ patient.name }} ({{ patient.patient_id }})
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <ChevronDownIcon
-                class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
-              />
+          <div class="space-y-4 pt-2">
+            <div class="space-y-2">
+              <label
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                >Patient <span class="text-rose-500">*</span></label
+              >
+              <div class="relative">
+                <Select v-model="form.patient_fk_id" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Patient" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="patient in patients"
+                      :key="patient.id"
+                      :value="patient.id.toString()"
+                    >
+                      {{ patient.name }} ({{ patient.patient_id }})
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <!-- Patient WhatsApp Number & Toggle -->
+            <div class="flex items-end gap-3 px-1">
+              <div class="flex-1 space-y-1.5">
+                <label
+                  class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1"
+                  >WhatsApp No</label
+                >
+                <input
+                  v-model="form.whatsapp_no_patient"
+                  type="text"
+                  placeholder="Patient mobile..."
+                  class="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <label
+                class="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-white hover:border-primary/20 transition-all group shrink-0"
+              >
+                <div class="relative flex items-center justify-center">
+                  <input
+                    v-model="form.send_whatsapp_patient"
+                    type="checkbox"
+                    class="peer h-4 w-4 rounded border-2 border-slate-200 text-primary focus:ring-primary/10 transition-all cursor-pointer appearance-none checked:bg-primary checked:border-primary"
+                  />
+                  <CheckIcon
+                    class="absolute h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                  />
+                </div>
+                <span
+                  class="text-[10px] font-bold text-slate-500 group-hover:text-primary transition-colors"
+                  >WhatsApp</span
+                >
+              </label>
             </div>
           </div>
 
           <!-- Doctor Selection -->
-          <div class="space-y-2">
-            <label
-              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Referring Doctor <span class="text-rose-500">*</span></label
-            >
-            <div class="relative">
-              <Select v-model="form.doc_ref_fk_id" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Doctor" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="doctor in doctors"
-                    :key="doctor.id"
-                    :value="doctor.id.toString()"
-                  >
-                    {{ doctor.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <ChevronDownIcon
-                class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none"
-              />
+          <div class="space-y-4 pt-4">
+            <div class="space-y-2">
+              <label
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                >Referring Doctor <span class="text-rose-500">*</span></label
+              >
+              <div class="relative">
+                <Select v-model="form.doc_ref_fk_id" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Doctor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      v-for="doctor in doctors"
+                      :key="doctor.id"
+                      :value="doctor.id.toString()"
+                    >
+                      {{ doctor.name }}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <!-- Doctor WhatsApp Number & Toggle -->
+            <div class="flex items-end gap-3 px-1">
+              <div class="flex-1 space-y-1.5">
+                <label
+                  class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1"
+                  >WhatsApp No</label
+                >
+                <input
+                  v-model="form.whatsapp_no_doctor"
+                  type="text"
+                  placeholder="Doctor mobile..."
+                  class="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-300"
+                />
+              </div>
+              <label
+                class="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-white hover:border-primary/20 transition-all group shrink-0"
+              >
+                <div class="relative flex items-center justify-center">
+                  <input
+                    v-model="form.send_whatsapp_doctor"
+                    type="checkbox"
+                    class="peer h-4 w-4 rounded border-2 border-slate-200 text-primary focus:ring-primary/10 transition-all cursor-pointer appearance-none checked:bg-primary checked:border-primary"
+                  />
+                  <CheckIcon
+                    class="absolute h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                  />
+                </div>
+                <span
+                  class="text-[10px] font-bold text-slate-500 group-hover:text-primary transition-colors"
+                  >WhatsApp</span
+                >
+              </label>
             </div>
           </div>
 
@@ -426,6 +492,7 @@
       :is-open="isWhatsappModalOpen"
       :report="reportForWhatsapp"
       :loading="sendingWhatsapp"
+      :initial-recipients="initialRecipients"
       @close="handleModalClose"
       @confirm="handleSendWhatsApp"
     />
@@ -433,7 +500,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../../composables/useToast";
 import axios from "axios";
@@ -473,10 +540,15 @@ const processingGeneral = ref(false);
 const isWhatsappModalOpen = ref(false);
 const reportForWhatsapp = ref(null);
 const sendingWhatsapp = ref(false);
+const initialRecipients = ref([]);
 
 const form = reactive({
   patient_fk_id: "",
   doc_ref_fk_id: "",
+  send_whatsapp_patient: true,
+  send_whatsapp_doctor: true,
+  whatsapp_no_patient: "",
+  whatsapp_no_doctor: "",
   description: "",
   documents: [], // General documents
   items: [
@@ -506,6 +578,27 @@ onMounted(async () => {
     error.value = "Failed to load master data. Please refresh.";
   }
 });
+
+// Auto-fill mobile numbers
+watch(
+  () => form.patient_fk_id,
+  (newVal) => {
+    const p = patients.value.find((p) => p.id == newVal);
+    if (p) {
+      form.whatsapp_no_patient = p.whatsapp_no || p.mobile_no || "";
+    }
+  },
+);
+
+watch(
+  () => form.doc_ref_fk_id,
+  (newVal) => {
+    const d = doctors.value.find((d) => d.id == newVal);
+    if (d) {
+      form.whatsapp_no_doctor = d.mobile_no || "";
+    }
+  },
+);
 
 const getScans = (typeId) => {
   if (!typeId) return [];
@@ -637,9 +730,28 @@ const handleSubmit = async () => {
         variant: "success",
       });
 
-      // Open WhatsApp modal instead of direct redirect
-      reportForWhatsapp.value = response.data.data;
-      isWhatsappModalOpen.value = true;
+      if (form.send_whatsapp_patient || form.send_whatsapp_doctor) {
+        // Open WhatsApp modal
+        const recipients = [];
+        if (form.send_whatsapp_patient) recipients.push("patient");
+        if (form.send_whatsapp_doctor) recipients.push("doctor");
+        initialRecipients.value = recipients;
+
+        const report = response.data.data;
+        // Inject custom numbers into the report object for the modal to display
+        if (report.patient) {
+          report.patient.whatsapp_no = form.whatsapp_no_patient;
+        }
+        if (report.doctor) {
+          report.doctor.mobile_no = form.whatsapp_no_doctor;
+        }
+
+        reportForWhatsapp.value = report;
+        isWhatsappModalOpen.value = true;
+      } else {
+        // Direct redirect
+        router.push("/case-reports");
+      }
     }
   } catch (err) {
     console.error("Save failed", err);
@@ -661,7 +773,13 @@ const handleSendWhatsApp = async (recipients) => {
   try {
     const response = await axios.post(
       `/api/v1/case-reports/${reportForWhatsapp.value.id}/whatsapp`,
-      { recipients },
+      {
+        recipients,
+        custom_numbers: {
+          patient: form.whatsapp_no_patient,
+          doctor: form.whatsapp_no_doctor,
+        },
+      },
     );
     if (response.data.success) {
       addToast({

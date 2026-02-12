@@ -64,7 +64,12 @@
             <th
               class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
             >
-              Created At
+              Created
+            </th>
+            <th
+              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
+            >
+              Modified
             </th>
             <th
               class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase"
@@ -85,6 +90,9 @@
               </td>
               <td class="px-6 py-4">
                 <div class="h-6 bg-slate-50 rounded-full w-20"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="h-4 bg-slate-50 rounded-md w-32"></div>
               </td>
               <td class="px-6 py-4">
                 <div class="h-4 bg-slate-50 rounded-md w-32"></div>
@@ -129,7 +137,36 @@
                 </button>
               </td>
               <td class="px-6 py-4 text-xs font-medium text-slate-500">
-                {{ formatDate(g.created_at) }}
+                <div class="flex flex-col">
+                  <span class="text-xs text-slate-600">{{
+                    formatDate(g.created_at)
+                  }}</span>
+                  <span
+                    v-if="g.added_by_user"
+                    class="text-[10px] text-slate-400"
+                  >
+                    by {{ g.added_by_user?.name || "Unknown" }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-xs font-medium text-slate-500">
+                <div class="flex flex-col">
+                  <span class="text-xs text-slate-600">{{
+                    formatDate(g.updated_at)
+                  }}</span>
+                  <span
+                    v-if="g.modified_by_user"
+                    class="text-[10px] text-slate-400"
+                  >
+                    by {{ g.modified_by_user?.name || "Unknown" }}
+                  </span>
+                  <span
+                    v-else-if="g.added_by_user"
+                    class="text-[10px] text-slate-400"
+                  >
+                    by {{ g.added_by_user?.name || "Unknown" }}
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 text-right">
                 <TableActions

@@ -80,10 +80,35 @@
                       v-model="form.name"
                       type="text"
                       :placeholder="`Enter ${label.toLowerCase()} name`"
-                      class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed"
+                      class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed font-medium text-slate-700"
                       :disabled="mode === 'view' || loading"
                       required
                     />
+                  </div>
+
+                  <!-- Audit Info -->
+                  <div
+                    v-if="mode === 'view' && initialData"
+                    class="pt-4 border-t border-slate-100 space-y-3"
+                  >
+                    <div class="flex items-center justify-between text-xs">
+                      <span
+                        class="text-slate-400 font-bold uppercase tracking-wider"
+                        >Added By</span
+                      >
+                      <span class="text-slate-600 font-semibold">{{
+                        initialData.added_by_user?.name || "N/A"
+                      }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                      <span
+                        class="text-slate-400 font-bold uppercase tracking-wider"
+                        >Modified By</span
+                      >
+                      <span class="text-slate-600 font-semibold">{{
+                        initialData.modified_by_user?.name || "N/A"
+                      }}</span>
+                    </div>
                   </div>
                 </div>
 

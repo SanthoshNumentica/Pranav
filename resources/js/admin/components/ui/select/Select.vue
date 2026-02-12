@@ -1,4 +1,5 @@
 <script setup>
+import { ref, computed } from "vue";
 import { SelectRoot, useForwardPropsEmits } from "radix-vue";
 
 const props = defineProps({
@@ -14,23 +15,25 @@ const props = defineProps({
 });
 
 const emits = defineEmits(["update:modelValue", "update:open"]);
+const forwarded = useForwardPropsEmits(props, emits);
+
+// We only want to pass the 'open' prop to SelectRoot if it's explicitly controlled.
+// This allows Radix-Vue to manage internal state natively when uncontrolled.
+const rootProps = computed(() => {
+  const p = { ...forwarded };
+  if (props.open === undefined) {
+    delete p.open;
+  }
+  return p;
+});
 
 const handleOpenChange = (val) => {
-  if (!val) {
-    // Delay setting open to false so modal close guards can see it's still open
-    setTimeout(() => {
-      emits("update:open", false);
-    }, 100);
-  } else {
-    emits("update:open", true);
-  }
+  emits("update:open", val);
 };
-
-const forwarded = useForwardPropsEmits(props, emits);
 </script>
 
 <template>
-  <SelectRoot v-bind="forwarded" :open="open" @update:open="handleOpenChange">
+  <SelectRoot v-bind="rootProps" @update:open="handleOpenChange">
     <slot />
   </SelectRoot>
 </template>

@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Traits\HasAudit;
+
 class CaseReport extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasAudit;
 
     protected $table = 'case_reports';
 
@@ -46,13 +48,4 @@ class CaseReport extends Model
         return $this->hasMany(CaseReportItem::class, 'case_report_id');
     }
 
-    public function addedBy()
-    {
-        return $this->belongsTo(User::class, 'added_by');
-    }
-
-    public function modifiedBy()
-    {
-        return $this->belongsTo(User::class, 'modified_by');
-    }
 }

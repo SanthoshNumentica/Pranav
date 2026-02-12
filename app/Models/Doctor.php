@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Traits\HasAudit;
+
 class Doctor extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasAudit;
 
     protected $table = 'doctors';
 
@@ -50,13 +52,4 @@ class Doctor extends Model
         return $this->hasMany(CaseReport::class, 'doc_ref_fk_id');
     }
 
-    public function addedBy()
-    {
-        return $this->belongsTo(User::class, 'added_by');
-    }
-
-    public function modifiedBy()
-    {
-        return $this->belongsTo(User::class, 'modified_by');
-    }
 }

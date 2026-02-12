@@ -46,7 +46,12 @@
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Updated On
+            Created
+          </th>
+          <th
+            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+          >
+            Modified
           </th>
           <th
             class="px-3 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -82,6 +87,9 @@
             </td>
             <td class="px-3 py-4">
               <div class="h-6 bg-slate-100 rounded-full w-20"></div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
             </td>
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-24"></div>
@@ -141,8 +149,37 @@
                 {{ doctor.status }}
               </button>
             </td>
-            <td class="px-3 py-4 text-sm text-slate-500">
-              {{ formatDate(doctor.updated_at) }}
+            <td class="px-3 py-4">
+              <div class="flex flex-col">
+                <span class="text-xs text-slate-600">{{
+                  formatDate(doctor.created_at)
+                }}</span>
+                <span
+                  v-if="doctor.added_by_user"
+                  class="text-[10px] text-slate-400"
+                >
+                  by {{ doctor.added_by_user?.name || "Unknown" }}
+                </span>
+              </div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="flex flex-col">
+                <span class="text-xs text-slate-600">{{
+                  formatDate(doctor.updated_at)
+                }}</span>
+                <span
+                  v-if="doctor.modified_by_user"
+                  class="text-[10px] text-slate-400"
+                >
+                  by {{ doctor.modified_by_user?.name || "Unknown" }}
+                </span>
+                <span
+                  v-else-if="doctor.added_by_user"
+                  class="text-[10px] text-slate-400"
+                >
+                  by {{ doctor.added_by_user?.name || "Unknown" }}
+                </span>
+              </div>
             </td>
             <td class="px-3 py-4 text-right">
               <TableActions

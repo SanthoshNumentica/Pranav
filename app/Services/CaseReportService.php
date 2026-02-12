@@ -20,7 +20,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         return CaseReport::query()
-            ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedBy', 'modifiedBy'])
+            ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -43,7 +43,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedBy', 'modifiedBy'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
@@ -87,7 +87,6 @@ class CaseReportService
                 'status' => 'available',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
                 'expires_at' => now()->addDays(10),
-                'added_by' => auth()->id(),
             ]);
 
             // 3. Process Items
@@ -148,7 +147,6 @@ class CaseReportService
                 'doc_ref_fk_id' => $data['doc_ref_fk_id'],
                 'description' => $data['description'] ?? null,
                 'documents' => $generalDocPaths,
-                'modified_by' => auth()->id(),
             ]);
 
             // 3. Refresh Items
@@ -240,7 +238,7 @@ class CaseReportService
     /**
      * Send WhatsApp notification for the case report.
      */
-    public function sendWhatsAppNotification(int $id, array $recipients = ['doctor']): array
+    public function sendWhatsAppNotification(int $id, array $recipients = ['doctor'], array $customNumbers = []): array
     {
         $caseReport = $this->getCaseReport($id);
         $whatsAppService = app(WhatsAppService::class);
@@ -265,11 +263,13 @@ class CaseReportService
         // 3. Send to each recipient
         $anySuccess = false;
         foreach ($recipients as $type) {
-            $mobileNo = null;
-            if ($type === 'doctor') {
-                $mobileNo = $caseReport->doctor->mobile_no ?? null;
-            } elseif ($type === 'patient') {
-                $mobileNo = $caseReport->patient->whatsapp_no ?? $caseReport->patient->mobile_no ?? null;
+            $mobileNo = $customNumbers[$type] ?? null;
+            if (!$mobileNo) {
+                if ($type === 'doctor') {
+                    $mobileNo = $caseReport->doctor->mobile_no ?? null;
+                } elseif ($type === 'patient') {
+                    $mobileNo = $caseReport->patient->whatsapp_no ?? $caseReport->patient->mobile_no ?? null;
+                }
             }
 
             if ($mobileNo) {
