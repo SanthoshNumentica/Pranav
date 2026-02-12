@@ -19,9 +19,9 @@
 
 <script setup>
 import { onMounted } from "vue";
-import AppSidebar from "../components/AppSidebar.vue";
-import AdminHeader from "../components/AdminHeader.vue";
-import ToastContainer from "../components/ToastContainer.vue";
+import AppSidebar from "../components/layouts/AppSidebar.vue";
+import AdminHeader from "../components/layouts/AdminHeader.vue";
+import ToastContainer from "../components/notifications/ToastContainer.vue";
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");

@@ -121,6 +121,9 @@ import {
   AlertCircle as AlertCircleIcon,
 } from "lucide-vue-next";
 
+import { useAuth } from "../../composables/useAuth";
+
+const { setUser } = useAuth();
 const router = useRouter();
 const loading = ref(false);
 const errorMessage = ref(null);
@@ -143,9 +146,14 @@ const handleLogin = async () => {
     const response = await axios.post("/api/v1/login", form);
 
     if (response.data.success) {
-      localStorage.setItem("auth_token", response.data.data.token);
-      axios.defaults.headers.common["Authorization"] =
-        `Bearer ${response.data.data.token}`;
+      const { token, user, permissions } = response.data.data;
+
+      localStorage.setItem("auth_token", token);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+      // Update global auth state with user and permissions
+      setUser(user, permissions);
+
       router.push("/case-reports");
     }
   } catch (error) {

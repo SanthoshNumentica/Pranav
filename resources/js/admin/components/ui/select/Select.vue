@@ -13,13 +13,24 @@ const props = defineProps({
   required: { type: Boolean, required: false },
 });
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "update:open"]);
+
+const handleOpenChange = (val) => {
+  if (!val) {
+    // Delay setting open to false so modal close guards can see it's still open
+    setTimeout(() => {
+      emits("update:open", false);
+    }, 100);
+  } else {
+    emits("update:open", true);
+  }
+};
 
 const forwarded = useForwardPropsEmits(props, emits);
 </script>
 
 <template>
-  <SelectRoot v-bind="forwarded">
+  <SelectRoot v-bind="forwarded" :open="open" @update:open="handleOpenChange">
     <slot />
   </SelectRoot>
 </template>

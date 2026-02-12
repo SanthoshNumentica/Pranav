@@ -3,117 +3,135 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\UserService;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    protected $userService;
-
-    public function __construct(UserService $userService)
-    {
-        $this->userService = $userService;
-    }
-
     /**
-     * Display a listing of users.
+     * Get all roles for dropdowns.
      */
-    public function index(Request $request): JsonResponse
+    public function roles()
     {
-        $users = $this->userService->listUsers($request->all(), $request->get('limit', 15));
-
+        $roles = Role::all(['id', 'name']);
         return response()->json([
             'success' => true,
-            'data' => $users,
+            'data' => $roles
         ]);
     }
 
     /**
-     * Store a newly created user.
+     * Display a listing of the resource.
      */
-    public function store(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        $request->validate([
+        $currentUser = auth()->user();
+        // Check if user is super admin - utilizing the loaded role relationship or checking directly
+        $isSuperAdmin = $currentUser->role && strtolower($currentUser->role->name) === 'super-admin';
+
+        $users = User::when($request->search, function ($query, $search) {
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%");
+        })
+            ->when(!$isSuperAdmin, function ($query) use ($currentUser) {
+                $query->where('id', $currentUser->id);
+            })
+            ->when($request->role_id, function ($query, $role_id) {
+                $query->where('role_id', $role_id);
+            })
+            ->with('role')
+            ->latest()
+            ->paginate($request->per_page ?? 10);
+
+        return response()->json([
+            'success' => true,
+            'data' => $users
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'role' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role_id' => ['required', 'exists:roles,id'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
 
-        $user = $this->userService->createUser($request->all());
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role_id' => $data['role_id'],
+            'status' => $data['status'],
+        ]);
 
         return response()->json([
             'success' => true,
-            'data' => $user,
             'message' => 'User created successfully',
+            'data' => $user
+        ], 201);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(User $user)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $user->load('role')
         ]);
     }
 
     /**
-     * Display the specified user.
+     * Update the specified resource in storage.
      */
-    public function show(int $id): JsonResponse
+    public function update(Request $request, User $user)
     {
-        $user = User::findOrFail($id);
-        return response()->json([
-            'success' => true,
-            'data' => $user,
-        ]);
-    }
-
-    /**
-     * Update the specified user.
-     */
-    public function update(Request $request, int $id): JsonResponse
-    {
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,' . $id,
-            'password' => 'nullable|string|min:8',
-            'role' => 'nullable|string',
-            'status' => 'nullable|in:active,inactive',
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'password' => 'nullable|string|min:8|confirmed',
+            'role_id' => ['required', 'exists:roles,id'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
 
-        $user = $this->userService->updateUser($id, $request->all());
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->role_id = $data['role_id'];
+        $user->status = $data['status'];
+
+        if (!empty($data['password'])) {
+            $user->password = Hash::make($data['password']);
+        }
+
+        $user->save();
 
         return response()->json([
             'success' => true,
-            'data' => $user,
             'message' => 'User updated successfully',
+            'data' => $user
         ]);
     }
 
     /**
-     * Remove the specified user.
+     * Remove the specified resource from storage.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(User $user)
     {
-        $this->userService->deleteUser($id);
+        $user->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'User deleted successfully',
-        ]);
-    }
-
-    /**
-     * Update user status.
-     */
-    public function updateStatus(Request $request, int $id): JsonResponse
-    {
-        $request->validate([
-            'status' => 'required|in:active,inactive',
-        ]);
-
-        $user = $this->userService->updateStatus($id, $request->status);
-
-        return response()->json([
-            'success' => true,
-            'data' => $user,
-            'message' => 'User status updated successfully',
+            'message' => 'User deleted successfully'
         ]);
     }
 }

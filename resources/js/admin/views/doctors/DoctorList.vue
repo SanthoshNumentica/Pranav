@@ -12,6 +12,7 @@
       </div>
       <div class="flex items-center gap-3">
         <button
+          v-if="modulePermissions.canAdd"
           @click="openAddModal"
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
@@ -69,6 +70,7 @@
       <DoctorsTable
         :doctors="doctors"
         :loading="loading"
+        :permissions="modulePermissions"
         @view-info="handleView"
         @edit="handleEdit"
         @delete="handleDelete"
@@ -134,12 +136,13 @@ import {
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
-import DoctorsTable from "../../components/DoctorsTable.vue";
-import DoctorFormDialog from "../../components/DoctorFormDialog.vue";
-import DoctorInfoDialog from "../../components/DoctorInfoDialog.vue";
-import ConfirmationModal from "../../components/ConfirmationModal.vue";
-import Pagination from "../../components/Pagination.vue";
+import DoctorsTable from "../../components/doctors/DoctorsTable.vue";
+import DoctorFormDialog from "../../components/doctors/DoctorFormDialog.vue";
+import DoctorInfoDialog from "../../components/doctors/DoctorInfoDialog.vue";
+import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
+import Pagination from "../../components/ui/Pagination.vue";
 import { useToast } from "../../composables/useToast";
+import { usePermissions } from "../../composables/usePermissions";
 import {
   Select,
   SelectContent,
@@ -149,6 +152,8 @@ import {
 } from "../../components/ui/select";
 
 const { addToast } = useToast();
+const { getModulePermissions } = usePermissions();
+const modulePermissions = getModulePermissions("doctors");
 
 const doctors = ref([]);
 const pagination = ref(null);

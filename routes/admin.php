@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\FileController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\WhatsappController;
+use App\Http\Controllers\Admin\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,6 +71,13 @@ Route::prefix('v1')->group(function () {
         Route::put('users/{id}', [UserController::class, 'update']);
         Route::delete('users/{id}', [UserController::class, 'destroy']);
         Route::post('users/{id}/status', [UserController::class, 'updateStatus']);
+
+        // Roles
+        Route::get('roles', [RoleController::class, 'index']);
+        Route::post('roles', [RoleController::class, 'store']);
+        Route::get('roles/{id}', [RoleController::class, 'show']);
+        Route::put('roles/{id}', [RoleController::class, 'update']);
+        Route::delete('roles/{id}', [RoleController::class, 'destroy']);
 
         // WhatsApp Logs
         Route::get('whatsapp-logs/count', [WhatsappController::class, 'count']);

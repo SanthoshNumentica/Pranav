@@ -10,8 +10,9 @@
         </p>
       </div>
       <button
-        @click="openAddDialog"
-        class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95"
+        v-if="canAdd"
+        @click="isCreateModalOpen = true"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95"
       >
         <PlusIcon class="h-4 w-4" />
         Add Title
@@ -129,22 +130,16 @@
                 {{ formatDate(title.created_at) }}
               </td>
               <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-1 transition-opacity">
-                  <button
-                    @click="openEditDialog(title)"
-                    class="h-8 w-8 flex items-center justify-center rounded-xl text-primary hover:bg-primary/10 transition-all active:scale-90"
-                    title="Edit"
-                  >
-                    <EditIcon class="h-4 w-4" />
-                  </button>
-                  <button
-                    @click="deleteTitle(title)"
-                    class="h-8 w-8 flex items-center justify-center rounded-xl text-rose-500 hover:bg-rose-500/10 transition-all active:scale-90"
-                    title="Delete"
-                  >
-                    <TrashIcon class="h-4 w-4" />
-                  </button>
-                </div>
+                <TableActions
+                  :item="title"
+                  :permissions="{ canView, canEdit, canDelete }"
+                  view-title="View"
+                  edit-title="Edit"
+                  delete-title="Delete"
+                  @view="openViewDialog($event)"
+                  @edit="openEditDialog($event)"
+                  @delete="deleteTitle($event)"
+                />
               </td>
             </tr>
             <tr v-if="filteredTitles.length === 0">
@@ -199,16 +194,16 @@ import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 import {
   Plus as PlusIcon,
-  Edit as EditIcon,
-  Trash2 as TrashIcon,
   Circle as CircleIcon,
-  CaseSensitive as CaseSensitiveIcon,
+  UserCircle as TitleIcon,
 } from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
-import MasterDataDialog from "../../components/MasterDataDialog.vue";
-import ConfirmationModal from "../../components/ConfirmationModal.vue";
-import Pagination from "../../components/Pagination.vue";
+import MasterDataDialog from "../../components/master-data/MasterDataDialog.vue";
+import TableActions from "../../components/ui/TableActions.vue";
+import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
+import Pagination from "../../components/ui/Pagination.vue";
 import { useToast } from "../../composables/useToast";
+import { usePermissions } from "../../composables/usePermissions";
 
 // Utility for classes
 function cn(...classes) {
@@ -216,6 +211,8 @@ function cn(...classes) {
 }
 
 const { addToast } = useToast();
+const { getModulePermissions } = usePermissions();
+const { canAdd, canView, canEdit, canDelete } = getModulePermissions("titles");
 
 const titles = ref([]);
 const pagination = ref(null);
@@ -270,6 +267,13 @@ const openAddDialog = () => {
 
 const openEditDialog = (title) => {
   dialogMode.value = "edit";
+  selectedTitle.value = { id: title.id, name: title.title_name }; // Mapping title_name to name for dialog
+  dialogError.value = null;
+  dialogOpen.value = true;
+};
+
+const openViewDialog = (title) => {
+  dialogMode.value = "view";
   selectedTitle.value = { id: title.id, name: title.title_name }; // Mapping title_name to name for dialog
   dialogError.value = null;
   dialogOpen.value = true;

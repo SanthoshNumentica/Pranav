@@ -14,6 +14,7 @@
       </div>
       <div class="flex items-center gap-3">
         <button
+          v-if="modulePermissions.canAdd"
           @click="$router.push('/case-reports/new')"
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
@@ -69,6 +70,7 @@
       <CaseReportsTable
         :reports="reports"
         :loading="loading"
+        :permissions="modulePermissions"
         @view-info="handleView"
         @send-whatsapp="confirmWhatsApp"
         @delete="confirmDelete"
@@ -123,13 +125,14 @@ import {
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
-import CaseReportsTable from "../../components/CaseReportsTable.vue";
-import CaseReportInfoDialog from "../../components/CaseReportInfoDialog.vue";
-import ConfirmationModal from "../../components/ConfirmationModal.vue";
-import WhatsAppRecipientModal from "../../components/WhatsAppRecipientModal.vue";
-import Pagination from "../../components/Pagination.vue";
+import CaseReportsTable from "../../components/case-reports/CaseReportsTable.vue";
+import CaseReportInfoDialog from "../../components/case-reports/CaseReportInfoDialog.vue";
+import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
+import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
+import Pagination from "../../components/ui/Pagination.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../../composables/useToast";
+import { usePermissions } from "../../composables/usePermissions";
 import {
   Select,
   SelectContent,
@@ -139,6 +142,8 @@ import {
 } from "../../components/ui/select";
 
 const { addToast } = useToast();
+const { getModulePermissions } = usePermissions();
+const modulePermissions = getModulePermissions("case-reports");
 
 const reports = ref([]);
 const pagination = ref(null);

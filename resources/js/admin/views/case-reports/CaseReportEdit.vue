@@ -455,7 +455,7 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useToast } from "../../composables/useToast";
 import axios from "axios";
-import WhatsAppRecipientModal from "../../components/WhatsAppRecipientModal.vue";
+import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
 import {
   Select,
   SelectContent,

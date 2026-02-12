@@ -20,15 +20,26 @@ class AuthController extends Controller
         ]);
 
         $credentials['status'] = 'active';
-        $credentials['role'] = 'admin';
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            // Optional: Check if user has admin permissions
-            // if (!$user->hasRole('admin')) { ... }
+            // Prevent standard users from logging into admin panel
+            if ($user->role && $user->role->name === 'User') {
+                Auth::guard('web')->logout();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Access denied. Standard users cannot access the admin portal.',
+                ], 403);
+            }
 
             $token = $user->createToken('admin-token')->plainTextToken;
+
+            $user->load(['role.permissions.module', 'role.permissions.action']);
+            $permissions = $user->permission_names;
+            if ($user->role) {
+                $user->role->makeHidden('permissions');
+            }
 
             return response()->json([
                 'success' => true,
@@ -36,6 +47,7 @@ class AuthController extends Controller
                 'data' => [
                     'user' => $user,
                     'token' => $token,
+                    'permissions' => $permissions,
                 ]
             ]);
         }
@@ -67,7 +79,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'user' => $request->user(),
+                'user' => $request->user()->load('role'),
             ]
         ]);
     }

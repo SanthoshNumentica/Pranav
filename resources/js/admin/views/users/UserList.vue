@@ -5,13 +5,14 @@
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500"
     >
       <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
-          Users
-        </h1>
-        <p class="text-sm text-slate-500 mt-1">Manage system users and administrators.</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Users</h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Manage system users and administrators.
+        </p>
       </div>
       <div class="flex items-center gap-3">
         <button
+          v-if="modulePermissions.canAdd"
           @click="openAddModal"
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
@@ -69,6 +70,7 @@
       <UsersTable
         :users="users"
         :loading="loading"
+        :permissions="modulePermissions"
         @view="handleView"
         @edit="handleEdit"
         @delete="handleDelete"
@@ -135,11 +137,12 @@ import {
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
-import UsersTable from "../../components/UsersTable.vue";
-import UserInfoDialog from "../../components/UserInfoDialog.vue";
-import UserFormDialog from "../../components/UserFormDialog.vue";
-import ConfirmationModal from "../../components/ConfirmationModal.vue";
-import Pagination from "../../components/Pagination.vue";
+import UsersTable from "../../components/users/UsersTable.vue";
+import UserInfoDialog from "../../components/users/UserInfoDialog.vue";
+import UserFormDialog from "../../components/users/UserFormDialog.vue";
+import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
+import Pagination from "../../components/ui/Pagination.vue";
+import { usePermissions } from "../../composables/usePermissions";
 import { useToast } from "../../composables/useToast";
 import {
   Select,
@@ -150,6 +153,8 @@ import {
 } from "../../components/ui/select";
 
 const { addToast } = useToast();
+const { getModulePermissions } = usePermissions();
+const modulePermissions = getModulePermissions("user");
 
 const users = ref([]);
 const pagination = ref(null);
