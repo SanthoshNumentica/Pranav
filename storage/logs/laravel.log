@@ -3484,3 +3484,41 @@
 #10 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
 #11 {main}
 "} 
+[2026-02-15 13:40:52] local.INFO: OrthancService: Preparing upload for Case Report #24  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162794_I00001  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162808_I00002  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162809_I00003  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162810_I00004  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162811_I00005  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162812_I00006  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162813_I00007  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162814_I00008  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162815_I00009  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162816_I00010  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162817_I00011  
+[2026-02-15 13:40:52] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771162817_I00012  
+[2026-02-15 17:29:59] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:29:59] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176562_SER00001.zip  
+[2026-02-15 17:29:59] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:31:00] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:31:00] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176562_SER00001.zip  
+[2026-02-15 17:31:00] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:31:13] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:31:13] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176562_SER00001.zip  
+[2026-02-15 17:31:13] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:32:01] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:32:01] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176562_SER00001.zip  
+[2026-02-15 17:32:01] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:32:01] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176704_SER00024.zip  
+[2026-02-15 17:34:35] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:34:35] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176562_SER00001.zip  
+[2026-02-15 17:34:35] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:34:35] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176704_SER00024.zip  
+[2026-02-15 17:39:55] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:39:55] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176562_SER00001.zip  
+[2026-02-15 17:39:55] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:40:08] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:40:08] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:50:35] local.INFO: OrthancService: Preparing upload for Case Report #25  
+[2026-02-15 17:50:35] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771176563_SER00002.zip  
+[2026-02-15 17:50:35] local.INFO: OrthancService: Skeleton upload for file: app/case-reports/1771177829_SER00024.zip  

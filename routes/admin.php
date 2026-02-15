@@ -47,6 +47,7 @@ Route::prefix('v1')->group(function () {
 
         // File Uploads
         Route::post('files/upload', [FileController::class, 'upload']);
+        Route::delete('files/delete', [FileController::class, 'destroy']);
 
         // Patients
         Route::get('patients', [PatientController::class, 'index']);

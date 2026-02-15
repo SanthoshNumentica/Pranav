@@ -27,13 +27,22 @@ const rootProps = computed(() => {
   return p;
 });
 
+const value = computed({
+  get: () => props.modelValue,
+  set: (val) => emits("update:modelValue", val),
+});
+
 const handleOpenChange = (val) => {
   emits("update:open", val);
 };
 </script>
 
 <template>
-  <SelectRoot v-bind="rootProps" @update:open="handleOpenChange">
+  <SelectRoot
+    v-bind="rootProps"
+    v-model="value"
+    @update:open="handleOpenChange"
+  >
     <slot />
   </SelectRoot>
 </template>

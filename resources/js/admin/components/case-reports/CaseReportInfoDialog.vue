@@ -510,11 +510,18 @@ const handleReupload = () => {
 const viewFile = (pathOrPaths) => {
   if (!pathOrPaths) return;
 
-  const paths = Array.isArray(pathOrPaths) ? pathOrPaths : [pathOrPaths];
-  const firstPath = paths[0];
-  const ext = firstPath.split(".").pop().toLowerCase();
+  // Normalize to array of strings
+  const paths = (Array.isArray(pathOrPaths) ? pathOrPaths : [pathOrPaths]).map(
+    (p) => (typeof p === "object" ? p.path : p),
+  );
 
-  if (ext === "dcm") {
+  const firstPath = paths[0];
+  if (!firstPath) return;
+
+  const ext = firstPath.split(".").pop().toLowerCase();
+  const isDicomFolder = firstPath.includes("app/case-reports");
+
+  if (ext === "dcm" || isDicomFolder) {
     // Check if expired status
     if (props.report?.status === "expired") {
       isExpiredModalOpen.value = true;
@@ -523,7 +530,10 @@ const viewFile = (pathOrPaths) => {
 
     router.push({
       name: "DicomView",
-      query: { paths: paths.join(",") },
+      query: {
+        paths: paths.join(","),
+        token: props.report.sharing_token,
+      },
     });
   } else {
     window.open("/" + firstPath, "_blank");

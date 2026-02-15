@@ -165,7 +165,8 @@
           <div class="space-y-2">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Case Documents (JPG, PNG)</label
+              >Case Documents (JPG, PNG, PDF, Word)
+              <span class="text-rose-500">*</span></label
             >
             <div class="flex items-center gap-3">
               <label
@@ -174,7 +175,7 @@
                 <input
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,application/pdf"
+                  accept="image/jpeg,image/png,application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   class="hidden"
                   @change="handleGeneralFiles"
                   :disabled="processingGeneral"
@@ -365,7 +366,7 @@
                   <div class="space-y-2">
                     <label
                       class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                      >DICOM Files (.dcm)</label
+                      >DICOM Study Folder</label
                     >
                     <div
                       class="relative h-[112px] rounded-2xl border-2 border-dashed border-slate-200 bg-white flex flex-col items-center justify-center p-4 transition-all hover:border-primary/50 group/upload overflow-hidden"
@@ -374,8 +375,9 @@
                     >
                       <input
                         type="file"
+                        webkitdirectory
+                        directory
                         multiple
-                        accept=".dcm"
                         class="absolute inset-0 opacity-0 cursor-pointer"
                         @change="handleFiles($event, index)"
                       />
@@ -385,13 +387,14 @@
                         <div
                           class="p-2 rounded-xl bg-slate-50 group-hover/upload:bg-primary/10 transition-colors"
                         >
-                          <UploadIcon
-                            v-if="!item.processing"
-                            class="h-5 w-5 text-slate-400 group-hover/upload:text-primary"
-                          />
-                          <Loader2Icon
-                            v-else
-                            class="h-5 w-5 text-primary animate-spin"
+                          <component
+                            :is="item.processing ? Loader2Icon : UploadIcon"
+                            :class="[
+                              'h-5 w-5',
+                              item.processing
+                                ? 'text-primary animate-spin'
+                                : 'text-slate-400 group-hover/upload:text-primary',
+                            ]"
                           />
                         </div>
                         <span
@@ -400,19 +403,49 @@
                           {{
                             item.processing
                               ? "Analyzing files..."
-                              : "Click or drag DICOM files"
+                              : "Drop multiple folders or Click to select"
                           }}
                         </span>
                       </div>
                     </div>
 
-                    <!-- File List Preview -->
+                    <!-- Multi-Folder Display -->
+                    <div class="mt-2 space-y-2">
+                      <div
+                        v-for="folder in getUniqueFolders(item.documents)"
+                        :key="folder.name"
+                        class="flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg group/folder"
+                      >
+                        <div class="flex items-center gap-2">
+                          <FolderIcon class="h-4 w-4 text-primary" />
+                          <span class="text-xs font-bold text-slate-700">{{
+                            folder.name
+                          }}</span>
+                          <span class="text-[10px] text-slate-400 font-medium"
+                            >({{ folder.count }} files)</span
+                          >
+                        </div>
+                        <button
+                          type="button"
+                          @click="removeFolder(index, folder.name)"
+                          class="p-1 rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                          title="Remove Folder"
+                        >
+                          <XIcon class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Root Files Preview (if any) -->
                     <div
-                      v-if="item.documents.length > 0"
+                      v-if="getUniqueFolders(item.documents, true).length > 0"
                       class="mt-3 flex flex-wrap gap-2"
                     >
                       <div
-                        v-for="(doc, dIdx) in item.documents"
+                        v-for="(doc, dIdx) in getUniqueFolders(
+                          item.documents,
+                          true,
+                        )"
                         :key="dIdx"
                         class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] font-bold text-emerald-600 animate-in zoom-in-95 duration-200"
                       >
@@ -421,6 +454,7 @@
                           doc.name
                         }}</span>
                         <button
+                          type="button"
                           @click="removeDoc(index, dIdx)"
                           class="hover:text-rose-500"
                         >
@@ -496,15 +530,30 @@
       @close="handleModalClose"
       @confirm="handleSendWhatsApp"
     />
+
+    <!-- DICOM Upload Progress & Confirmation Modal -->
+    <DicomUploadModal
+      :is-open="uploadModal.isOpen"
+      :state="uploadModal.state"
+      :file-count="uploadModal.fileCount"
+      :progress="uploadModal.progress"
+      :current-file-index="uploadModal.currentFileIndex"
+      :total-files="uploadModal.totalFiles"
+      :current-file-name="uploadModal.currentFileName"
+      :title="uploadModal.title"
+      :description="uploadModal.description"
+      :variant="uploadModal.variant"
+      @confirm="startBatchedUpload"
+      @close="uploadModal.isOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
-import { useToast } from "../../composables/useToast";
-import axios from "axios";
+import { onMounted } from "vue";
+import { useCaseReportForm } from "../../composables/useCaseReportForm";
 import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
+import DicomUploadModal from "../../components/dicom/DicomUploadModal.vue";
 import {
   Select,
   SelectContent,
@@ -524,286 +573,42 @@ import {
   Paperclip as PaperclipIcon,
   Check as CheckIcon,
   CheckCircle as CheckCircleIcon,
+  Folder as FolderIcon,
 } from "lucide-vue-next";
 
-const router = useRouter();
-const { addToast } = useToast();
-const loading = ref(false);
-const error = ref(null);
+// Initialize useCaseReportForm with isEdit = false
+const {
+  loading,
+  error,
+  form,
+  patients,
+  doctors,
+  scanTypes,
+  processingGeneral,
+  uploadModal,
+  isWhatsappModalOpen,
+  reportForWhatsapp,
+  sendingWhatsapp,
+  initialRecipients,
+  fetchMasters,
+  getScans,
+  getFileName,
+  addItem,
+  removeItem,
+  getUniqueFolders,
+  handleGeneralFiles,
+  removeGeneralDoc,
+  handleDrop,
+  handleFiles,
+  startBatchedUpload,
+  removeFolder,
+  removeDoc,
+  handleSubmit,
+  handleSendWhatsApp,
+  handleModalClose,
+} = useCaseReportForm(false);
 
-const patients = ref([]);
-const doctors = ref([]);
-const scanTypes = ref([]);
-
-const processingGeneral = ref(false);
-
-const isWhatsappModalOpen = ref(false);
-const reportForWhatsapp = ref(null);
-const sendingWhatsapp = ref(false);
-const initialRecipients = ref([]);
-
-const form = reactive({
-  patient_fk_id: "",
-  doc_ref_fk_id: "",
-  send_whatsapp_patient: true,
-  send_whatsapp_doctor: true,
-  whatsapp_no_patient: "",
-  whatsapp_no_doctor: "",
-  description: "",
-  documents: [], // General documents
-  items: [
-    {
-      scan_type_id: "",
-      scan_id: "",
-      documents: [],
-      remarks: "",
-      processing: false,
-    },
-  ],
+onMounted(() => {
+  fetchMasters();
 });
-
-onMounted(async () => {
-  try {
-    const [pRes, dRes, sRes] = await Promise.all([
-      axios.get("/api/v1/masters/patients?status=active&nopaginate=1"),
-      axios.get("/api/v1/masters/doctors?status=active&nopaginate=1"),
-      axios.get("/api/v1/masters/scan-types?status=active&nopaginate=1"),
-    ]);
-
-    patients.value = pRes.data.data;
-    doctors.value = dRes.data.data;
-    scanTypes.value = sRes.data.data;
-  } catch (err) {
-    console.error("Failed to fetch master data", err);
-    error.value = "Failed to load master data. Please refresh.";
-  }
-});
-
-// Auto-fill mobile numbers
-watch(
-  () => form.patient_fk_id,
-  (newVal) => {
-    const p = patients.value.find((p) => p.id == newVal);
-    if (p) {
-      form.whatsapp_no_patient = p.whatsapp_no || p.mobile_no || "";
-    }
-  },
-);
-
-watch(
-  () => form.doc_ref_fk_id,
-  (newVal) => {
-    const d = doctors.value.find((d) => d.id == newVal);
-    if (d) {
-      form.whatsapp_no_doctor = d.mobile_no || "";
-    }
-  },
-);
-
-const getScans = (typeId) => {
-  if (!typeId) return [];
-  const type = scanTypes.value.find((t) => t.id == typeId);
-  return type ? type.scans : [];
-};
-
-const addItem = () => {
-  form.items.push({
-    scan_type_id: "",
-    scan_id: "",
-    documents: [],
-    remarks: "",
-    processing: false,
-  });
-};
-
-const removeItem = (index) => {
-  form.items.splice(index, 1);
-};
-
-const handleGeneralFiles = async (event) => {
-  const files = Array.from(event.target.files);
-  if (files.length === 0) return;
-
-  processingGeneral.value = true;
-  error.value = null;
-
-  try {
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "document");
-
-      const response = await axios.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        form.documents.push({
-          name: response.data.name,
-          path: response.data.path,
-        });
-      }
-    }
-  } catch (err) {
-    console.error("Upload failed", err);
-    error.value = "Failed to upload document. Please try again.";
-  } finally {
-    processingGeneral.value = false;
-  }
-};
-
-const removeGeneralDoc = (index) => {
-  form.documents.splice(index, 1);
-};
-
-const handleFiles = async (event, index) => {
-  const files = Array.from(event.target.files);
-  await uploadDicomFiles(files, index);
-};
-
-const handleDrop = async (event, index) => {
-  const files = Array.from(event.dataTransfer.files);
-  await uploadDicomFiles(files, index);
-};
-
-const uploadDicomFiles = async (files, index) => {
-  const validFiles = files.filter((f) => f.name.toLowerCase().endsWith(".dcm"));
-  if (validFiles.length === 0) return;
-
-  form.items[index].processing = true;
-  error.value = null;
-
-  try {
-    for (const file of validFiles) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "dicom");
-
-      const response = await axios.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        form.items[index].documents.push({
-          name: response.data.name,
-          path: response.data.path,
-        });
-      }
-    }
-  } catch (err) {
-    console.error("DICOM Upload failed", err);
-    error.value = "Failed to upload DICOM file. Please try again.";
-  } finally {
-    form.items[index].processing = false;
-  }
-};
-
-const removeDoc = (itemIndex, docIndex) => {
-  form.items[itemIndex].documents.splice(docIndex, 1);
-};
-
-const handleSubmit = async () => {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    // Preparing payload using paths
-    const payload = {
-      patient_fk_id: form.patient_fk_id,
-      doc_ref_fk_id: form.doc_ref_fk_id,
-      description: form.description,
-      documents: form.documents.map((d) => d.path),
-      items: form.items.map((item) => ({
-        scan_type_id: item.scan_type_id,
-        scan_id: item.scan_id,
-        documents: item.documents.map((d) => d.path),
-        remarks: item.remarks,
-      })),
-    };
-
-    const response = await axios.post("/api/v1/case-reports", payload);
-
-    if (response.data.success) {
-      addToast({
-        title: "Success",
-        description: "Case report created successfully.",
-        variant: "success",
-      });
-
-      if (form.send_whatsapp_patient || form.send_whatsapp_doctor) {
-        // Open WhatsApp modal
-        const recipients = [];
-        if (form.send_whatsapp_patient) recipients.push("patient");
-        if (form.send_whatsapp_doctor) recipients.push("doctor");
-        initialRecipients.value = recipients;
-
-        const report = response.data.data;
-        // Inject custom numbers into the report object for the modal to display
-        if (report.patient) {
-          report.patient.whatsapp_no = form.whatsapp_no_patient;
-        }
-        if (report.doctor) {
-          report.doctor.mobile_no = form.whatsapp_no_doctor;
-        }
-
-        reportForWhatsapp.value = report;
-        isWhatsappModalOpen.value = true;
-      } else {
-        // Direct redirect
-        router.push("/case-reports");
-      }
-    }
-  } catch (err) {
-    console.error("Save failed", err);
-    error.value = err.response?.data?.message || "Failed to save case report.";
-    addToast({
-      title: "Error",
-      description: error.value,
-      variant: "error",
-    });
-  } finally {
-    loading.value = false;
-  }
-};
-
-const handleSendWhatsApp = async (recipients) => {
-  if (!reportForWhatsapp.value) return;
-
-  sendingWhatsapp.value = true;
-  try {
-    const response = await axios.post(
-      `/api/v1/case-reports/${reportForWhatsapp.value.id}/whatsapp`,
-      {
-        recipients,
-        custom_numbers: {
-          patient: form.whatsapp_no_patient,
-          doctor: form.whatsapp_no_doctor,
-        },
-      },
-    );
-    if (response.data.success) {
-      addToast({
-        title: "Success",
-        description: "WhatsApp notification sent successfully.",
-        variant: "success",
-      });
-      handleModalClose();
-    }
-  } catch (err) {
-    console.error("WhatsApp failed", err);
-    addToast({
-      title: "Error",
-      description:
-        err.response?.data?.message || "Failed to send notification.",
-      variant: "error",
-    });
-  } finally {
-    sendingWhatsapp.value = false;
-  }
-};
-
-const handleModalClose = () => {
-  isWhatsappModalOpen.value = false;
-  router.push("/case-reports");
-};
 </script>

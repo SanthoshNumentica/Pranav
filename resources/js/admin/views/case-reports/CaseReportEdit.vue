@@ -79,6 +79,40 @@
             </div>
           </div>
 
+          <!-- Patient WhatsApp Number & Toggle -->
+          <div class="flex items-end gap-3 px-1">
+            <div class="flex-1 space-y-1.5">
+              <label
+                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1"
+                >WhatsApp No</label
+              >
+              <input
+                v-model="form.whatsapp_no_patient"
+                type="text"
+                placeholder="Patient mobile..."
+                class="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-300"
+              />
+            </div>
+            <label
+              class="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-white hover:border-primary/20 transition-all group shrink-0"
+            >
+              <div class="relative flex items-center justify-center">
+                <input
+                  v-model="form.send_whatsapp_patient"
+                  type="checkbox"
+                  class="peer h-4 w-4 rounded border-2 border-slate-200 text-primary focus:ring-primary/10 transition-all cursor-pointer appearance-none checked:bg-primary checked:border-primary"
+                />
+                <CheckIcon
+                  class="absolute h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                />
+              </div>
+              <span
+                class="text-[10px] font-bold text-slate-500 group-hover:text-primary transition-colors"
+                >WhatsApp</span
+              >
+            </label>
+          </div>
+
           <!-- Doctor Selection -->
           <div class="space-y-2">
             <label
@@ -106,11 +140,46 @@
             </div>
           </div>
 
+          <!-- Doctor WhatsApp Number & Toggle -->
+          <div class="flex items-end gap-3 px-1">
+            <div class="flex-1 space-y-1.5">
+              <label
+                class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1"
+                >WhatsApp No</label
+              >
+              <input
+                v-model="form.whatsapp_no_doctor"
+                type="text"
+                placeholder="Doctor mobile..."
+                class="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none transition-all placeholder:text-slate-300"
+              />
+            </div>
+            <label
+              class="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-white hover:border-primary/20 transition-all group shrink-0"
+            >
+              <div class="relative flex items-center justify-center">
+                <input
+                  v-model="form.send_whatsapp_doctor"
+                  type="checkbox"
+                  class="peer h-4 w-4 rounded border-2 border-slate-200 text-primary focus:ring-primary/10 transition-all cursor-pointer appearance-none checked:bg-primary checked:border-primary"
+                />
+                <CheckIcon
+                  class="absolute h-2.5 w-2.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                />
+              </div>
+              <span
+                class="text-[10px] font-bold text-slate-500 group-hover:text-primary transition-colors"
+                >WhatsApp</span
+              >
+            </label>
+          </div>
+
           <!-- General Documents -->
           <div class="space-y-2">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Case Documents (JPG, PNG)</label
+              >Case Documents (JPG, PNG, PDF, Word)
+              <span class="text-rose-500">*</span></label
             >
             <div class="flex items-center gap-3">
               <label
@@ -119,7 +188,7 @@
                 <input
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,application/pdf"
+                  accept="image/jpeg,image/png,application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   class="hidden"
                   @change="handleGeneralFiles"
                   :disabled="processingGeneral"
@@ -311,7 +380,7 @@
                   <div class="space-y-2">
                     <label
                       class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                      >DICOM Files (.dcm)</label
+                      >DICOM Study Folder</label
                     >
                     <div
                       class="relative h-[112px] rounded-2xl border-2 border-dashed border-slate-200 bg-white flex flex-col items-center justify-center p-4 transition-all hover:border-primary/50 group/upload overflow-hidden"
@@ -320,8 +389,9 @@
                     >
                       <input
                         type="file"
+                        webkitdirectory
+                        directory
                         multiple
-                        accept=".dcm"
                         class="absolute inset-0 opacity-0 cursor-pointer"
                         @change="handleFiles($event, index)"
                       />
@@ -331,13 +401,14 @@
                         <div
                           class="p-2 rounded-xl bg-slate-50 group-hover/upload:bg-primary/10 transition-colors"
                         >
-                          <UploadIcon
-                            v-if="!item.processing"
-                            class="h-5 w-5 text-slate-400 group-hover/upload:text-primary"
-                          />
-                          <Loader2Icon
-                            v-else
-                            class="h-5 w-5 text-primary animate-spin"
+                          <component
+                            :is="item.processing ? Loader2Icon : UploadIcon"
+                            :class="[
+                              'h-5 w-5',
+                              item.processing
+                                ? 'text-primary animate-spin'
+                                : 'text-slate-400 group-hover/upload:text-primary',
+                            ]"
                           />
                         </div>
                         <span
@@ -346,19 +417,49 @@
                           {{
                             item.processing
                               ? "Analyzing files..."
-                              : "Click or drag DICOM files"
+                              : "Drop multiple folders or Click to select"
                           }}
                         </span>
                       </div>
                     </div>
 
-                    <!-- File List Preview -->
+                    <!-- Multi-Folder Display -->
+                    <div class="mt-2 space-y-2">
+                      <div
+                        v-for="folder in getUniqueFolders(item.documents)"
+                        :key="folder.name"
+                        class="flex items-center justify-between gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg group/folder"
+                      >
+                        <div class="flex items-center gap-2">
+                          <FolderIcon class="h-4 w-4 text-primary" />
+                          <span class="text-xs font-bold text-slate-700">{{
+                            folder.name
+                          }}</span>
+                          <span class="text-[10px] text-slate-400 font-medium"
+                            >({{ folder.count }} files)</span
+                          >
+                        </div>
+                        <button
+                          type="button"
+                          @click="removeFolder(index, folder.name)"
+                          class="p-1 rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
+                          title="Remove Folder"
+                        >
+                          <XIcon class="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Root Files Preview (if any) -->
                     <div
-                      v-if="item.documents.length > 0"
+                      v-if="getUniqueFolders(item.documents, true).length > 0"
                       class="mt-3 flex flex-wrap gap-2"
                     >
                       <div
-                        v-for="(doc, dIdx) in item.documents"
+                        v-for="(doc, dIdx) in getUniqueFolders(
+                          item.documents,
+                          true,
+                        )"
                         :key="dIdx"
                         class="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-lg text-[10px] font-bold text-emerald-600 animate-in zoom-in-95 duration-200"
                       >
@@ -367,6 +468,7 @@
                           getFileName(doc.path)
                         }}</span>
                         <button
+                          type="button"
                           @click="removeDoc(index, dIdx)"
                           class="hover:text-rose-500"
                         >
@@ -433,10 +535,77 @@
       </div>
     </form>
 
-    <!-- Loading State -->
-    <div v-else class="h-96 flex flex-col items-center justify-center gap-4">
-      <Loader2Icon class="h-12 w-12 text-primary animate-spin" />
-      <p class="text-slate-500 font-bold">Loading case specifics...</p>
+    <!-- Loading State: Skeleton Loader -->
+    <div
+      v-else
+      class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-500"
+    >
+      <!-- Left Column Skeleton: Case Info -->
+      <div class="lg:col-span-1 space-y-8">
+        <div
+          class="bg-white rounded-[32px] border border-slate-200 p-8 shadow-soft-xl space-y-6"
+        >
+          <div class="flex items-center gap-3 mb-2">
+            <Skeleton class="h-10 w-10 rounded-2xl" />
+            <Skeleton class="h-6 w-32" />
+          </div>
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <Skeleton class="h-3 w-16 ml-1" />
+              <Skeleton class="h-10 w-full rounded-lg" />
+            </div>
+            <div class="space-y-2">
+              <Skeleton class="h-3 w-16 ml-1" />
+              <Skeleton class="h-10 w-full rounded-lg" />
+            </div>
+            <div class="space-y-2">
+              <Skeleton class="h-3 w-32 ml-1" />
+              <Skeleton class="h-12 w-full rounded-2xl" />
+            </div>
+            <div class="space-y-2">
+              <Skeleton class="h-3 w-32 ml-1" />
+              <Skeleton class="h-24 w-full rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column Skeleton: Scan Items -->
+      <div class="lg:col-span-2 space-y-8">
+        <div
+          class="bg-white rounded-[40px] border border-slate-200 p-8 md:p-10 shadow-soft-xl"
+        >
+          <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-3">
+              <Skeleton class="h-10 w-10 rounded-2xl" />
+              <Skeleton class="h-6 w-48" />
+            </div>
+            <Skeleton class="h-10 w-32 rounded-xl" />
+          </div>
+          <div class="space-y-6">
+            <div
+              class="bg-slate-50/50 rounded-[32px] border border-slate-100 p-8 space-y-6"
+            >
+              <div class="grid grid-cols-2 gap-6">
+                <div class="space-y-4">
+                  <div class="space-y-2">
+                    <Skeleton class="h-3 w-20 ml-1" />
+                    <Skeleton class="h-10 w-full rounded-lg" />
+                  </div>
+                  <div class="space-y-2">
+                    <Skeleton class="h-3 w-24 ml-1" />
+                    <Skeleton class="h-10 w-full rounded-lg" />
+                  </div>
+                </div>
+                <div class="space-y-4">
+                  <Skeleton class="h-3 w-32 ml-1" />
+                  <Skeleton class="h-28 w-full rounded-2xl" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- WhatsApp Recipient Selection Modal -->
@@ -444,18 +613,36 @@
       :is-open="isWhatsappModalOpen"
       :report="reportForWhatsapp"
       :loading="sendingWhatsapp"
+      :initial-recipients="initialRecipients"
       @close="handleModalClose"
       @confirm="handleSendWhatsApp"
+    />
+
+    <!-- DICOM Upload Progress & Confirmation Modal -->
+    <DicomUploadModal
+      :is-open="uploadModal.isOpen"
+      :state="uploadModal.state"
+      :file-count="uploadModal.fileCount"
+      :progress="uploadModal.progress"
+      :current-file-index="uploadModal.currentFileIndex"
+      :total-files="uploadModal.totalFiles"
+      :current-file-name="uploadModal.currentFileName"
+      :title="uploadModal.title"
+      :description="uploadModal.description"
+      :variant="uploadModal.variant"
+      @confirm="startBatchedUpload"
+      @close="uploadModal.isOpen = false"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useToast } from "../../composables/useToast";
-import axios from "axios";
+import { onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useCaseReportForm } from "../../composables/useCaseReportForm";
+import Skeleton from "../../components/ui/skeleton/Skeleton.vue";
 import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
+import DicomUploadModal from "../../components/dicom/DicomUploadModal.vue";
 import {
   Select,
   SelectContent,
@@ -475,257 +662,49 @@ import {
   Paperclip as PaperclipIcon,
   Check as CheckIcon,
   CheckCircle as CheckCircleIcon,
+  Folder as FolderIcon,
 } from "lucide-vue-next";
 
-const router = useRouter();
+// Initialize useCaseReportForm with isEdit = true
+const {
+  loading,
+  fetching,
+  error,
+  form,
+  patients,
+  doctors,
+  scanTypes,
+  processingGeneral,
+  uploadModal,
+  isWhatsappModalOpen,
+  reportForWhatsapp,
+  sendingWhatsapp,
+  initialRecipients,
+  fetchMasters,
+  fetchCaseReport,
+  getScans,
+  getFileName,
+  addItem,
+  removeItem,
+  getUniqueFolders,
+  handleGeneralFiles,
+  removeGeneralDoc,
+  handleDrop,
+  handleFiles,
+  startBatchedUpload,
+  removeFolder,
+  removeDoc,
+  handleSubmit,
+  handleSendWhatsApp,
+  handleModalClose,
+} = useCaseReportForm(true);
+
 const route = useRoute();
-const { addToast } = useToast();
-const loading = ref(false);
-const fetching = ref(true);
-const error = ref(null);
-
-const patients = ref([]);
-const doctors = ref([]);
-const scanTypes = ref([]);
-
-const processingGeneral = ref(false);
-
-const isWhatsappModalOpen = ref(false);
-const reportForWhatsapp = ref(null);
-const sendingWhatsapp = ref(false);
-
-const form = reactive({
-  id: null,
-  case_id: "",
-  patient_fk_id: "",
-  doc_ref_fk_id: "",
-  description: "",
-  documents: [], // General documents
-  items: [],
-});
 
 onMounted(async () => {
-  try {
-    const [pRes, dRes, sRes, cRes] = await Promise.all([
-      axios.get("/api/v1/masters/patients?status=active&nopaginate=1"),
-      axios.get("/api/v1/masters/doctors?status=active&nopaginate=1"),
-      axios.get("/api/v1/masters/scan-types?status=active&nopaginate=1"),
-      axios.get(`/api/v1/case-reports/${route.params.id}`),
-    ]);
-
-    patients.value = pRes.data.data;
-    doctors.value = dRes.data.data;
-    scanTypes.value = sRes.data.data;
-
-    // Populate form
-    const data = cRes.data.data;
-    form.id = data.id;
-    form.case_id = data.case_id;
-    form.patient_fk_id = data.patient_fk_id?.toString() || "";
-    form.doc_ref_fk_id = data.doc_ref_fk_id?.toString() || "";
-    form.description = data.description || "";
-    form.documents = (data.documents || []).map((path) => ({ path }));
-
-    form.items = data.items.map((item) => ({
-      scan_type_id: item.scan_type_id?.toString() || "",
-      scan_id: item.scan_id?.toString() || "",
-      documents: (item.documents || []).map((path) => ({ path })),
-      remarks: item.remarks || "",
-      processing: false,
-    }));
-  } catch (err) {
-    console.error("Failed to fetch data", err);
-    error.value = "Failed to load case data. Please refresh.";
-  } finally {
-    fetching.value = false;
-  }
+  // 1. Fetch masters first
+  await fetchMasters();
+  // 2. Then fetch the case report
+  await fetchCaseReport(route.params.id);
 });
-
-const getScans = (typeId) => {
-  if (!typeId) return [];
-  const type = scanTypes.value.find((t) => t.id == typeId);
-  return type ? type.scans : [];
-};
-
-const getFileName = (path) => {
-  if (!path) return "";
-  return path.split("/").pop();
-};
-
-const addItem = () => {
-  form.items.push({
-    scan_type_id: "",
-    scan_id: "",
-    documents: [],
-    remarks: "",
-    processing: false,
-  });
-};
-
-const removeItem = (index) => {
-  form.items.splice(index, 1);
-};
-
-const handleGeneralFiles = async (event) => {
-  const files = Array.from(event.target.files);
-  if (files.length === 0) return;
-
-  processingGeneral.value = true;
-  error.value = null;
-
-  try {
-    for (const file of files) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "document");
-
-      const response = await axios.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        form.documents.push({
-          path: response.data.path,
-        });
-      }
-    }
-  } catch (err) {
-    console.error("Upload failed", err);
-    error.value = "Failed to upload document. Please try again.";
-  } finally {
-    processingGeneral.value = false;
-  }
-};
-
-const removeGeneralDoc = (index) => {
-  form.documents.splice(index, 1);
-};
-
-const handleFiles = async (event, index) => {
-  const files = Array.from(event.target.files);
-  await uploadDicomFiles(files, index);
-};
-
-const handleDrop = async (event, index) => {
-  const files = Array.from(event.dataTransfer.files);
-  await uploadDicomFiles(files, index);
-};
-
-const uploadDicomFiles = async (files, index) => {
-  const validFiles = files.filter((f) => f.name.toLowerCase().endsWith(".dcm"));
-  if (validFiles.length === 0) return;
-
-  form.items[index].processing = true;
-  error.value = null;
-
-  try {
-    for (const file of validFiles) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("type", "dicom");
-
-      const response = await axios.post("/api/v1/files/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (response.data.success) {
-        form.items[index].documents.push({
-          path: response.data.path,
-        });
-      }
-    }
-  } catch (err) {
-    console.error("DICOM Upload failed", err);
-    error.value = "Failed to upload DICOM file. Please try again.";
-  } finally {
-    form.items[index].processing = false;
-  }
-};
-
-const removeDoc = (itemIndex, docIndex) => {
-  form.items[itemIndex].documents.splice(docIndex, 1);
-};
-
-const handleSubmit = async () => {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    const payload = {
-      patient_fk_id: form.patient_fk_id,
-      doc_ref_fk_id: form.doc_ref_fk_id,
-      description: form.description,
-      documents: form.documents.map((d) => d.path),
-      items: form.items.map((item) => ({
-        scan_type_id: item.scan_type_id,
-        scan_id: item.scan_id,
-        documents: item.documents.map((d) => d.path),
-        remarks: item.remarks,
-      })),
-    };
-
-    const response = await axios.put(
-      `/api/v1/case-reports/${form.id}`,
-      payload,
-    );
-
-    if (response.data.success) {
-      addToast({
-        title: "Success",
-        description: "Case report updated successfully.",
-        variant: "success",
-      });
-
-      // Open WhatsApp modal instead of direct redirect
-      reportForWhatsapp.value = response.data.data;
-      isWhatsappModalOpen.value = true;
-    }
-  } catch (err) {
-    console.error("Save failed", err);
-    error.value =
-      err.response?.data?.message || "Failed to update case report.";
-    addToast({
-      title: "Error",
-      description: error.value,
-      variant: "error",
-    });
-  } finally {
-    loading.value = false;
-  }
-};
-
-const handleSendWhatsApp = async (recipients) => {
-  if (!reportForWhatsapp.value) return;
-
-  sendingWhatsapp.value = true;
-  try {
-    const response = await axios.post(
-      `/api/v1/case-reports/${reportForWhatsapp.value.id}/whatsapp`,
-      { recipients },
-    );
-    if (response.data.success) {
-      addToast({
-        title: "Success",
-        description: "WhatsApp notification sent successfully.",
-        variant: "success",
-      });
-      handleModalClose();
-    }
-  } catch (err) {
-    console.error("WhatsApp failed", err);
-    addToast({
-      title: "Error",
-      description:
-        err.response?.data?.message || "Failed to send notification.",
-      variant: "error",
-    });
-  } finally {
-    sendingWhatsapp.value = false;
-  }
-};
-
-const handleModalClose = () => {
-  isWhatsappModalOpen.value = false;
-  router.push("/case-reports");
-};
 </script>

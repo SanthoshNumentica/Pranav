@@ -123,12 +123,12 @@ const routes = [
     {
         path: '/view-report/:token',
         name: 'PublicReportView',
-        component: () => import('../views/case-reports/PublicReportView.vue')
+        component: () => import('../views/dicom/PublicReportView.vue')
     },
     {
         path: '/case-reports/view-dicom',
         name: 'DicomView',
-        component: () => import('../views/case-reports/DicomView.vue')
+        component: () => import('../views/dicom/DicomView.vue')
     },
     {
         // Default redirect

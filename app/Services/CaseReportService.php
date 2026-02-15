@@ -86,7 +86,7 @@ class CaseReportService
                 'documents' => $generalDocPaths,
                 'status' => 'available',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
-                'expires_at' => now()->addDays(10),
+                'expires_at' => now()->addDays(7),
             ]);
 
             // 3. Process Items
@@ -185,7 +185,7 @@ class CaseReportService
 
             $updateData = ['status' => $status];
             if ($documentsChanged && $hasDocuments) {
-                $updateData['expires_at'] = now()->addDays(30);
+                $updateData['expires_at'] = now()->addDays(7);
                 $updateData['status'] = 'available'; // Ensure available if refreshed
             } elseif (!$hasDocuments) {
                 $updateData['expires_at'] = null;
@@ -295,7 +295,7 @@ class CaseReportService
         // 4. Update expiry and status ONLY if at least one message was sent successfully
         if ($anySuccess) {
             $caseReport->update([
-                'expires_at' => now()->addDays(10),
+                'expires_at' => now()->addDays(7),
                 'status' => 'available'
             ]);
         }
@@ -333,9 +333,10 @@ class CaseReportService
         $dicomPaths = [];
         foreach ($caseReport->items as $item) {
             if ($item->documents) {
-                // Filter only DICOM files
+                // Filter only DICOM files (dcm, zip, or empty extension)
                 $itemPaths = array_filter($item->documents, function ($path) {
-                    return strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'dcm';
+                    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                    return $ext === 'dcm' || $ext === 'zip' || $ext === '';
                 });
                 $dicomPaths = array_merge($dicomPaths, $itemPaths);
             }
