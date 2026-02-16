@@ -332,7 +332,18 @@ export function useDicomViewer() {
 
     const scrollToIndex = (index) => {
         const imageId = imageIds.value[index];
-        fileName.value = imageId.split("/").pop() || "Image " + (index + 1);
+        fileName.value =
+            imageId.split("/").pop()?.split("?")[0] || "Image " + (index + 1);
+
+        // Update the stack tool state to keep cornerstoneTools sync'd
+        const stackData = cornerstoneTools.getToolState(
+            dicomElement.value,
+            "stack",
+        );
+        if (stackData && stackData.data && stackData.data.length > 0) {
+            stackData.data[0].currentImageIdIndex = index;
+        }
+
         cornerstone.loadAndCacheImage(imageId).then((image) => {
             cornerstone.displayImage(dicomElement.value, image);
         });

@@ -15,7 +15,7 @@ class FileController extends Controller
     public function upload(Request $request): JsonResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'max:102400'], // 100MB max
+            'file' => ['required', 'file', 'max:2097152'], // 2GB max
             'type' => ['required', 'in:document,dicom'],
             'relative_path' => ['nullable', 'string'],
         ]);

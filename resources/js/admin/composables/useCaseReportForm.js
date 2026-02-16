@@ -217,6 +217,9 @@ export function useCaseReportForm(isEdit = false) {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
 
+        // Reset input value so the same file can be selected again
+        event.target.value = "";
+
         processingGeneral.value = true;
         error.value = null;
 
@@ -336,6 +339,9 @@ export function useCaseReportForm(isEdit = false) {
     const handleFiles = async (event, index) => {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
+
+        // Reset input value so the same folder/files can be selected again
+        event.target.value = "";
 
         if (files.length > 1 || event.target.webkitdirectory) {
             uploadModal.pendingFiles = files;

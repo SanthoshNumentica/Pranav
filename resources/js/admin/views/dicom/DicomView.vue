@@ -1,6 +1,6 @@
 <template>
   <div
-    class="h-screen bg-slate-950 flex flex-col overflow-hidden text-slate-200 font-sans selection:bg-primary/30"
+    class="h-screen bg-slate-950 flex flex-col overflow-hidden text-slate-200 font-sans selection:bg-primary/30 pt-32 md:pt-14"
   >
     <DicomHeader
       :patient-name="patientName"
@@ -18,7 +18,7 @@
       :documents="reportDocuments"
     />
 
-    <div class="flex-grow flex relative overflow-hidden">
+    <div class="flex-grow flex flex-col md:flex-row relative overflow-hidden">
       <DicomSidebar
         :main-tools="mainTools"
         :action-tools="actionTools"
@@ -40,47 +40,58 @@
         :viewport="viewport"
         :current-image-index="currentImageIndex"
       />
-    </div>
 
-    <!-- Series Footer -->
-    <div
-      v-if="seriesList.length > 1"
-      class="bg-black border-t border-white/10 p-2 flex gap-2 overflow-x-auto pb-6 md:pb-2 z-40"
-    >
-      <button
-        v-for="(series, idx) in seriesList"
-        :key="idx"
-        @click="selectSeries(idx)"
-        class="relative group overflow-hidden rounded-lg border border-white/10 transition-all active:scale-95 flex flex-col items-center"
-        :class="
-          idx === currentSeriesIndex
-            ? 'ring-2 ring-primary bg-black'
-            : 'bg-slate-900 hover:bg-slate-800'
-        "
+      <!-- Series Previews: Absolute on Mobile, Sidebar on Desktop -->
+      <aside
+        v-if="seriesList.length > 0"
+        class="bg-black/40 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none md:border-l border-white/10 flex flex-row md:flex-col w-full h-16 md:w-16 md:h-full z-40 transition-all overflow-hidden absolute bottom-20 md:relative md:bottom-auto left-0 right-0 md:left-auto md:right-auto"
       >
-        <div class="w-16 h-16 bg-black relative">
-          <DicomThumbnail
-            v-if="series.imageIds.length > 0"
-            :imageId="series.imageIds[Math.floor(series.imageIds.length / 2)]"
-          />
-          <div
-            v-else
-            class="absolute inset-0 flex items-center justify-center text-slate-500"
+        <div
+          class="hidden md:flex p-3 border-b border-white/5 flex-col items-center"
+        >
+          <p
+            class="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] text-center"
           >
-            <LayersIcon class="w-6 h-6" />
-          </div>
+            Series
+          </p>
         </div>
         <div
-          class="w-full px-1 py-1 bg-black/50 text-[10px] text-center text-slate-300 truncate max-w-[4rem]"
+          class="flex flex-row md:flex-col gap-1.5 md:gap-2 p-1.5 md:p-2 overflow-x-auto md:overflow-y-auto w-full h-full"
         >
-          {{ series.name }}
+          <button
+            v-for="(series, idx) in seriesList"
+            :key="idx"
+            @click="selectSeries(idx)"
+            class="relative group aspect-square h-full md:h-auto md:w-full overflow-hidden rounded-xl border border-white/10 transition-all active:scale-95 flex-shrink-0"
+            :class="
+              idx === currentSeriesIndex
+                ? 'ring-2 ring-primary bg-black border-transparent'
+                : 'bg-slate-900/80 hover:bg-slate-800'
+            "
+          >
+            <div class="absolute inset-0 bg-black">
+              <DicomThumbnail
+                v-if="series.imageIds.length > 0"
+                :imageId="
+                  series.imageIds[Math.floor(series.imageIds.length / 2)]
+                "
+              />
+              <div
+                v-else
+                class="absolute inset-0 flex items-center justify-center text-slate-500"
+              >
+                <LayersIcon class="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+            </div>
+            <!-- File Count Overlay -->
+            <div
+              class="absolute top-0 right-0 bg-primary/90 text-white text-[8px] md:text-[10px] px-1.5 py-0.5 rounded-bl-lg font-bold shadow-lg z-10"
+            >
+              {{ series.imageIds.length }}
+            </div>
+          </button>
         </div>
-        <div
-          class="absolute top-0 right-0 bg-primary text-white text-[9px] px-1 rounded-bl"
-        >
-          {{ series.imageIds.length }}
-        </div>
-      </button>
+      </aside>
     </div>
   </div>
 </template>
@@ -227,8 +238,8 @@ const fetchByToken = async (token) => {
         if (!docList) return;
         docList.forEach((doc) => {
           const ext = doc.split(".").pop().toLowerCase();
-          // Allow all files except individual dcm (unless we want to allow those too)
-          if (ext !== "dcm") {
+          // Allow all files except individual dcm and zip files
+          if (ext !== "dcm" && ext !== "zip") {
             let cleanPath = doc;
             if (cleanPath.includes("public/")) {
               cleanPath = cleanPath.split("public/").pop();

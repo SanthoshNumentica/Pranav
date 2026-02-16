@@ -4,120 +4,125 @@
   >
     <!-- Top Bar -->
     <div
-      class="h-14 md:h-16 px-4 md:px-6 bg-slate-900/90 backdrop-blur-xl border-b border-white/5 flex items-center justify-between shadow-2xl pointer-events-auto"
+      class="h-12 md:h-14 px-4 md:px-6 bg-slate-900/90 backdrop-blur-xl border-b border-white/5 flex items-center justify-between shadow-2xl pointer-events-auto"
     >
       <div
-        class="flex items-center gap-4 md:gap-6 w-full md:w-auto overflow-hidden"
+        class="flex items-center gap-3 md:gap-6 flex-1 min-w-0 overflow-hidden"
       >
         <button
           @click="$emit('back')"
-          class="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all active:scale-95 flex items-center justify-center border border-white/5 flex-shrink-0"
+          class="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700 text-slate-400 hover:text-white transition-all active:scale-95 flex items-center justify-center border border-white/5 flex-shrink-0"
         >
-          <ArrowLeftIcon class="h-5 w-5" />
+          <ArrowLeftIcon class="h-4.5 w-4.5" />
         </button>
         <div class="h-6 w-px bg-white/10 flex-shrink-0"></div>
-        <div class="flex items-center gap-3 md:gap-4 overflow-hidden">
+        <div class="flex items-center gap-3 md:gap-4 min-w-0">
           <div
-            class="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30 ring-2 md:ring-4 ring-primary/5 flex-shrink-0"
+            class="h-8 w-8 md:h-9 md:w-9 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 ring-2 md:ring-4 ring-primary/5 flex-shrink-0"
           >
-            <ActivityIcon class="h-4 w-4 md:h-5 md:w-5 text-primary" />
+            <ActivityIcon class="h-3.5 w-3.5 md:h-4.5 md:w-4.5 text-primary" />
           </div>
-          <div class="flex flex-col overflow-hidden">
+          <div
+            class="min-w-0 flex-1 truncate pr-4 border-r border-white/10 hidden sm:block"
+          >
             <h3
-              class="text-xs md:text-sm font-bold text-white tracking-tight leading-tight truncate"
+              class="text-xs md:text-sm font-bold text-white tracking-tight leading-none truncate"
             >
               {{ patientName }}
             </h3>
-            <p
-              class="text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] mt-0.5 truncate"
-            >
-              {{ fileName || "Awaiting Data..." }}
-            </p>
           </div>
-        </div>
-      </div>
 
-      <!-- Desktop Center: Stack Info & Cine Controls -->
-      <div
-        class="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-6"
-      >
-        <div
-          class="flex items-center bg-slate-950/50 rounded-2xl px-4 py-1.5 border border-white/5 shadow-inner"
-        >
-          <button
-            @click="$emit('prev')"
-            class="p-1.5 text-slate-500 hover:text-white transition-colors"
-          >
-            <ChevronLeftIcon class="h-4 w-4" />
-          </button>
+          <!-- Desktop: Img Navigation moved to Left (Hidden on Mobile) -->
           <div
-            class="px-4 text-[11px] font-black text-slate-400 uppercase tracking-widest tabular-nums"
+            class="hidden md:flex items-center bg-slate-950/30 rounded-xl py-1 md:py-1.5 px-3 border border-white/5 shadow-inner flex-shrink-0"
           >
-            Img: <span class="text-primary">{{ currentImageIndex + 1 }}</span> /
-            {{ totalImages }}
-          </div>
-          <button
-            @click="$emit('next')"
-            class="p-1.5 text-slate-500 hover:text-white transition-colors"
-          >
-            <ChevronRightIcon class="h-4 w-4" />
-          </button>
-        </div>
-
-        <div
-          class="flex items-center gap-3 bg-slate-950/50 rounded-2xl px-3 py-1.5 border border-white/5"
-        >
-          <button
-            @click="$emit('toggle-cine')"
-            :class="[
-              'p-2 rounded-lg transition-all',
-              isCineActive
-                ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                : 'text-slate-500 hover:text-white hover:bg-slate-800',
-            ]"
-          >
-            <PlayIcon v-if="!isCineActive" class="h-4 w-4 fill-current" />
-            <PauseIcon v-else class="h-4 w-4 fill-current" />
-          </button>
-          <div class="flex flex-col w-16">
-            <div
-              class="flex justify-between text-[7px] font-black text-slate-500 uppercase tracking-tighter mb-0.5"
+            <button
+              @click="$emit('prev')"
+              class="p-1 px-2 text-slate-500 hover:text-white transition-colors border-r border-white/5 active:scale-90"
             >
-              <span>CINE</span>
-              <span class="text-primary">{{ cineFps }}</span>
+              <ChevronLeftIcon class="h-3.5 w-3.5" />
+            </button>
+            <div
+              class="px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest tabular-nums flex items-center gap-1.5"
+            >
+              <span class="hidden lg:inline">Img:</span>
+              <span class="text-primary text-xs">{{
+                currentImageIndex + 1
+              }}</span>
+              <span class="text-slate-600">/</span>
+              <span class="text-slate-300">{{ totalImages }}</span>
             </div>
-            <input
-              type="range"
-              min="0.5"
-              max="5"
-              step="0.1"
-              :value="cineFps"
-              @input="$emit('update:cineFps', Number($event.target.value))"
-              class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
-            />
+            <button
+              @click="$emit('next')"
+              class="p-1 px-2 text-slate-500 hover:text-white transition-colors border-l border-white/5 active:scale-90"
+            >
+              <ChevronRightIcon class="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Right: Viewport Metrics & Actions -->
       <div class="flex items-center gap-2 md:gap-4 flex-shrink-0">
+        <!-- Desktop: Cine Controls moved to Right -->
+        <div
+          class="hidden md:flex items-center gap-4 bg-slate-950/30 rounded-xl py-1.5 px-3 border border-white/5"
+        >
+          <button
+            @click="$emit('toggle-cine')"
+            :class="[
+              'p-1 rounded-lg transition-all',
+              isCineActive
+                ? 'bg-primary text-white shadow-lg shadow-primary/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800',
+            ]"
+          >
+            <PlayIcon v-if="!isCineActive" class="h-3.5 w-3.5 fill-current" />
+            <PauseIcon v-else class="h-3.5 w-3.5 fill-current" />
+          </button>
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col">
+              <span
+                class="text-[6px] font-black text-slate-600 uppercase tracking-widest leading-none mb-0.5"
+                >Cine</span
+              >
+              <span
+                class="text-[10px] font-black text-primary tabular-nums leading-none"
+                >{{ cineFps }}</span
+              >
+            </div>
+            <div class="w-12 xl:w-16">
+              <input
+                type="range"
+                min="0.5"
+                max="5"
+                step="0.1"
+                :value="cineFps"
+                @input="$emit('update:cineFps', Number($event.target.value))"
+                class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="hidden md:block h-6 w-px bg-white/10"></div>
         <!-- Desktop Metrics -->
         <div
-          class="hidden xl:flex items-center bg-slate-950/50 rounded-2xl px-4 py-2 border border-white/5 gap-6"
+          class="hidden xl:flex items-center bg-slate-950/50 rounded-2xl py-2 px-4 border border-white/5 gap-6"
         >
           <div class="flex flex-col">
             <span
-              class="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] leading-none mb-1"
+              class="text-[7px] font-black text-slate-600 uppercase tracking-widest leading-none mb-1"
               >Scaling</span
             >
             <span class="text-xs font-bold text-primary tabular-nums"
               >{{ Math.round(viewport.scale * 100) }}%</span
             >
           </div>
-          <div class="w-px h-6 bg-white/5"></div>
+          <div class="w-px h-6 bg-white/10"></div>
           <div class="flex flex-col">
             <span
-              class="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] leading-none mb-1"
+              class="text-[7px] font-black text-slate-600 uppercase tracking-widest leading-none mb-1"
               >WW / WC</span
             >
             <span class="text-xs font-bold text-emerald-500 tabular-nums"
@@ -147,7 +152,7 @@
                 class="h-10 px-4 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary hover:text-white text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all active:scale-95 flex items-center gap-2"
               >
                 <DownloadIcon class="h-3.5 w-3.5" />
-                Download
+                Document
               </a>
             </template>
             <template v-else>
@@ -202,45 +207,78 @@
 
     <!-- Mobile Nav Bar (Below Main Header) -->
     <div
-      class="md:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-2 flex items-center justify-between gap-2 pointer-events-auto"
+      class="md:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-1.5 flex flex-col gap-1.5 pointer-events-auto"
     >
-      <!-- Mobile Stack Nav -->
-      <div
-        class="flex items-center flex-1 bg-slate-950/50 rounded-xl px-2 py-1 border border-white/5 shadow-inner justify-between"
-      >
-        <button
-          @click="$emit('prev')"
-          class="p-2 text-slate-400 active:text-white active:scale-90"
-        >
-          <ChevronLeftIcon class="h-4 w-4" />
-        </button>
+      <div class="flex items-center justify-between gap-2">
+        <!-- Mobile Stack Nav -->
         <div
-          class="text-[10px] font-black text-slate-500 uppercase tracking-widest"
+          class="flex items-center flex-1 bg-slate-950/50 rounded-xl px-2 py-1 border border-white/5 shadow-inner justify-between"
         >
-          <span class="text-primary">{{ currentImageIndex + 1 }}</span> /
-          {{ totalImages }}
+          <button
+            @click="$emit('prev')"
+            class="p-2 text-slate-400 active:text-white active:scale-90"
+          >
+            <ChevronLeftIcon class="h-4 w-4" />
+          </button>
+          <div
+            class="text-[10px] font-black text-slate-500 uppercase tracking-widest"
+          >
+            <span class="text-primary">{{ currentImageIndex + 1 }}</span> /
+            {{ totalImages }}
+          </div>
+          <button
+            @click="$emit('next')"
+            class="p-2 text-slate-400 active:text-white active:scale-90"
+          >
+            <ChevronRightIcon class="h-4 w-4" />
+          </button>
         </div>
+
+        <!-- Mobile Cine Toggle -->
         <button
-          @click="$emit('next')"
-          class="p-2 text-slate-400 active:text-white active:scale-90"
+          @click="$emit('toggle-cine')"
+          :class="[
+            'h-9 w-9 rounded-xl flex items-center justify-center border border-white/5',
+            isCineActive
+              ? 'bg-primary text-white shadow-lg shadow-primary/30'
+              : 'bg-slate-800/50 text-slate-400',
+          ]"
         >
-          <ChevronRightIcon class="h-4 w-4" />
+          <PlayIcon v-if="!isCineActive" class="h-4 w-4 fill-current" />
+          <PauseIcon v-else class="h-4 w-4 fill-current" />
         </button>
       </div>
 
-      <!-- Mobile Cine Toggle -->
-      <button
-        @click="$emit('toggle-cine')"
-        :class="[
-          'h-9 w-9 rounded-xl flex items-center justify-center border border-white/5',
-          isCineActive
-            ? 'bg-primary text-white shadow-lg shadow-primary/30'
-            : 'bg-slate-800/50 text-slate-400',
-        ]"
+      <!-- Mobile Metrics Display -->
+      <div
+        class="flex items-center justify-between px-3 py-1.5 bg-slate-950/30 rounded-lg border border-white/5"
       >
-        <PlayIcon v-if="!isCineActive" class="h-4 w-4 fill-current" />
-        <PauseIcon v-else class="h-4 w-4 fill-current" />
-      </button>
+        <div class="flex items-center gap-4">
+          <div class="flex flex-col">
+            <span
+              class="text-[6px] font-black text-slate-600 uppercase tracking-widest leading-none mb-0.5"
+              >Scaling</span
+            >
+            <span class="text-[9px] font-bold text-primary tabular-nums"
+              >{{ Math.round(viewport.scale * 100) }}%</span
+            >
+          </div>
+          <div class="w-px h-4 bg-white/10"></div>
+          <div class="flex flex-col">
+            <span
+              class="text-[6px] font-black text-slate-600 uppercase tracking-widest leading-none mb-0.5"
+              >WW / WC</span
+            >
+            <span class="text-[9px] font-bold text-emerald-500 tabular-nums"
+              >{{ Math.round(viewport.voi.windowWidth) }} /
+              {{ Math.round(viewport.voi.windowCenter) }}</span
+            >
+          </div>
+        </div>
+        <div class="text-[8px] font-medium text-slate-500 italic pr-1">
+          Adjust tools via bottom bar
+        </div>
+      </div>
     </div>
   </header>
 </template>

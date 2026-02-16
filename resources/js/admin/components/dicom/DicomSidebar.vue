@@ -1,105 +1,94 @@
 <template>
   <div class="pointer-events-none absolute inset-0 z-30">
-    <!-- Desktop: Left Floating Tool Palette -->
+    <!-- Desktop: Bottom Horizontal Toolbar -->
     <aside
-      class="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 flex-col gap-4 pointer-events-auto"
-    >
-      <!-- Analysis -->
-      <div
-        class="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-2 shadow-2xl flex flex-col gap-1 ring-1 ring-white/5"
-      >
-        <p
-          class="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] text-center py-2 border-b border-white/5 mb-1"
-        >
-          Analysis
-        </p>
-        <button
-          v-for="tool in mainTools"
-          :key="tool.name"
-          @click="$emit('set-active-tool', tool.name)"
-          :title="tool.label"
-          :class="[
-            'h-12 w-12 rounded-xl flex items-center justify-center transition-all duration-300 group relative',
-            activeTool === tool.name
-              ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-105 z-10'
-              : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/80',
-          ]"
-        >
-          <component :is="tool.icon" class="h-5 w-5" />
-          <span
-            v-if="activeTool !== tool.name"
-            class="absolute left-full ml-3 px-2 py-1 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5 shadow-2xl"
-          >
-            {{ tool.label }}
-          </span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Desktop: Right Floating Manipulation Palette -->
-    <aside
-      class="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 flex-col gap-4 pointer-events-auto"
+      class="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-row items-center gap-2 pointer-events-auto z-40"
     >
       <div
-        class="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-2 shadow-2xl flex flex-col gap-1 ring-1 ring-white/5"
+        class="bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-1.5 shadow-2xl flex items-center gap-1.5 ring-1 ring-white/5"
       >
-        <p
-          class="text-[8px] font-black text-slate-600 uppercase tracking-[0.2em] text-center py-2 border-b border-white/5 mb-1"
-        >
-          Transform
-        </p>
-        <button
-          v-for="tool in actionTools"
-          :key="tool.action"
-          @click="$emit('action', tool.action)"
-          :title="tool.label"
-          class="h-11 w-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800/80 transition-all group relative"
-        >
-          <component :is="tool.icon" class="h-4.5 w-4.5" />
-          <span
-            class="absolute right-full mr-3 px-2 py-1 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5"
+        <!-- Analysis Group -->
+        <div class="flex items-center gap-1 px-1 border-r border-white/10">
+          <button
+            v-for="tool in mainTools"
+            :key="tool.name"
+            @click="$emit('set-active-tool', tool.name)"
+            :title="tool.label"
+            :class="[
+              'h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300 group relative',
+              activeTool === tool.name
+                ? 'bg-primary text-white shadow-lg shadow-primary/40 scale-105 z-10'
+                : 'text-slate-500 hover:text-slate-200 hover:bg-slate-800/80',
+            ]"
           >
-            {{ tool.label }}
-          </span>
-        </button>
+            <component :is="tool.icon" class="h-5 w-5" />
+            <span
+              v-if="activeTool !== tool.name"
+              class="absolute bottom-full mb-3 px-2 py-1 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5 shadow-2xl"
+            >
+              {{ tool.label }}
+            </span>
+          </button>
+        </div>
 
-        <div class="h-px bg-white/5 my-1"></div>
-
-        <button
-          @click="$emit('set-window', 'bone')"
-          class="h-10 px-2 rounded-lg text-[9px] font-black uppercase tracking-tighter text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
-        >
-          Bone
-        </button>
-        <button
-          @click="$emit('set-window', 'soft')"
-          class="h-10 px-2 rounded-lg text-[9px] font-black uppercase tracking-tighter text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
-        >
-          Soft
-        </button>
-        <button
-          @click="$emit('set-window', 'lung')"
-          class="h-10 px-2 rounded-lg text-[9px] font-black uppercase tracking-tighter text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
-        >
-          Lung
-        </button>
-        <button
-          @click="$emit('action', 'invert')"
-          class="h-11 w-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800/80 transition-all group relative"
-        >
-          <ContrastIcon class="h-4.5 w-4.5" />
-          <span
-            class="absolute right-full mr-3 px-2 py-1 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5"
+        <!-- Transform Group -->
+        <div class="flex items-center gap-1 px-1">
+          <button
+            v-for="tool in actionTools"
+            :key="tool.action"
+            @click="$emit('action', tool.action)"
+            :title="tool.label"
+            class="h-10 w-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800/80 transition-all group relative"
           >
-            Invert
-          </span>
-        </button>
+            <component :is="tool.icon" class="h-4.5 w-4.5" />
+            <span
+              class="absolute bottom-full mb-3 px-2 py-1 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5 shadow-2xl"
+            >
+              {{ tool.label }}
+            </span>
+          </button>
+
+          <div class="h-6 w-px bg-white/10 mx-1"></div>
+
+          <div class="flex items-center gap-1">
+            <button
+              @click="$emit('set-window', 'bone')"
+              class="h-8 px-2 rounded-lg text-[8px] font-black uppercase tracking-tighter text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+            >
+              Bone
+            </button>
+            <button
+              @click="$emit('set-window', 'soft')"
+              class="h-8 px-2 rounded-lg text-[8px] font-black uppercase tracking-tighter text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+            >
+              Soft
+            </button>
+            <button
+              @click="$emit('set-window', 'lung')"
+              class="h-8 px-2 rounded-lg text-[8px] font-black uppercase tracking-tighter text-slate-500 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+            >
+              Lung
+            </button>
+            <button
+              @click="$emit('action', 'invert')"
+              class="h-10 w-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-slate-800/80 transition-all group relative"
+              title="Invert"
+            >
+              <ContrastIcon class="h-4.5 w-4.5" />
+              <span
+                class="absolute bottom-full mb-3 px-2 py-1 bg-slate-800 text-white text-[9px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 border border-white/5 shadow-2xl"
+              >
+                Invert
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
 
     <!-- Mobile Bottom Toolbar (Horizontal Scroll) -->
     <div
-      class="md:hidden fixed bottom-[90px] left-0 right-0 z-30 flex justify-center pointer-events-auto px-2"
+      class="md:hidden fixed bottom-4 left-0 right-0 z-30 flex justify-center pointer-events-auto px-2"
     >
       <div
         class="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-2 flex gap-2 overflow-x-auto max-w-full"
