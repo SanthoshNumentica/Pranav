@@ -173,7 +173,7 @@ import {
   Lock as LockIcon,
 } from "lucide-vue-next";
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     required: true,
