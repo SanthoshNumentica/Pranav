@@ -135,7 +135,25 @@
         <!-- Documents Button -->
         <div class="relative" v-if="documents && documents.length > 0">
           <!-- Mobile simplified button -->
+          <div v-if="documents.length === 1" class="md:hidden flex items-center gap-2">
+            <a
+              :href="documents[0].url"
+              target="_blank"
+              class="h-9 w-9 rounded-xl bg-slate-800/50 text-slate-300 border border-white/5 flex items-center justify-center active:scale-95"
+            >
+              <EyeIcon class="h-4 w-4 text-primary" />
+            </a>
+            <a
+              :href="documents[0].url"
+              download
+              target="_blank"
+              class="h-9 w-9 rounded-xl bg-primary/20 text-primary border border-primary/20 flex items-center justify-center active:scale-95"
+            >
+              <DownloadIcon class="h-4 w-4" />
+            </a>
+          </div>
           <button
+            v-else
             @click="showDocs = !showDocs"
             class="md:hidden h-9 w-9 rounded-xl bg-primary/20 text-primary border border-primary/20 flex items-center justify-center active:scale-95"
           >
@@ -145,15 +163,25 @@
           <!-- Desktop button -->
           <div class="hidden md:block">
             <template v-if="documents.length === 1">
-              <a
-                :href="documents[0].url"
-                download
-                target="_blank"
-                class="h-10 px-4 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary hover:text-white text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all active:scale-95 flex items-center gap-2"
-              >
-                <DownloadIcon class="h-3.5 w-3.5" />
-                Document
-              </a>
+              <div class="flex items-center gap-2">
+                <a
+                  :href="documents[0].url"
+                  target="_blank"
+                  class="h-10 px-4 rounded-xl bg-slate-800/50 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-black uppercase tracking-widest border border-white/5 transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <EyeIcon class="h-3.5 w-3.5 text-primary" />
+                  View
+                </a>
+                <a
+                  :href="documents[0].url"
+                  download
+                  target="_blank"
+                  class="h-10 px-4 rounded-xl bg-primary/20 hover:bg-primary/30 text-primary hover:text-white text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all active:scale-95 flex items-center gap-2"
+                >
+                  <DownloadIcon class="h-3.5 w-3.5" />
+                  Document
+                </a>
+              </div>
             </template>
             <template v-else>
               <button
@@ -168,23 +196,46 @@
 
           <div
             v-if="showDocs"
-            class="absolute top-full right-0 mt-2 w-56 bg-slate-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[60vh] overflow-y-auto"
+            class="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col max-h-[60vh] overflow-y-auto"
           >
-            <a
+            <div
               v-for="(doc, idx) in documents"
               :key="idx"
-              :href="doc.url"
-              download
-              target="_blank"
-              class="px-4 py-3 text-xs text-slate-300 hover:bg-white/5 hover:text-white flex items-center gap-2 border-b border-white/5 last:border-0 transition-colors"
+              class="px-4 py-3 hover:bg-white/5 flex items-center justify-between border-b border-white/5 last:border-0 transition-colors"
             >
-              <FileTextIcon
-                v-if="!doc.name.endsWith('.zip')"
-                class="h-3 w-3 opacity-50 flex-shrink-0"
-              />
-              <DownloadIcon v-else class="h-3 w-3 opacity-50 flex-shrink-0" />
-              <span class="truncate">{{ doc.name }}</span>
-            </a>
+              <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                <FileTextIcon
+                  v-if="!doc.name.endsWith('.zip')"
+                  class="h-4 w-4 text-slate-500 flex-shrink-0"
+                />
+                <DownloadIcon
+                  v-else
+                  class="h-4 w-4 text-slate-500 flex-shrink-0"
+                />
+                <span class="truncate text-xs font-medium text-slate-300">{{
+                  doc.name
+                }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 ml-4">
+                <a
+                  :href="doc.url"
+                  target="_blank"
+                  class="p-2 rounded-lg hover:bg-primary/10 text-primary transition-all active:scale-90"
+                  title="View"
+                >
+                  <EyeIcon class="h-4 w-4" />
+                </a>
+                <a
+                  :href="doc.url"
+                  download
+                  target="_blank"
+                  class="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-all active:scale-90"
+                  title="Download"
+                >
+                  <DownloadIcon class="h-4 w-4" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -207,12 +258,12 @@
 
     <!-- Mobile Nav Bar (Below Main Header) -->
     <div
-      class="md:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-1.5 flex flex-col gap-1.5 pointer-events-auto"
+      class="md:hidden bg-slate-900/80 backdrop-blur-md border-b border-white/5 p-1.5 flex flex-col gap-1.5 pointer-events-none"
     >
       <div class="flex items-center justify-between gap-2">
         <!-- Mobile Stack Nav -->
         <div
-          class="flex items-center flex-1 bg-slate-950/50 rounded-xl px-2 py-1 border border-white/5 shadow-inner justify-between"
+          class="flex items-center flex-1 bg-slate-950/50 rounded-xl px-2 py-1 border border-white/5 shadow-inner justify-between pointer-events-auto"
         >
           <button
             @click="$emit('prev')"
@@ -238,9 +289,9 @@
         <button
           @click="$emit('toggle-cine')"
           :class="[
-            'h-9 w-9 rounded-xl flex items-center justify-center border border-white/5',
+            'h-9 w-9 rounded-xl flex items-center justify-center border border-white/5 pointer-events-auto',
             isCineActive
-              ? 'bg-primary text-white shadow-lg shadow-primary/30'
+              ? 'bg-primary text-white shadow-lg shadow-primary/40'
               : 'bg-slate-800/50 text-slate-400',
           ]"
         >
@@ -251,7 +302,7 @@
 
       <!-- Mobile Metrics Display -->
       <div
-        class="flex items-center justify-between px-3 py-1.5 bg-slate-950/30 rounded-lg border border-white/5"
+        class="flex items-center justify-between px-3 py-1.5 bg-slate-950/30 rounded-lg border border-white/5 pointer-events-auto"
       >
         <div class="flex items-center gap-4">
           <div class="flex flex-col">
@@ -295,6 +346,7 @@ import {
   RefreshCwIcon,
   FileTextIcon,
   DownloadIcon,
+  EyeIcon,
 } from "lucide-vue-next";
 
 defineProps({

@@ -39,12 +39,12 @@
         :current-series="currentSeries"
         :viewport="viewport"
         :current-image-index="currentImageIndex"
+        :loading-count="loadingCount"
       />
 
-      <!-- Series Previews Sidebar -->
       <aside
         v-if="seriesList.length > 0"
-        class="bg-slate-900 md:bg-transparent border-l border-white/10 flex flex-col w-28 md:w-16 h-full z-40 transition-all overflow-hidden relative"
+        class="bg-slate-900 md:bg-transparent border-l border-white/10 flex flex-col w-22 md:w-16 h-full md:relative fixed right-0 top-0 pt-32 md:pt-0 z-[100] transition-all overflow-hidden"
       >
         <div
           class="flex p-2 md:p-3 border-b border-white/5 flex-col items-center"
@@ -56,20 +56,20 @@
           </p>
         </div>
         <div
-          class="flex flex-col gap-1.5 md:gap-2 p-1.5 md:p-2 overflow-y-auto w-full h-full custom-scrollbar"
+          class="flex flex-col gap-1.5 md:gap-2 p-1.5 md:p-2 overflow-y-auto w-full h-full custom-scrollbar pb-32"
         >
           <button
             v-for="(series, idx) in seriesList"
             :key="idx"
             @click="selectSeries(idx)"
-            class="relative group aspect-square w-full overflow-hidden rounded-xl border border-white/10 transition-all active:scale-95 flex-shrink-0"
+            class="relative group aspect-square w-full overflow-hidden rounded-xl border border-white/10 transition-all flex-shrink-0"
             :class="
               idx === currentSeriesIndex
                 ? 'ring-2 ring-primary bg-black border-transparent'
                 : 'bg-slate-900/80 hover:bg-slate-800'
             "
           >
-            <div class="absolute inset-0 bg-black">
+            <div class="absolute inset-0 bg-black pointer-events-none">
               <DicomThumbnail
                 v-if="series.imageIds.length > 0"
                 :imageId="
@@ -85,7 +85,7 @@
             </div>
             <!-- File Count Overlay -->
             <div
-              class="absolute top-0 right-0 bg-primary/90 text-white text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-bl-lg font-bold shadow-lg z-10"
+              class="absolute top-0 right-0 bg-primary/90 text-white text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-bl-lg font-bold shadow-lg z-10 pointer-events-none"
             >
               {{ series.imageIds.length }}
             </div>
@@ -162,6 +162,7 @@ const {
   seriesList,
   currentSeriesIndex,
   selectSeries,
+  loadingCount,
 } = useDicomViewer();
 
 const mainTools = [

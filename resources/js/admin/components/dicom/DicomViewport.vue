@@ -28,11 +28,8 @@
             <ActivityIcon class="h-10 w-10 text-primary" />
           </div>
         </div>
-        <h2 class="text-xl font-bold text-white tracking-tight mb-2">
-          Initializing Engine
-        </h2>
-        <p class="text-slate-500 font-medium animate-pulse text-sm">
-          Processing DICOM Stream...
+        <p class="text-slate-500 font-medium animate-pulse text-sm uppercase tracking-wider">
+          Processing File {{ loadingCount || "..." }}
         </p>
       </div>
 
@@ -74,6 +71,7 @@ const props = defineProps({
   currentSeries: String,
   viewport: Object,
   currentImageIndex: Number,
+  loadingCount: String,
 });
 
 const emit = defineEmits(["back", "element-ready"]);

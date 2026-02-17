@@ -54,13 +54,28 @@
                     <SelectValue placeholder="Select Patient" />
                   </SelectTrigger>
                   <SelectContent>
+                    <div class="px-2 py-2 sticky top-0 bg-white z-10 border-b border-slate-100">
+                      <div class="relative">
+                        <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                        <input
+                          v-model="patientSearch"
+                          type="text"
+                          placeholder="Search patient..."
+                          class="w-full pl-8 pr-3 py-1.5 text-[11px] font-medium border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/5 focus:border-primary transition-all"
+                          @keydown.stop
+                        />
+                      </div>
+                    </div>
                     <SelectItem
-                      v-for="patient in patients"
+                      v-for="patient in filteredPatients"
                       :key="patient.id"
                       :value="patient.id.toString()"
                     >
                       {{ patient.name }} ({{ patient.patient_id }})
                     </SelectItem>
+                    <div v-if="filteredPatients.length === 0" class="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      No patients found
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
@@ -114,13 +129,28 @@
                     <SelectValue placeholder="Select Doctor" />
                   </SelectTrigger>
                   <SelectContent>
+                    <div class="px-2 py-2 sticky top-0 bg-white z-10 border-b border-slate-100">
+                      <div class="relative">
+                        <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                        <input
+                          v-model="doctorSearch"
+                          type="text"
+                          placeholder="Search doctor..."
+                          class="w-full pl-8 pr-3 py-1.5 text-[11px] font-medium border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/5 focus:border-primary transition-all"
+                          @keydown.stop
+                        />
+                      </div>
+                    </div>
                     <SelectItem
-                      v-for="doctor in doctors"
+                      v-for="doctor in filteredDoctors"
                       :key="doctor.id"
                       :value="doctor.id.toString()"
                     >
                       {{ doctor.name }}
                     </SelectItem>
+                    <div v-if="filteredDoctors.length === 0" class="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      No doctors found
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
@@ -165,7 +195,7 @@
           <div class="space-y-2">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Case Documents (JPG, PNG, PDF, Word)
+              >Case Documents (PDF, WORD, EXCEL)
               <span class="text-rose-500">*</span></label
             >
             <div class="flex items-center gap-3">
@@ -175,7 +205,7 @@
                 <input
                   type="file"
                   multiple
-                  accept="image/jpeg,image/png,application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  accept="application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   class="hidden"
                   @change="handleGeneralFiles"
                   :disabled="processingGeneral"
@@ -550,7 +580,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { useCaseReportForm } from "../../composables/useCaseReportForm";
 import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
 import DicomUploadModal from "../../components/dicom/DicomUploadModal.vue";
@@ -574,6 +604,7 @@ import {
   Check as CheckIcon,
   CheckCircle as CheckCircleIcon,
   Folder as FolderIcon,
+  Search as SearchIcon,
 } from "lucide-vue-next";
 
 // Initialize useCaseReportForm with isEdit = false
@@ -607,6 +638,24 @@ const {
   handleSendWhatsApp,
   handleModalClose,
 } = useCaseReportForm(false);
+
+const patientSearch = ref("");
+const filteredPatients = computed(() => {
+  if (!patientSearch.value) return patients.value;
+  const query = patientSearch.value.toLowerCase();
+  return patients.value.filter(
+    (p) =>
+      p.name.toLowerCase().includes(query) ||
+      p.patient_id?.toLowerCase().includes(query),
+  );
+});
+
+const doctorSearch = ref("");
+const filteredDoctors = computed(() => {
+  if (!doctorSearch.value) return doctors.value;
+  const query = doctorSearch.value.toLowerCase();
+  return doctors.value.filter((d) => d.name.toLowerCase().includes(query));
+});
 
 onMounted(() => {
   fetchMasters();

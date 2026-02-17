@@ -37,6 +37,7 @@ export function useDicomViewer() {
     const studyDate = ref("");
     const currentOrientation = ref("Axial");
     const currentSeries = ref("Series 01");
+    const loadingCount = ref("");
 
     let initialized = false;
     const initCornerstone = () => {
@@ -138,7 +139,9 @@ export function useDicomViewer() {
 
     const loadImages = async (paths) => {
         if (!paths || !paths.length || !dicomElement.value) return;
+        if (!paths || !paths.length || !dicomElement.value) return;
         loading.value = true;
+        loadingCount.value = "";
         error.value = null;
 
         try {
@@ -172,7 +175,9 @@ export function useDicomViewer() {
 
                         files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
-                        for (const zipEntry of files) {
+                        for (let i = 0; i < files.length; i++) {
+                            const zipEntry = files[i];
+                            loadingCount.value = `${i + 1} / ${files.length}`;
                             const blob = await zipEntry.async("blob");
                             const objectUrl = URL.createObjectURL(blob);
                             objectUrls.value.push(objectUrl);
@@ -231,12 +236,30 @@ export function useDicomViewer() {
         );
         if (stackData && stackData.data && stackData.data.length > 0) {
             const stack = stackData.data[0];
-            currentImageIndex.value = stack.currentImageIdIndex;
-            const imageId = stack.imageIds[stack.currentImageIdIndex];
+            const oldIdx = currentImageIndex.value;
+            const newIdx = stack.currentImageIdIndex;
+
+            // Handle Cine continuous play across series
+            if (isCineActive.value && seriesList.value.length > 1) {
+                // If we hit the end of the current series and it's looping back to 0
+                if (oldIdx === totalImages.value - 1 && newIdx === 0) {
+                    const nextIndex = (currentSeriesIndex.value + 1) % seriesList.value.length;
+
+                    // Stop current clip to prevent multiple triggers during load
+                    cornerstoneTools.stopClip(dicomElement.value);
+
+                    // Switch to the next series
+                    selectSeries(nextIndex);
+                    return;
+                }
+            }
+
+            currentImageIndex.value = newIdx;
+            const imageId = stack.imageIds[newIdx];
             if (imageId) {
                 fileName.value =
                     imageId.split("/").pop()?.split("?")[0] ||
-                    "Image " + (stack.currentImageIdIndex + 1);
+                    "Image " + (newIdx + 1);
             }
         }
     };
@@ -271,6 +294,11 @@ export function useDicomViewer() {
             cornerstone.displayImage(dicomElement.value, image);
             setupTools();
             updateViewportState();
+
+            // Resume cine if it was active
+            if (isCineActive.value) {
+                cornerstoneTools.playClip(dicomElement.value, cineFps.value);
+            }
 
             // Remove previous listeners to avoid duplicates
             dicomElement.value.removeEventListener("cornerstoneimagerendered", updateViewportState);
@@ -427,5 +455,6 @@ export function useDicomViewer() {
         selectSeries,
 
         updateViewportState,
+        loadingCount,
     };
 }
