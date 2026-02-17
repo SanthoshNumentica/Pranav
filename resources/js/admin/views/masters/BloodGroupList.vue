@@ -13,7 +13,7 @@
       </div>
       <button
         v-if="canAdd"
-        @click="openAddDialog()"
+        @click="isCreateModalOpen = true"
         class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95"
       >
         <PlusIcon class="h-4 w-4" />

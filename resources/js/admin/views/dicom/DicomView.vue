@@ -18,7 +18,7 @@
       :documents="reportDocuments"
     />
 
-    <div class="flex-grow flex flex-col md:flex-row relative overflow-hidden">
+    <div class="flex-grow flex flex-row relative overflow-hidden">
       <DicomSidebar
         :main-tools="mainTools"
         :action-tools="actionTools"
@@ -41,28 +41,28 @@
         :current-image-index="currentImageIndex"
       />
 
-      <!-- Series Previews: Absolute on Mobile, Sidebar on Desktop -->
+      <!-- Series Previews Sidebar -->
       <aside
         v-if="seriesList.length > 0"
-        class="bg-black/40 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none md:border-l border-white/10 flex flex-row md:flex-col w-full h-16 md:w-16 md:h-full z-40 transition-all overflow-hidden absolute bottom-20 md:relative md:bottom-auto left-0 right-0 md:left-auto md:right-auto"
+        class="bg-slate-900 md:bg-transparent border-l border-white/10 flex flex-col w-28 md:w-16 h-full z-40 transition-all overflow-hidden relative"
       >
         <div
-          class="hidden md:flex p-3 border-b border-white/5 flex-col items-center"
+          class="flex p-2 md:p-3 border-b border-white/5 flex-col items-center"
         >
           <p
-            class="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] text-center"
+            class="text-[9px] md:text-[8px] font-black text-slate-500 uppercase tracking-[0.2em] text-center"
           >
             Series
           </p>
         </div>
         <div
-          class="flex flex-row md:flex-col gap-1.5 md:gap-2 p-1.5 md:p-2 overflow-x-auto md:overflow-y-auto w-full h-full"
+          class="flex flex-col gap-1.5 md:gap-2 p-1.5 md:p-2 overflow-y-auto w-full h-full custom-scrollbar"
         >
           <button
             v-for="(series, idx) in seriesList"
             :key="idx"
             @click="selectSeries(idx)"
-            class="relative group aspect-square h-full md:h-auto md:w-full overflow-hidden rounded-xl border border-white/10 transition-all active:scale-95 flex-shrink-0"
+            class="relative group aspect-square w-full overflow-hidden rounded-xl border border-white/10 transition-all active:scale-95 flex-shrink-0"
             :class="
               idx === currentSeriesIndex
                 ? 'ring-2 ring-primary bg-black border-transparent'
@@ -85,7 +85,7 @@
             </div>
             <!-- File Count Overlay -->
             <div
-              class="absolute top-0 right-0 bg-primary/90 text-white text-[8px] md:text-[10px] px-1.5 py-0.5 rounded-bl-lg font-bold shadow-lg z-10"
+              class="absolute top-0 right-0 bg-primary/90 text-white text-[9px] md:text-[10px] px-1.5 py-0.5 rounded-bl-lg font-bold shadow-lg z-10"
             >
               {{ series.imageIds.length }}
             </div>

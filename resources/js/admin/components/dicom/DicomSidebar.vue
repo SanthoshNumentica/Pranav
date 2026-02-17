@@ -88,7 +88,7 @@
 
     <!-- Mobile Bottom Toolbar (Horizontal Scroll) -->
     <div
-      class="md:hidden fixed bottom-4 left-0 right-0 z-30 flex justify-center pointer-events-auto px-2"
+      class="md:hidden fixed bottom-10 left-0 right-0 z-30 flex justify-center pointer-events-auto px-4 pb-[env(safe-area-inset-bottom)]"
     >
       <div
         class="bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-2 flex gap-2 overflow-x-auto max-w-full"

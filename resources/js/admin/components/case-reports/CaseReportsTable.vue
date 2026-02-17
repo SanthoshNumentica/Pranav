@@ -170,12 +170,14 @@
               <TableActions
                 :item="report"
                 :permissions="permissions"
+                :show-whatsapp="true"
                 view-title="View Info"
                 edit-title="Edit Case Report"
                 delete-title="Delete Case Report"
                 @view="$emit('view-info', $event)"
                 @edit="router.push(`/case-reports/${$event.id}/edit`)"
                 @delete="$emit('delete', $event)"
+                @whatsapp="$emit('send-whatsapp', $event)"
               />
             </td>
           </tr>
