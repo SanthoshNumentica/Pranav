@@ -49,8 +49,14 @@ const routes = [
             {
                 path: 'patients',
                 name: 'Patients',
-                component: () => import('../views/patients/PatientList.vue'),
-                meta: { module: 'patients' }
+                component: () => import("../views/patients/PatientList.vue"),
+                meta: { title: "Patients", action: "view", subject: "patients" },
+            },
+            {
+                path: "patients/create",
+                name: "PatientCreate",
+                component: () => import("../views/patients/PatientCreate.vue"),
+                meta: { title: "Create Patient", action: "create", subject: "patients" },
             },
             {
                 path: 'doctors',
@@ -69,6 +75,12 @@ const routes = [
                 name: 'Roles',
                 component: () => import('../views/roles/RoleList.vue'),
                 meta: { module: 'role' }
+            },
+            {
+                path: 'branches',
+                name: 'Branches',
+                component: () => import('../views/branches/BranchList.vue'),
+                meta: { module: 'branch' }
             },
             {
                 path: 'masters/scan-types',

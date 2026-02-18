@@ -54,9 +54,13 @@
                     <SelectValue placeholder="Select Patient" />
                   </SelectTrigger>
                   <SelectContent>
-                    <div class="px-2 py-2 sticky top-0 bg-white z-10 border-b border-slate-100">
+                    <div
+                      class="px-2 py-2 sticky top-0 bg-white z-10 border-b border-slate-100"
+                    >
                       <div class="relative">
-                        <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                        <SearchIcon
+                          class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400"
+                        />
                         <input
                           v-model="patientSearch"
                           type="text"
@@ -73,7 +77,10 @@
                     >
                       {{ patient.name }} ({{ patient.patient_id }})
                     </SelectItem>
-                    <div v-if="filteredPatients.length === 0" class="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <div
+                      v-if="filteredPatients.length === 0"
+                      class="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider"
+                    >
                       No patients found
                     </div>
                   </SelectContent>
@@ -129,9 +136,13 @@
                     <SelectValue placeholder="Select Doctor" />
                   </SelectTrigger>
                   <SelectContent>
-                    <div class="px-2 py-2 sticky top-0 bg-white z-10 border-b border-slate-100">
+                    <div
+                      class="px-2 py-2 sticky top-0 bg-white z-10 border-b border-slate-100"
+                    >
                       <div class="relative">
-                        <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                        <SearchIcon
+                          class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400"
+                        />
                         <input
                           v-model="doctorSearch"
                           type="text"
@@ -148,7 +159,10 @@
                     >
                       {{ doctor.name }}
                     </SelectItem>
-                    <div v-if="filteredDoctors.length === 0" class="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    <div
+                      v-if="filteredDoctors.length === 0"
+                      class="p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider"
+                    >
                       No doctors found
                     </div>
                   </SelectContent>
@@ -266,6 +280,39 @@
               class="w-full rounded-2xl py-3.5 px-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none resize-none"
               placeholder="Case history or notes..."
             ></textarea>
+          </div>
+
+          <!-- Branch Selection -->
+          <div class="space-y-2 pt-4 border-t border-slate-100 mt-4">
+            <label
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+              >Assigned Branch <span class="text-rose-500">*</span></label
+            >
+            <div class="relative group/select">
+              <div
+                class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-hover/select:text-primary transition-colors"
+              >
+                <MapPinIcon class="h-4 w-4" />
+              </div>
+              <Select
+                v-model="form.branch_id"
+                required
+                :disabled="!loggedInUserIsSuperAdmin"
+              >
+                <SelectTrigger class="pl-10">
+                  <SelectValue placeholder="Select Branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="branch in filteredBranches"
+                    :key="branch.id"
+                    :value="branch.id.toString()"
+                  >
+                    {{ branch.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
@@ -605,6 +652,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Folder as FolderIcon,
   Search as SearchIcon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 
 // Initialize useCaseReportForm with isEdit = false
@@ -637,6 +685,8 @@ const {
   handleSubmit,
   handleSendWhatsApp,
   handleModalClose,
+  loggedInUserIsSuperAdmin,
+  filteredBranches,
 } = useCaseReportForm(false);
 
 const patientSearch = ref("");

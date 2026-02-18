@@ -218,6 +218,7 @@ import {
   Droplets as BloodIcon,
   CaseSensitive as CaseSensitiveIcon,
   Shield as ShieldIcon,
+  Building2 as BuildingsIcon,
 } from "lucide-vue-next";
 import SidebarNavItem from "../ui/SidebarNavItem.vue";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
@@ -312,6 +313,7 @@ const navSystem = computed(() => {
   const items = [
     { title: "Users", url: "/users", icon: UserIcon, module: "user" },
     { title: "Roles", url: "/roles", icon: ShieldIcon, module: "role" },
+    { title: "Branches", url: "/branches", icon: BuildingsIcon, module: "branch" },
     { title: "Settings", url: "/profile", icon: SettingsIcon },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));

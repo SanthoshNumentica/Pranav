@@ -47,7 +47,10 @@
           </div>
 
           <!-- Status Select -->
-          <Select v-model="filters.status" @update:modelValue="fetchReports">
+          <Select
+            v-model="filters.status"
+            @update:modelValue="() => fetchReports(1)"
+          >
             <SelectTrigger class="w-full md:w-44 bg-slate-50">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
@@ -116,12 +119,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, watch } from "vue";
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
   Trash2 as TrashIcon,
   MessageSquare as MessageSquareIcon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
@@ -133,6 +137,7 @@ import Pagination from "../../components/ui/Pagination.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../../composables/useToast";
 import { usePermissions } from "../../composables/usePermissions";
+import { useBranchContext } from "../../composables/useBranchContext";
 import {
   Select,
   SelectContent,
@@ -143,6 +148,7 @@ import {
 
 const { addToast } = useToast();
 const { getModulePermissions } = usePermissions();
+const { selectedBranchId } = useBranchContext();
 const modulePermissions = getModulePermissions("case-reports");
 
 const reports = ref([]);
@@ -153,6 +159,7 @@ const selectedReport = ref(null);
 const filters = reactive({
   search: "",
   status: "all",
+  branch_id: selectedBranchId.value,
 });
 
 const isWhatsappModalOpen = ref(false);
@@ -271,6 +278,11 @@ const handleSendWhatsApp = async (recipients) => {
     sendingWhatsapp.value = false;
   }
 };
+
+watch(selectedBranchId, (newId) => {
+  filters.branch_id = newId;
+  fetchReports(1);
+});
 
 onMounted(() => {
   fetchReports(1);

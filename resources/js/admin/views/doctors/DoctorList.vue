@@ -96,6 +96,7 @@
       :is-open="isInfoModalOpen"
       :doctor="selectedDoctor"
       @close="isInfoModalOpen = false"
+      @edit="handleEditFromInfo"
     />
 
     <ConfirmationModal
@@ -215,6 +216,11 @@ const handleView = async (doctor) => {
 const handleEdit = (doctor) => {
   selectedDoctor.value = doctor;
   isFormModalOpen.value = true;
+};
+
+const handleEditFromInfo = (doctor) => {
+  isInfoModalOpen.value = false;
+  handleEdit(doctor);
 };
 
 const handleDelete = (doctor) => {

@@ -24,6 +24,18 @@ class UserController extends Controller
     }
 
     /**
+     * Get all active branches for dropdowns.
+     */
+    public function branches()
+    {
+        $branches = \App\Models\Branch::where('status', 'active')->get(['id', 'name']);
+        return response()->json([
+            'success' => true,
+            'data' => $branches
+        ]);
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
@@ -37,12 +49,20 @@ class UserController extends Controller
                 ->orWhere('email', 'like', "%{$search}%");
         })
             ->when(!$isSuperAdmin, function ($query) use ($currentUser) {
-                $query->where('id', $currentUser->id);
+                // For non-super admins, we might want to filter by their own branch as well
+                if ($currentUser->branch_id) {
+                    $query->where('branch_id', $currentUser->branch_id);
+                } else {
+                    $query->where('id', $currentUser->id);
+                }
             })
             ->when($request->role_id, function ($query, $role_id) {
                 $query->where('role_id', $role_id);
             })
-            ->with('role')
+            ->when($request->branch_id, function ($query, $branch_id) {
+                $query->where('branch_id', $branch_id);
+            })
+            ->with(['role', 'branch'])
             ->latest()
             ->paginate($request->per_page ?? 10);
 
@@ -62,6 +82,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role_id' => ['required', 'exists:roles,id'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
 
@@ -70,6 +91,7 @@ class UserController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role_id' => $data['role_id'],
+            'branch_id' => $data['branch_id'],
             'status' => $data['status'],
         ]);
 
@@ -87,7 +109,7 @@ class UserController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data' => $user->load('role')
+            'data' => $user->load(['role', 'branch'])
         ]);
     }
 
@@ -101,12 +123,14 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'role_id' => ['required', 'exists:roles,id'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
             'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
 
         $user->name = $data['name'];
         $user->email = $data['email'];
         $user->role_id = $data['role_id'];
+        $user->branch_id = $data['branch_id'];
         $user->status = $data['status'];
 
         if (!empty($data['password'])) {
@@ -132,6 +156,25 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'User deleted successfully'
+        ]);
+    }
+
+    /**
+     * Update user status.
+     */
+    public function updateStatus(Request $request, User $user)
+    {
+        $request->validate([
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $user->status = $request->status;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User status updated successfully',
+            'data' => $user
         ]);
     }
 }

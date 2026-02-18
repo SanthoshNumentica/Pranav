@@ -26,6 +26,11 @@
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
+            Branch
+          </th>
+          <th
+            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+          >
             Status
           </th>
           <th
@@ -62,6 +67,9 @@
               <div class="h-4 bg-slate-100 rounded-md w-16"></div>
             </td>
             <td class="px-3 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-20"></div>
+            </td>
+            <td class="px-3 py-4">
               <div class="h-6 bg-slate-100 rounded-full w-20"></div>
             </td>
             <td class="px-3 py-4">
@@ -95,6 +103,22 @@
             </td>
             <td class="px-3 py-4 text-sm text-slate-600 capitalize">
               {{ user.role?.name || "N/A" }}
+            </td>
+            <td class="px-3 py-4 text-sm text-slate-600">
+              <div
+                class="flex items-center gap-1.5"
+                v-if="user.role?.name.toLowerCase() === 'super-admin'"
+              >
+                <div class="h-1.5 w-1.5 rounded-full bg-indigo-500"></div>
+                <span class="font-medium text-slate-900">All Branches</span>
+              </div>
+              <div class="flex items-center gap-1.5" v-else-if="user.branch">
+                <div class="h-1.5 w-1.5 rounded-full bg-primary/40"></div>
+                {{ user.branch.name }}
+              </div>
+              <span v-else class="text-slate-300 italic text-xs"
+                >Unassigned</span
+              >
             </td>
             <td class="px-3 py-4">
               <button

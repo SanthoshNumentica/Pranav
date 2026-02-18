@@ -5,9 +5,11 @@
       class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500"
     >
       <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Users</h1>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
+          Branches
+        </h1>
         <p class="text-sm text-slate-500 mt-1">
-          Manage system users and administrators.
+          Manage organization branches and locations.
         </p>
       </div>
       <div class="flex items-center gap-3">
@@ -17,7 +19,7 @@
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
           <PlusIcon class="h-4 w-4" />
-          Add User
+          Add Branch
         </button>
       </div>
     </div>
@@ -30,7 +32,7 @@
         class="flex flex-col md:flex-row md:items-center justify-between gap-4"
       >
         <div class="flex flex-wrap items-center gap-3 flex-1">
-          <!-- Search Inner -->
+          <!-- Search -->
           <div class="relative w-full md:w-72 group">
             <SearchIcon
               class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"
@@ -38,21 +40,21 @@
             <input
               v-model="filters.search"
               type="text"
-              placeholder="Search Name, Email..."
+              placeholder="Search Name, Code..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               @input="debouncedFetch"
             />
           </div>
 
           <div class="relative w-full md:w-48">
-            <Select v-model="filters.status" @update:modelValue="fetchUsers">
+            <Select v-model="filters.status" @update:modelValue="fetchBranches">
               <SelectTrigger class="w-full pl-10">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active Users</SelectItem>
-                <SelectItem value="inactive">Inactive Users</SelectItem>
-                <SelectItem value="all">All Users</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
               </SelectContent>
             </Select>
             <FilterIcon
@@ -67,12 +69,12 @@
     <div
       class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
     >
-      <UsersTable
-        :users="users"
+      <BranchesTable
+        :branches="branches"
         :loading="loading"
-        :permissions="modulePermissions"
-        @view="handleView"
+        :permissions="{ ...modulePermissions, canStatus: hasStatusPermission }"
         @edit="handleEdit"
+        @view-info="handleView"
         @delete="handleDelete"
         @toggle-status="handleToggleStatus"
       />
@@ -85,18 +87,16 @@
     </div>
 
     <!-- Modals -->
-    <!-- Note: UserFormDialog should be implemented if needed. For now, we'll focus on the table display. -->
-    <UserFormDialog
-      v-if="isFormModalOpen"
+    <BranchFormDialog
       :is-open="isFormModalOpen"
-      :user="selectedUser"
+      :branch="selectedBranch"
       @close="isFormModalOpen = false"
-      @saved="fetchUsers"
+      @saved="fetchBranches"
     />
 
-    <UserInfoDialog
+    <BranchInfoDialog
       :is-open="isInfoModalOpen"
-      :user="selectedUser"
+      :branch="selectedBranch"
       :can-edit="modulePermissions.canEdit"
       @close="isInfoModalOpen = false"
       @edit="handleEditFromInfo"
@@ -104,9 +104,9 @@
 
     <ConfirmationModal
       :is-open="isDeleteModalOpen"
-      title="Delete User"
-      :description="`Are you sure you want to delete user ${userToDelete?.name}?`"
-      confirm-label="Delete User"
+      title="Delete Branch"
+      :description="`Are you sure you want to delete branch ${branchToDelete?.name}?`"
+      confirm-label="Delete Branch"
       variant="danger"
       :icon="Trash2Icon"
       :loading="isDeleting"
@@ -117,7 +117,7 @@
     <ConfirmationModal
       :is-open="isStatusModalOpen"
       title="Update Status"
-      :description="`Are you sure you want to change the status of ${userToToggle?.name} to ${nextStatus}?`"
+      :description="`Are you sure you want to change the status of ${branchToToggle?.name} to ${nextStatus}?`"
       confirm-label="Update Status"
       variant="warning"
       :icon="AlertCircleIcon"
@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, computed } from "vue";
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
@@ -139,9 +139,9 @@ import {
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
-import UsersTable from "../../components/users/UsersTable.vue";
-import UserInfoDialog from "../../components/users/UserInfoDialog.vue";
-import UserFormDialog from "../../components/users/UserFormDialog.vue";
+import BranchesTable from "../../components/branches/BranchesTable.vue";
+import BranchFormDialog from "../../components/branches/BranchFormDialog.vue";
+import BranchInfoDialog from "../../components/branches/BranchInfoDialog.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
 import { usePermissions } from "../../composables/usePermissions";
@@ -155,15 +155,16 @@ import {
 } from "../../components/ui/select";
 
 const { addToast } = useToast();
-const { getModulePermissions } = usePermissions();
-const modulePermissions = getModulePermissions("user");
+const { getModulePermissions, hasPermission } = usePermissions();
+const modulePermissions = getModulePermissions("branch");
+const hasStatusPermission = computed(() => hasPermission("branch", "status"));
 
-const users = ref([]);
+const branches = ref([]);
 const pagination = ref(null);
 const loading = ref(true);
 const filters = reactive({
   search: "",
-  status: "active",
+  status: "all",
 });
 
 const isFormModalOpen = ref(false);
@@ -172,77 +173,77 @@ const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 const isStatusModalOpen = ref(false);
 const isStatusUpdating = ref(false);
-const selectedUser = ref(null);
-const userToDelete = ref(null);
-const userToToggle = ref(null);
+const selectedBranch = ref(null);
+const branchToDelete = ref(null);
+const branchToToggle = ref(null);
 const nextStatus = ref("");
 
-const fetchUsers = async (page = 1) => {
+const fetchBranches = async (page = 1) => {
   loading.value = true;
   try {
-    const response = await axios.get("/api/v1/users", {
+    const response = await axios.get("/api/v1/branches", {
       params: { ...filters, page },
     });
     if (response.data.success) {
-      users.value = response.data.data.data;
+      branches.value = response.data.data.data;
       pagination.value = response.data.data;
     }
   } catch (error) {
-    console.error("Failed to fetch users", error);
+    console.error("Failed to fetch branches", error);
   } finally {
     loading.value = false;
   }
 };
 
 const handlePageChange = (page) => {
-  fetchUsers(page);
+  fetchBranches(page);
 };
 
-const debouncedFetch = debounce(fetchUsers, 300);
+const debouncedFetch = debounce(fetchBranches, 300);
 
 const openAddModal = () => {
-  selectedUser.value = null;
+  selectedBranch.value = null;
   isFormModalOpen.value = true;
 };
 
-const handleView = (user) => {
-  selectedUser.value = user;
+const handleView = (branch) => {
+  selectedBranch.value = branch;
   isInfoModalOpen.value = true;
 };
 
-const handleEdit = (user) => {
-  selectedUser.value = user;
+const handleEdit = (branch) => {
+  selectedBranch.value = branch;
   isFormModalOpen.value = true;
 };
 
-const handleEditFromInfo = (user) => {
+const handleEditFromInfo = (branch) => {
   isInfoModalOpen.value = false;
-  selectedUser.value = user;
+  selectedBranch.value = branch;
   isFormModalOpen.value = true;
 };
 
-const handleDelete = (user) => {
-  userToDelete.value = user;
+const handleDelete = (branch) => {
+  branchToDelete.value = branch;
   isDeleteModalOpen.value = true;
 };
 
 const confirmDelete = async () => {
-  if (!userToDelete.value) return;
+  if (!branchToDelete.value) return;
   isDeleting.value = true;
   try {
-    await axios.delete(`/api/v1/users/${userToDelete.value.id}`);
-    fetchUsers();
+    await axios.delete(`/api/v1/branches/${branchToDelete.value.id}`);
+    fetchBranches();
     isDeleteModalOpen.value = false;
     addToast({
       title: "Success",
-      description: "User deleted successfully.",
+      description: "Branch deleted successfully.",
       variant: "success",
     });
   } catch (err) {
-    console.error("Failed to delete user", err);
+    console.error("Failed to delete branch", err);
     addToast({
       title: "Error",
-      description: "Failed to delete user.",
+      description: "Failed to delete branch.",
       variant: "error",
     });
   } finally {
@@ -250,31 +251,31 @@ const confirmDelete = async () => {
   }
 };
 
-const handleToggleStatus = (user) => {
-  userToToggle.value = user;
-  nextStatus.value = user.status === "active" ? "inactive" : "active";
+const handleToggleStatus = (branch) => {
+  branchToToggle.value = branch;
+  nextStatus.value = branch.status === "active" ? "inactive" : "active";
   isStatusModalOpen.value = true;
 };
 
 const confirmToggleStatus = async () => {
-  if (!userToToggle.value) return;
+  if (!branchToToggle.value) return;
   isStatusUpdating.value = true;
   try {
-    await axios.post(`/api/v1/users/${userToToggle.value.id}/status`, {
+    await axios.post(`/api/v1/branches/${branchToToggle.value.id}/status`, {
       status: nextStatus.value,
     });
-    fetchUsers();
+    fetchBranches();
     isStatusModalOpen.value = false;
     addToast({
       title: "Success",
-      description: "User status updated successfully.",
+      description: "Branch status updated successfully.",
       variant: "success",
     });
   } catch (err) {
     console.error("Failed to toggle status", err);
     addToast({
       title: "Error",
-      description: "Failed to update user status.",
+      description: "Failed to update branch status.",
       variant: "error",
     });
   } finally {
@@ -283,6 +284,6 @@ const confirmToggleStatus = async () => {
 };
 
 onMounted(() => {
-  fetchUsers(1);
+  fetchBranches(1);
 });
 </script>

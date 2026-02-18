@@ -1,12 +1,14 @@
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "./useToast";
+import { useAuth } from "./useAuth";
 import axios from "axios";
 import JSZip from "jszip";
 
 export function useCaseReportForm(isEdit = false) {
     const router = useRouter();
     const { addToast } = useToast();
+    const { user: authUser } = useAuth();
 
     const loading = ref(false);
     const fetching = ref(true);
@@ -15,6 +17,7 @@ export function useCaseReportForm(isEdit = false) {
     const patients = ref([]);
     const doctors = ref([]);
     const scanTypes = ref([]);
+    const branches = ref([]);
     const processingGeneral = ref(false);
 
     // WhatsApp Modal State
@@ -36,6 +39,7 @@ export function useCaseReportForm(isEdit = false) {
         description: "",
         documents: [], // General documents
         items: [],
+        branch_id: "",
     });
 
     // Default item structure
@@ -72,10 +76,11 @@ export function useCaseReportForm(isEdit = false) {
     // --- Master Data Fetching ---
     const fetchMasters = async () => {
         try {
-            const [pRes, dRes, sRes] = await Promise.all([
+            const [pRes, dRes, sRes, bRes] = await Promise.all([
                 axios.get("/api/v1/masters/patients?status=active&nopaginate=1"),
                 axios.get("/api/v1/masters/doctors?status=active&nopaginate=1"),
                 axios.get("/api/v1/masters/scan-types?status=active&nopaginate=1"),
+                axios.get("/api/v1/masters/branches?status=active&nopaginate=1"),
             ]);
 
             patients.value = Array.isArray(pRes.data.data)
@@ -87,6 +92,14 @@ export function useCaseReportForm(isEdit = false) {
             scanTypes.value = Array.isArray(sRes.data.data)
                 ? sRes.data.data
                 : sRes.data.data?.data || [];
+            branches.value = Array.isArray(bRes.data.data)
+                ? bRes.data.data
+                : bRes.data.data?.data || [];
+
+            // Auto-assign branch for non-super-admins on creation
+            if (!isEdit && !loggedInUserIsSuperAdmin.value && authUser.value?.branch_id) {
+                form.branch_id = authUser.value.branch_id.toString();
+            }
         } catch (err) {
             console.error("Failed to fetch master data", err);
             error.value = "Failed to load master data. Please refresh.";
@@ -109,6 +122,7 @@ export function useCaseReportForm(isEdit = false) {
             form.send_whatsapp_patient = data.send_whatsapp_patient ?? true;
             form.send_whatsapp_doctor = data.send_whatsapp_doctor ?? true;
             form.description = data.description || "";
+            form.branch_id = data.branch_id?.toString() || "";
 
             form.documents = (data.documents || []).map((path) => ({
                 name: typeof path === 'string' ? path.split("/").pop() : path.name,
@@ -588,12 +602,17 @@ export function useCaseReportForm(isEdit = false) {
                     documents: item.documents.map((d) => d.path || d),
                     remarks: item.remarks,
                 })),
+                branch_id: form.branch_id,
             };
 
             let response;
             if (isEdit) {
                 response = await axios.put(`/api/v1/case-reports/${form.id}`, payload);
             } else {
+                // If branch_id is still empty, try to fallback to user's branch
+                if (!payload.branch_id && authUser.value?.branch_id) {
+                    payload.branch_id = authUser.value.branch_id;
+                }
                 response = await axios.post("/api/v1/case-reports", payload);
             }
 
@@ -657,6 +676,18 @@ export function useCaseReportForm(isEdit = false) {
         router.push("/case-reports");
     };
 
+    const loggedInUserIsSuperAdmin = computed(
+        () => authUser.value?.role?.name.toLowerCase() === "super-admin",
+    );
+
+    const filteredBranches = computed(() => {
+        if (loggedInUserIsSuperAdmin.value) return branches.value;
+        if (!authUser.value?.branch_id) return [];
+        return branches.value.filter(
+            (b) => b.id.toString() === authUser.value.branch_id.toString(),
+        );
+    });
+
     return {
         // State
         loading,
@@ -672,6 +703,9 @@ export function useCaseReportForm(isEdit = false) {
         reportForWhatsapp,
         sendingWhatsapp,
         initialRecipients,
+        branches,
+        loggedInUserIsSuperAdmin,
+        filteredBranches,
 
         // Methods
         fetchMasters,

@@ -14,7 +14,7 @@ class PatientService
     public function listPatients(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return Patient::query()
-            ->with(['gender', 'bloodGroup', 'addedByUser', 'modifiedByUser'])
+            ->with(['gender', 'bloodGroup', 'branch', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['search']), function (Builder $query) use ($filters) {
                 $query->where(function ($q) use ($filters) {
                     $q->where('name', 'like', "%{$filters['search']}%")
@@ -30,6 +30,9 @@ class PatientService
                 if (!request()->has('status')) {
                     $query->where('status', 'active');
                 }
+            })
+            ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
+                $query->where('branch_id', $filters['branch_id']);
             })
             ->latest()
             ->paginate($perPage);

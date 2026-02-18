@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use App\Traits\HasAudit;
 
@@ -32,6 +33,8 @@ class Patient extends Model
         'city',
         'remarks',
         'status',
+        'branch_id',
+        'doctor_id',
         'added_by',
         'modified_by'
     ];
@@ -53,6 +56,16 @@ class Patient extends Model
     public function caseReports()
     {
         return $this->hasMany(CaseReport::class, 'patient_fk_id');
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    public function doctor(): BelongsTo
+    {
+        return $this->belongsTo(Doctor::class, 'doctor_id');
     }
 
 }

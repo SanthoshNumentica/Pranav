@@ -72,6 +72,13 @@
                             {{ formatDate(report.expires_at) }}
                           </span>
                         </template>
+                        <span class="h-1 w-1 rounded-full bg-white/50"></span>
+                        <div class="flex items-center gap-1.5 opacity-80">
+                          <MapPinIcon class="h-3 w-3" />
+                          <span class="text-xs font-semibold">{{
+                            report?.branch?.name || "N/A"
+                          }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -475,6 +482,7 @@ import {
   MessageSquare as MessageSquareIcon,
   Edit as EditIcon,
   Clock as ClockIcon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { formatDate } from "../../utils/format";

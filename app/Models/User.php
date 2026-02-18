@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
+        'branch_id',
         'status',
         'added_by',
         'modified_by'
@@ -38,6 +39,14 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Get the branch associated with the user.
+     */
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     /**

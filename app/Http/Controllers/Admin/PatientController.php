@@ -21,7 +21,8 @@ class PatientController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $patients = $this->patientService->listPatients($request->all(), $request->get('limit', 15));
+        $filters = $request->all();
+        $patients = $this->patientService->listPatients($filters, $request->get('limit', 15));
 
         return response()->json([
             'success' => true,
@@ -35,23 +36,30 @@ class PatientController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'title_fk_id' => 'required|exists:titles,id',
+            'title_fk_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
             'father_name' => 'nullable|string|max:255',
             'email_id' => 'nullable|email|unique:patients,email_id',
             'mobile_no' => 'required|string',
             'gender_fk_id' => 'required|exists:genders,id',
             'address' => 'required|string',
-            'street' => 'required|string',
+            'street' => 'nullable|string',
             'pincode' => 'nullable|string',
-            'city' => 'required|string',
+            'city' => 'nullable|string',
             'dob' => 'required|date',
             'whatsapp_no' => 'nullable|string',
             'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
             'remarks' => 'nullable|string',
+            'branch_id' => 'nullable|exists:branches,id',
+            'doctor_id' => 'nullable|exists:doctors,id',
         ]);
 
-        $patient = $this->patientService->createPatient($request->all());
+        $data = $request->all();
+        if (auth()->user()->branch_id) {
+            $data['branch_id'] = auth()->user()->branch_id;
+        }
+
+        $patient = $this->patientService->createPatient($data);
 
         return response()->json([
             'success' => true,
@@ -78,20 +86,21 @@ class PatientController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'title_fk_id' => 'sometimes|required|exists:titles,id',
+            'title_fk_id' => 'sometimes|nullable|exists:titles,id',
             'name' => 'sometimes|required|string|max:255',
             'father_name' => 'sometimes|nullable|string|max:255',
             'email_id' => 'sometimes|nullable|email|unique:patients,email_id,' . $id,
             'mobile_no' => 'sometimes|required|string',
             'gender_fk_id' => 'sometimes|required|exists:genders,id',
             'address' => 'sometimes|required|string',
-            'street' => 'sometimes|required|string',
+            'street' => 'sometimes|nullable|string',
             'pincode' => 'sometimes|nullable|string',
-            'city' => 'sometimes|required|string',
+            'city' => 'sometimes|nullable|string',
             'dob' => 'nullable|date',
             'whatsapp_no' => 'nullable|string',
             'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
             'remarks' => 'nullable|string',
+            'doctor_id' => 'nullable|exists:doctors,id',
         ]);
 
         $patient = $this->patientService->updatePatient($id, $request->all());

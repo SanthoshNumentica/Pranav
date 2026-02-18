@@ -31,30 +31,48 @@
             <DialogPanel
               class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
             >
-              <!-- Header -->
-              <div class="px-6 py-6 border-b border-slate-100 shrink-0">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+              <!-- Header/Banner - Fixed -->
+              <div
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
+              >
+                <div
+                  class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+                <div
+                  class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+
+                <div class="relative flex items-center justify-between">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                      class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <UserIcon class="h-5 w-5 text-primary" />
+                      <UserIcon class="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 class="text-lg font-bold text-slate-900">
+                      <h3 class="text-xl font-bold tracking-tight">
                         Patient Details
                       </h3>
-                      <p class="text-xs text-slate-500">
+                      <p class="text-sm font-medium mt-1 opacity-90">
                         {{ patient?.name }} ({{ patient?.patient_id }})
                       </p>
                     </div>
                   </div>
-                  <button
-                    @click.stop="close"
-                    class="p-2 rounded-xl hover:bg-slate-50 transition-colors"
-                  >
-                    <XIcon class="h-5 w-5 text-slate-400" />
-                  </button>
+                  <div class="flex items-center gap-3">
+                    <button
+                      @click="$emit('edit', patient)"
+                      class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-all active:scale-95"
+                    >
+                      <EditIcon class="h-4 w-4" />
+                      Edit Patient
+                    </button>
+                    <button
+                      @click.stop="close"
+                      class="p-2 rounded-xl hover:bg-white/10 transition-colors"
+                    >
+                      <XIcon class="h-5 w-5 text-white" />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -160,7 +178,11 @@ import {
   TransitionChild,
   TransitionRoot,
 } from "@headlessui/vue";
-import { X as XIcon, User as UserIcon } from "lucide-vue-next";
+import {
+  X as XIcon,
+  User as UserIcon,
+  Edit as EditIcon,
+} from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
 
 const props = defineProps({
@@ -168,7 +190,7 @@ const props = defineProps({
   patient: Object,
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "edit"]);
 
 const close = () => {
   if (!props.isOpen) return;
@@ -183,6 +205,7 @@ const detailedInfo = computed(() => {
   if (!props.patient) return {};
   return {
     "Patient Name": props.patient.name,
+    Branch: props.patient.branch?.name || "N/A",
     "Father / Guardian": props.patient.father_name,
     Gender: props.patient.gender?.gender_name,
     DOB: formatDate(props.patient.dob),

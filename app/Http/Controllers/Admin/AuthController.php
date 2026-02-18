@@ -35,7 +35,7 @@ class AuthController extends Controller
 
             $token = $user->createToken('admin-token')->plainTextToken;
 
-            $user->load(['role.permissions.module', 'role.permissions.action']);
+            $user->load(['role.permissions.module', 'role.permissions.action', 'branch']);
             $permissions = $user->permission_names;
             if ($user->role) {
                 $user->role->makeHidden('permissions');
@@ -79,7 +79,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'user' => $request->user()->load('role'),
+                'user' => $request->user()->load(['role', 'branch']),
             ]
         ]);
     }

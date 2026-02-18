@@ -13,30 +13,11 @@
       </div>
       <button
         v-if="canAdd"
-        @click="isCreateModalOpen = true"
+        @click="openAddDialog"
         class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95"
       >
         <PlusIcon class="h-4 w-4" />
         Add Gender
-      </button>
-    </div>
-
-    <!-- Filters -->
-    <div class="flex items-center gap-2 p-1 bg-slate-100 w-fit rounded-xl">
-      <button
-        v-for="status in ['all', 'active', 'inactive']"
-        :key="status"
-        @click="filterStatus = status"
-        :class="
-          cn(
-            'px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all',
-            filterStatus === status
-              ? 'bg-white text-primary shadow-sm'
-              : 'text-slate-500 hover:text-slate-700',
-          )
-        "
-      >
-        {{ status }}
       </button>
     </div>
 
@@ -256,7 +237,6 @@ const { canAdd, canView, canEdit, canDelete } = getModulePermissions("genders");
 const genders = ref([]);
 const pagination = ref(null);
 const loading = ref(true);
-const filterStatus = ref("all");
 
 const dialogOpen = ref(false);
 const dialogMode = ref("add");
@@ -275,7 +255,6 @@ const fetchGenders = async (page = 1) => {
     const response = await axios.get("/api/v1/masters/genders", {
       params: {
         page,
-        status: filterStatus.value,
       },
     });
     if (response.data.success) {
@@ -292,10 +271,6 @@ const fetchGenders = async (page = 1) => {
 const handlePageChange = (page) => {
   fetchGenders(page);
 };
-
-watch(filterStatus, () => {
-  fetchGenders(1);
-});
 
 const openAddDialog = () => {
   dialogMode.value = "add";

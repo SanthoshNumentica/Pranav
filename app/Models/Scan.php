@@ -16,6 +16,7 @@ class Scan extends Model
         'scan_type_id',
         'name',
         'status',
+        'amount',
     ];
 
     public function scanType()

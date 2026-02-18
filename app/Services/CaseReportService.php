@@ -20,7 +20,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         return CaseReport::query()
-            ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])
+            ->with(['patient.gender', 'doctor', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -34,6 +34,9 @@ class CaseReportService
                             ->orWhere('patient_id', 'like', "%{$filters['search']}%");
                     });
             })
+            ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
+                $query->where('branch_id', $filters['branch_id']);
+            })
             ->latest()
             ->paginate($perPage);
     }
@@ -43,7 +46,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
@@ -87,6 +90,7 @@ class CaseReportService
                 'status' => 'available',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
                 'expires_at' => now()->addDays(7),
+                'branch_id' => $data['branch_id'] ?? null,
             ]);
 
             // 3. Process Items

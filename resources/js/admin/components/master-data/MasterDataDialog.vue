@@ -29,40 +29,61 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-100"
+              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
             >
-              <div class="bg-white px-6 py-6 border-b border-slate-100">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+              <!-- Header/Banner - Fixed -->
+              <div
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
+              >
+                <div
+                  class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+                <div
+                  class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+
+                <div class="relative flex items-center justify-between">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center"
+                      class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <component :is="icon" class="h-5 w-5 text-primary" />
+                      <component :is="icon" class="h-6 w-6 text-white" />
                     </div>
-                    <DialogTitle
-                      as="h3"
-                      class="text-xl font-bold leading-6 text-slate-900"
-                    >
-                      {{
-                        mode === "view"
-                          ? `View ${title}`
-                          : mode === "edit"
-                            ? `Edit ${title}`
-                            : `Add ${title}`
-                      }}
-                    </DialogTitle>
+                    <div>
+                      <DialogTitle
+                        as="h3"
+                        class="text-xl font-bold tracking-tight text-white"
+                      >
+                        {{
+                          mode === "view"
+                            ? `View ${title}`
+                            : mode === "edit"
+                              ? `Edit ${title}`
+                              : `Add New ${title}`
+                        }}
+                      </DialogTitle>
+                      <p class="text-sm font-medium mt-1 opacity-90">
+                        {{
+                          mode === "view"
+                            ? `Viewing details of this ${label.toLowerCase()}.`
+                            : `Manage ${label.toLowerCase()} entries and details.`
+                        }}
+                      </p>
+                    </div>
                   </div>
                   <button
                     @click.stop="onClose"
-                    class="text-slate-400 hover:text-slate-500 transition-colors"
+                    class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                   >
-                    <XIcon class="h-6 w-6" />
+                    <XIcon class="h-5 w-5 text-white" />
                   </button>
                 </div>
               </div>
 
               <form @submit.prevent="handleSubmit">
-                <div class="bg-white px-6 py-8 space-y-6">
+                <div
+                  class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar space-y-6"
+                >
                   <!-- Error Message -->
                   <div
                     v-if="error"
@@ -73,7 +94,8 @@
                   </div>
 
                   <div class="space-y-1.5">
-                    <label class="text-sm font-bold text-slate-700 ml-1"
+                    <label
+                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
                       >{{ label }} Name</label
                     >
                     <input
@@ -89,36 +111,40 @@
                   <!-- Audit Info -->
                   <div
                     v-if="mode === 'view' && initialData"
-                    class="pt-4 border-t border-slate-100 space-y-3"
+                    class="pt-6 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-4"
                   >
-                    <div class="flex items-center justify-between text-xs">
+                    <div
+                      class="space-y-1 bg-slate-50/50 p-3 rounded-xl border border-slate-100/50"
+                    >
                       <span
-                        class="text-slate-400 font-bold uppercase tracking-wider"
+                        class="text-[10px] font-bold uppercase tracking-wider text-slate-400"
                         >Added By</span
                       >
-                      <span class="text-slate-600 font-semibold">{{
-                        initialData.added_by_user?.name || "N/A"
-                      }}</span>
+                      <p class="text-sm font-semibold text-slate-700">
+                        {{ initialData.added_by_user?.name || "N/A" }}
+                      </p>
                     </div>
-                    <div class="flex items-center justify-between text-xs">
+                    <div
+                      class="space-y-1 bg-slate-50/50 p-3 rounded-xl border border-slate-100/50"
+                    >
                       <span
-                        class="text-slate-400 font-bold uppercase tracking-wider"
+                        class="text-[10px] font-bold uppercase tracking-wider text-slate-400"
                         >Modified By</span
                       >
-                      <span class="text-slate-600 font-semibold">{{
-                        initialData.modified_by_user?.name || "N/A"
-                      }}</span>
+                      <p class="text-sm font-semibold text-slate-700">
+                        {{ initialData.modified_by_user?.name || "N/A" }}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 <div
-                  class="bg-slate-50 px-6 py-4 flex justify-end gap-3 rounded-b-3xl"
+                  class="bg-slate-50 px-6 py-6 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px] shrink-0"
                 >
                   <button
                     type="button"
                     @click.stop="onClose"
-                    class="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all active:scale-95"
+                    class="px-6 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all active:scale-95 bg-white shadow-sm"
                     :disabled="loading"
                   >
                     {{ mode === "view" ? "Close" : "Cancel" }}
@@ -126,7 +152,7 @@
                   <button
                     v-if="mode !== 'view'"
                     type="submit"
-                    class="px-6 py-2.5 rounded-xl bg-primary text-sm font-bold text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center min-w-[100px] active:scale-95"
+                    class="px-8 py-2.5 rounded-xl bg-primary text-sm font-bold text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center min-w-[120px] active:scale-95"
                     :disabled="loading"
                   >
                     <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />

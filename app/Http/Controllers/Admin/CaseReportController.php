@@ -21,7 +21,7 @@ class CaseReportController extends Controller
     public function index(Request $request): JsonResponse
     {
         $caseReports = $this->caseReportService->listCaseReports(
-            $request->only(['status', 'search']),
+            $request->only(['status', 'search', 'branch_id']),
             $request->get('limit', 10)
         );
 
@@ -61,7 +61,12 @@ class CaseReportController extends Controller
             'items.*.documents' => ['required', 'array'],
             'items.*.documents.*' => ['required', 'string'], // Pre-uploaded paths
             'items.*.remarks' => ['nullable', 'string'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
         ]);
+
+        if (auth()->user()->branch_id) {
+            $data['branch_id'] = auth()->user()->branch_id;
+        }
 
         $caseReport = $this->caseReportService->createCaseReport($data);
 

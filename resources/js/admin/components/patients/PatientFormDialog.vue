@@ -31,29 +31,38 @@
             <DialogPanel
               class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
             >
-              <!-- Header -->
-              <div class="px-6 py-6 border-b border-slate-100 shrink-0">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+              <!-- Header/Banner - Fixed -->
+              <div
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
+              >
+                <div
+                  class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+                <div
+                  class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+
+                <div class="relative flex items-center justify-between">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                      class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <UserIcon class="h-5 w-5 text-primary" />
+                      <UserIcon class="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 class="text-lg font-bold text-slate-900">
+                      <h3 class="text-xl font-bold tracking-tight">
                         {{ patient ? "Edit Patient" : "Add New Patient" }}
                       </h3>
-                      <p class="text-xs text-slate-500">
+                      <p class="text-sm font-medium mt-1 opacity-90">
                         Enter patient personal and contact details.
                       </p>
                     </div>
                   </div>
                   <button
                     @click.stop="close"
-                    class="p-2 rounded-xl hover:bg-slate-50 transition-colors"
+                    class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                   >
-                    <XIcon class="h-5 w-5 text-slate-400" />
+                    <XIcon class="h-5 w-5 text-white" />
                   </button>
                 </div>
               </div>
@@ -100,7 +109,6 @@
                           <Select
                             v-model="form.title_fk_id"
                             v-model:open="isTitleOpen"
-                            required
                           >
                             <SelectTrigger class="w-24">
                               <SelectValue placeholder="Title" />
@@ -338,17 +346,71 @@
                     </div>
                   </div>
 
-                  <div class="space-y-2 pt-4">
-                    <label
-                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                      >Remarks</label
+                  <div class="space-y-6 pt-4">
+                    <h4
+                      class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
                     >
-                    <textarea
-                      v-model="form.remarks"
-                      rows="2"
-                      placeholder="Any additional notes..."
-                      class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none font-medium"
-                    ></textarea>
+                      <div class="h-1 w-1 rounded-full bg-primary"></div>
+                      Additional Info
+                    </h4>
+
+                    <div class="space-y-2">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                        >Remarks</label
+                      >
+                      <textarea
+                        v-model="form.remarks"
+                        rows="2"
+                        placeholder="Any additional notes..."
+                        class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none font-medium"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Branch Selection (Conditional for Super Admins) -->
+                  <div class="space-y-6 pt-4">
+                    <h4
+                      class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
+                    >
+                      <div class="h-1 w-1 rounded-full bg-primary"></div>
+                      Branch Assignment
+                    </h4>
+
+                    <div class="grid grid-cols-1 gap-6">
+                      <div class="space-y-2">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Assigned Branch
+                          <span class="text-rose-500">*</span></label
+                        >
+                        <Select
+                          v-model="form.branch_id"
+                          v-model:open="isBranchOpen"
+                          :disabled="!loggedInUserIsSuperAdmin"
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              :placeholder="
+                                !loggedInUserIsSuperAdmin
+                                  ? authUser?.branch?.name
+                                  : 'Select Branch'
+                              "
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem
+                              v-for="branch in filteredBranches"
+                              :key="branch.id"
+                              :value="branch.id.toString()"
+                            >
+                              {{ branch.name }}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -383,7 +445,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, reactive, watch, onMounted, computed } from "vue";
 import {
   Dialog,
   DialogPanel,
@@ -394,6 +456,7 @@ import {
   X as XIcon,
   User as UserIcon,
   Loader2 as Loader2Icon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 import {
   Select,
@@ -404,8 +467,12 @@ import {
 } from "../ui/select";
 import axios from "axios";
 import { useToast } from "../../composables/useToast";
+import { useAuth } from "../../composables/useAuth";
+import { useBranchContext } from "../../composables/useBranchContext";
 
 const { addToast } = useToast();
+const { user: authUser } = useAuth();
+const { selectedBranchId } = useBranchContext();
 
 const props = defineProps({
   isOpen: Boolean,
@@ -430,6 +497,7 @@ const initialForm = {
   dob: "",
   mobile_no: "",
   whatsapp_no: "",
+  branch_id: "",
   blood_group_fk_id: "",
   gender_fk_id: "",
   address: "",
@@ -444,17 +512,35 @@ const form = reactive({ ...initialForm });
 const isTitleOpen = ref(false);
 const isGenderOpen = ref(false);
 const isBloodGroupOpen = ref(false);
+const isBranchOpen = ref(false);
+const branches = ref([]);
+
+const loggedInUserIsSuperAdmin = computed(
+  () => authUser.value?.role?.name.toLowerCase() === "super-admin",
+);
+
+const filteredBranches = computed(() => {
+  if (loggedInUserIsSuperAdmin.value) return branches.value;
+  if (!authUser.value?.branch_id) return [];
+  return branches.value.filter(
+    (b) => b.id.toString() === authUser.value.branch_id.toString(),
+  );
+});
 
 const fetchMasters = async () => {
   try {
-    const [tRes, gRes, bRes] = await Promise.all([
+    const [tRes, gRes, bRes, brRes] = await Promise.all([
       axios.get("/api/v1/masters/titles?status=active&nopaginate=1"),
       axios.get("/api/v1/masters/genders?status=active&nopaginate=1"),
       axios.get("/api/v1/masters/blood-groups?status=active&nopaginate=1"),
+      axios.get("/api/v1/masters/branches?status=active&nopaginate=1"),
     ]);
     titles.value = tRes.data.data;
     genders.value = gRes.data.data;
     bloodGroups.value = bRes.data.data;
+    branches.value = Array.isArray(brRes.data.data)
+      ? brRes.data.data
+      : brRes.data.data?.data || [];
   } catch (err) {
     console.error("Failed to fetch masters", err);
   }
@@ -482,6 +568,10 @@ watch(
       }
     } else {
       Object.assign(form, initialForm);
+      // Auto-assign branch for non-super-admins
+      if (!loggedInUserIsSuperAdmin.value && authUser.value?.branch_id) {
+        form.branch_id = authUser.value.branch_id.toString();
+      }
       age.value = "";
     }
   },

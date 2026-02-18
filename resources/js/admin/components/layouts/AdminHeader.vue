@@ -21,6 +21,114 @@
         </div>
       </div>
 
+      <!-- Middle Section: Branch Switcher -->
+      <div class="flex items-center gap-4">
+        <div v-if="isSuperAdmin" class="flex items-center">
+          <Menu as="div" class="relative">
+            <MenuButton
+              class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border bg-slate-50 border-slate-200 hover:border-primary/30 hover:bg-white transition-all duration-200 text-slate-700 shadow-sm"
+            >
+              <div
+                class="h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary"
+              >
+                <MapPinIcon class="h-4 w-4" />
+              </div>
+              <div class="flex flex-col items-start leading-tight">
+                <span
+                  class="text-[9px] font-bold uppercase tracking-wider text-slate-400"
+                  >Active Branch</span
+                >
+                <span class="text-sm font-bold truncate max-w-[120px]">
+                  {{ activeBranchName }}
+                </span>
+              </div>
+              <ChevronDownIcon class="h-4 w-4 text-slate-400" />
+            </MenuButton>
+
+            <transition
+              enter-active-class="transition duration-100 ease-out"
+              enter-from-class="transform scale-95 opacity-0"
+              enter-to-class="transform scale-100 opacity-100"
+              leave-active-class="transition duration-75 ease-in"
+              leave-from-class="transform scale-100 opacity-100"
+              leave-to-class="transform scale-95 opacity-0"
+            >
+              <MenuItems
+                class="absolute left-0 mt-2 w-64 origin-top-left rounded-2xl p-1.5 shadow-xl border focus:outline-none bg-white border-slate-100 text-slate-700 z-50"
+              >
+                <div
+                  class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-50 mb-1"
+                >
+                  Switch Branch Context
+                </div>
+                <MenuItem v-slot="{ active }">
+                  <button
+                    @click="setBranchId('all')"
+                    :class="[
+                      'group flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors',
+                      selectedBranchId === 'all'
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : active
+                          ? 'bg-slate-50'
+                          : '',
+                    ]"
+                  >
+                    <div
+                      class="h-1.5 w-1.5 rounded-full"
+                      :class="
+                        selectedBranchId === 'all'
+                          ? 'bg-primary'
+                          : 'bg-slate-300'
+                      "
+                    ></div>
+                    All Branches
+                  </button>
+                </MenuItem>
+
+                <MenuItem
+                  v-for="branch in branches"
+                  :key="branch.id"
+                  v-slot="{ active }"
+                >
+                  <button
+                    @click="setBranchId(branch.id)"
+                    :class="[
+                      'group flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors',
+                      selectedBranchId == branch.id
+                        ? 'bg-primary/10 text-primary font-bold'
+                        : active
+                          ? 'bg-slate-50'
+                          : '',
+                    ]"
+                  >
+                    <div
+                      class="h-1.5 w-1.5 rounded-full"
+                      :class="
+                        selectedBranchId == branch.id
+                          ? 'bg-primary'
+                          : 'bg-slate-300'
+                      "
+                    ></div>
+                    {{ branch.name }}
+                  </button>
+                </MenuItem>
+              </MenuItems>
+            </transition>
+          </Menu>
+        </div>
+
+        <!-- Static Branch Badge for regular users -->
+        <div
+          v-else-if="user?.branch"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-slate-50/50 border-slate-200"
+        >
+          <MapPinIcon class="h-4 w-4 text-slate-400" />
+          <span class="text-sm font-semibold text-slate-600">{{
+            user.branch.name
+          }}</span>
+        </div>
+      </div>
+
       <!-- Right Section: Actions -->
       <div class="flex items-center gap-4">
         <!-- Notifications -->
@@ -131,6 +239,7 @@ import { ref, computed, onMounted } from "vue";
 import {
   Search as SearchIcon,
   Bell as BellIcon,
+  MapPin as MapPinIcon,
   ChevronDown as ChevronDownIcon,
   User as UserIcon,
   LogOut as LogOutIcon,
@@ -138,6 +247,8 @@ import {
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { useAuth } from "../../composables/useAuth";
+import { useBranchContext } from "../../composables/useBranchContext";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
 import NotificationSlideOver from "../notifications/NotificationSlideOver.vue";
 
@@ -145,8 +256,34 @@ const router = useRouter();
 const isConfirmOpen = ref(false);
 const isNotificationOpen = ref(false);
 const isLoading = ref(false);
-const user = ref(null);
+const { user } = useAuth();
+const { selectedBranchId, setBranchId } = useBranchContext();
 const whatsappCount = ref(0);
+const branches = ref([]);
+
+const isSuperAdmin = computed(
+  () => user.value?.role?.name?.toLowerCase() === "super-admin",
+);
+
+const activeBranchName = computed(() => {
+  if (selectedBranchId.value === "all") return "All Branches";
+  const branch = branches.value.find(
+    (b) => b.id.toString() === selectedBranchId.value.toString(),
+  );
+  return branch ? branch.name : "Select Branch";
+});
+
+const fetchBranches = async () => {
+  if (!isSuperAdmin.value) return;
+  try {
+    const response = await axios.get("/api/v1/masters/branches");
+    if (response.data.success) {
+      branches.value = response.data.data;
+    }
+  } catch (e) {
+    console.error("Header: Failed to fetch branches", e);
+  }
+};
 
 const userInitials = computed(() => {
   if (!user.value?.name) return "AD";
@@ -181,8 +318,13 @@ const fetchWhatsappCount = async () => {
 };
 
 onMounted(() => {
-  fetchUser();
+  fetchBranches();
   fetchWhatsappCount();
+
+  // For non-super admins, sync the branch context once user data is available
+  if (!isSuperAdmin.value && user.value?.branch_id) {
+    setBranchId(user.value.branch_id);
+  }
 });
 
 // Utility for classes

@@ -29,41 +29,64 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-200 flex flex-col"
+              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
             >
-              <!-- Header -->
-              <div class="px-6 py-6 border-b border-slate-100 shrink-0">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+              <!-- Header/Banner - Fixed -->
+              <div
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
+              >
+                <div
+                  class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+                <div
+                  class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+
+                <div class="relative flex items-center justify-between">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                      class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <UserIcon class="h-5 w-5 text-primary" />
+                      <UserIcon class="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 class="text-lg font-bold text-slate-900">
+                      <h3 class="text-xl font-bold tracking-tight">
                         {{ user ? "Edit User" : "Add New User" }}
                       </h3>
-                      <p class="text-xs text-slate-500">
-                        Manage system access and roles.
-                      </p>
+                      <div class="flex items-center gap-2 mt-1 opacity-90">
+                        <span class="text-sm font-medium">
+                          {{
+                            user
+                              ? "Modify existing account"
+                              : "Create system access"
+                          }}
+                        </span>
+                        <template v-if="user">
+                          <span class="h-1 w-1 rounded-full bg-white/50"></span>
+                          <span
+                            class="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full border border-white/20"
+                          >
+                            {{ user.status }}
+                          </span>
+                        </template>
+                      </div>
                     </div>
                   </div>
                   <button
                     @click.stop="close"
-                    class="p-2 rounded-xl hover:bg-slate-50 transition-colors"
+                    class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                   >
-                    <XIcon class="h-5 w-5 text-slate-400" />
+                    <XIcon class="h-5 w-5" />
                   </button>
                 </div>
               </div>
 
               <!-- Form Body -->
-              <div class="p-6 sm:p-8 space-y-6">
+              <div class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
                 <form
                   id="userForm"
                   @submit.prevent="handleSubmit"
-                  class="space-y-6"
+                  class="space-y-8"
                 >
                   <div class="space-y-2">
                     <label
@@ -119,6 +142,40 @@
                       </Select>
                     </div>
 
+                    <div class="space-y-2" v-if="!isSuperAdmin">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                        >Branch <span class="text-rose-500">*</span></label
+                      >
+                      <Select
+                        v-model="form.branch_id"
+                        v-model:open="isBranchDropdownOpen"
+                        :disabled="!loggedInUserIsSuperAdmin"
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            :placeholder="
+                              !loggedInUserIsSuperAdmin
+                                ? authUser?.branch?.name
+                                : 'Select Branch'
+                            "
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            v-for="branch in filteredBranches"
+                            :key="branch.id"
+                            :value="branch.id.toString()"
+                          >
+                            {{ branch.name }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
                       <label
                         class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
@@ -170,7 +227,7 @@
                       <input
                         v-model="form.password_confirmation"
                         type="password"
-                        :required="!user || form.password"
+                        :required="!user"
                         placeholder="••••••••"
                         class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
                       />
@@ -209,7 +266,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted } from "vue";
+import { ref, reactive, watch, onMounted, computed } from "vue";
 import {
   Dialog,
   DialogPanel,
@@ -230,8 +287,10 @@ import {
 } from "../ui/select";
 import axios from "axios";
 import { useToast } from "../../composables/useToast";
+import { useAuth } from "../../composables/useAuth";
 
 const { addToast } = useToast();
+const { user: authUser } = useAuth();
 
 const props = defineProps({
   isOpen: Boolean,
@@ -245,17 +304,41 @@ const emit = defineEmits(["close", "saved"]);
 
 const loading = ref(false);
 const roles = ref([]);
+const branches = ref([]);
+const isRoleDropdownOpen = ref(false);
+const isBranchDropdownOpen = ref(false);
+const isStatusDropdownOpen = ref(false);
 
 const initialForm = {
   name: "",
   email: "",
   role_id: "",
+  branch_id: "null",
   status: "active",
   password: "",
   password_confirmation: "",
 };
 
 const form = reactive({ ...initialForm });
+
+const isSuperAdmin = computed(() => {
+  if (!form.role_id) return false;
+  const role = roles.value.find((r) => r.id.toString() === form.role_id);
+  return role?.name.toLowerCase() === "super-admin";
+});
+
+const loggedInUserIsSuperAdmin = computed(
+  () => authUser.value?.role?.name.toLowerCase() === "super-admin",
+);
+
+const filteredBranches = computed(() => {
+  if (loggedInUserIsSuperAdmin.value) return branches.value;
+  if (!authUser.value?.branch_id) return [];
+  // Only show the branch the current user belongs to
+  return branches.value.filter(
+    (b) => b.id.toString() === authUser.value.branch_id.toString(),
+  );
+});
 
 const fetchRoles = async () => {
   try {
@@ -268,7 +351,23 @@ const fetchRoles = async () => {
   }
 };
 
-onMounted(fetchRoles);
+const fetchBranches = async () => {
+  try {
+    const response = await axios.get("/api/v1/masters/branches");
+    if (response.data.success) {
+      branches.value = Array.isArray(response.data.data)
+        ? response.data.data
+        : response.data.data?.data || [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch branches", err);
+  }
+};
+
+onMounted(() => {
+  fetchRoles();
+  fetchBranches();
+});
 
 watch(
   () => props.user,
@@ -277,18 +376,26 @@ watch(
       form.name = newVal.name || "";
       form.email = newVal.email || "";
       form.role_id = newVal.role_id ? newVal.role_id.toString() : "";
+      form.branch_id = newVal.branch_id ? newVal.branch_id.toString() : "null";
       form.status = newVal.status || "active";
       form.password = "";
       form.password_confirmation = "";
     } else {
       Object.assign(form, initialForm);
+      // Auto-assign branch for non-super-admins adding a new user
+      if (!loggedInUserIsSuperAdmin.value && authUser.value?.branch_id) {
+        form.branch_id = authUser.value.branch_id.toString();
+      }
     }
   },
   { immediate: true },
 );
 
-const isRoleDropdownOpen = ref(false);
-const isStatusDropdownOpen = ref(false);
+watch(isSuperAdmin, (newVal) => {
+  if (newVal) {
+    form.branch_id = "null";
+  }
+});
 
 const close = () => {
   if (isRoleDropdownOpen.value || isStatusDropdownOpen.value) return;
@@ -309,8 +416,16 @@ const handleSubmit = async () => {
   loading.value = true;
   try {
     const payload = { ...form };
-    // backend expects numeric role_id
+    // backend expects numeric IDs or null
     payload.role_id = parseInt(payload.role_id);
+    payload.branch_id =
+      payload.branch_id === "null" ? null : parseInt(payload.branch_id);
+
+    // Only send password if it's filled
+    if (props.user && !payload.password) {
+      delete payload.password;
+      delete payload.password_confirmation;
+    }
 
     if (props.user) {
       await axios.put(`/api/v1/users/${props.user.id}`, payload);

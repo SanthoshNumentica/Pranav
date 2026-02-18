@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\WhatsappController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\BranchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,10 +69,10 @@ Route::prefix('v1')->group(function () {
         // Users
         Route::get('users', [UserController::class, 'index']);
         Route::post('users', [UserController::class, 'store']);
-        Route::get('users/{id}', [UserController::class, 'show']);
-        Route::put('users/{id}', [UserController::class, 'update']);
-        Route::delete('users/{id}', [UserController::class, 'destroy']);
-        Route::post('users/{id}/status', [UserController::class, 'updateStatus']);
+        Route::get('users/{user}', [UserController::class, 'show']);
+        Route::put('users/{user}', [UserController::class, 'update']);
+        Route::delete('users/{user}', [UserController::class, 'destroy']);
+        Route::post('users/{user}/status', [UserController::class, 'updateStatus']);
 
         // Roles
         Route::get('roles', [RoleController::class, 'index']);
@@ -114,6 +115,12 @@ Route::prefix('v1')->group(function () {
         Route::delete('masters/titles/{id}', [MasterController::class, 'destroyTitle']);
         Route::post('masters/titles/{id}/status', [MasterController::class, 'updateTitleStatus']);
 
+        // Branches
+        Route::post('branches/{id}/status', [BranchController::class, 'updateStatus']);
+        Route::get('branches/next-code', [BranchController::class, 'getNextCode']);
+        Route::apiResource('branches', BranchController::class);
+
         Route::get('masters/roles', [MasterController::class, 'roles']);
+        Route::get('masters/branches', [UserController::class, 'branches']);
     });
 });

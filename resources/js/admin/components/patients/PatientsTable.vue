@@ -23,6 +23,11 @@
           >
             Mobile No
           </th>
+          <th
+            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+          >
+            Branch
+          </th>
 
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -72,6 +77,9 @@
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-28"></div>
             </td>
+            <td class="px-3 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-20"></div>
+            </td>
 
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-16"></div>
@@ -113,6 +121,14 @@
             </td>
             <td class="px-3 py-4 text-sm text-slate-600">
               {{ patient.mobile_no || "N/A" }}
+            </td>
+            <td class="px-3 py-4">
+              <div class="flex items-center gap-2">
+                <MapPinIcon class="h-3 w-3 text-slate-400 fill-current" />
+                <span class="text-sm font-medium text-slate-700">{{
+                  patient.branch?.name || "N/A"
+                }}</span>
+              </div>
             </td>
 
             <td class="px-3 py-4 text-sm text-slate-600">
@@ -207,7 +223,11 @@
 </template>
 
 <script setup>
-import { User as UserIcon, Circle as CircleIcon } from "lucide-vue-next";
+import {
+  User as UserIcon,
+  Circle as CircleIcon,
+  MapPin as MapPinIcon,
+} from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
 import TableActions from "../ui/TableActions.vue";
 

@@ -31,29 +31,38 @@
             <DialogPanel
               class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
             >
-              <!-- Header -->
-              <div class="px-6 py-6 border-b border-slate-100 shrink-0">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+              <!-- Header/Banner - Fixed -->
+              <div
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
+              >
+                <div
+                  class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+                <div
+                  class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+
+                <div class="relative flex items-center justify-between">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center"
+                      class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <StethoscopeIcon class="h-5 w-5 text-primary" />
+                      <StethoscopeIcon class="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <h3 class="text-lg font-bold text-slate-900">
+                      <h3 class="text-xl font-bold tracking-tight">
                         {{ doctor ? "Edit Doctor" : "Add New Doctor" }}
                       </h3>
-                      <p class="text-xs text-slate-500">
+                      <p class="text-sm font-medium mt-1 opacity-90">
                         Manage referring clinician details.
                       </p>
                     </div>
                   </div>
                   <button
                     @click.stop="close"
-                    class="p-2 rounded-xl hover:bg-slate-50 transition-colors"
+                    class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                   >
-                    <XIcon class="h-5 w-5 text-slate-400" />
+                    <XIcon class="h-5 w-5 text-white" />
                   </button>
                 </div>
               </div>

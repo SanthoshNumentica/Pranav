@@ -19,6 +19,11 @@
             Patient
           </th>
           <th
+            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+          >
+            Branch
+          </th>
+          <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
             Mobile No
@@ -64,6 +69,9 @@
             </td>
             <td class="px-4 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-32"></div>
+            </td>
+            <td class="px-3 py-4">
+              <div class="h-4 bg-slate-100 rounded-md w-20"></div>
             </td>
             <td class="px-4 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-40"></div>
@@ -202,7 +210,11 @@
 </template>
 
 <script setup>
-import { FileText as FileTextIcon } from "lucide-vue-next";
+import {
+  FileText as FileTextIcon,
+  Circle as CircleIcon,
+  MapPin as MapPinIcon,
+} from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { formatDate } from "../../utils/format";
 import TableActions from "../ui/TableActions.vue";

@@ -55,7 +55,8 @@ class MasterController extends Controller
                 \Illuminate\Validation\Rule::unique('scan_types', 'name')->whereNull('deleted_at')
             ],
             'scans' => 'array',
-            'scans.*' => 'string|max:255'
+            'scans.*.name' => 'string|max:255',
+            'scans.*.amount' => 'nullable|numeric|min:0'
         ]);
 
         $scanType = ScanType::create([
@@ -64,9 +65,12 @@ class MasterController extends Controller
         ]);
 
         if ($request->has('scans')) {
-            foreach ($request->scans as $scanName) {
-                if (!empty($scanName)) {
-                    $scanType->scans()->create(['name' => $scanName]);
+            foreach ($request->scans as $scanData) {
+                if (!empty($scanData['name'])) {
+                    $scanType->scans()->create([
+                        'name' => $scanData['name'],
+                        'amount' => $scanData['amount'] ?? null
+                    ]);
                 }
             }
         }
@@ -90,7 +94,8 @@ class MasterController extends Controller
             ],
             'scans' => 'array',
             'scans.*.id' => 'nullable|exists:scans,id',
-            'scans.*.name' => 'required|string|max:255'
+            'scans.*.name' => 'required|string|max:255',
+            'scans.*.amount' => 'nullable|numeric|min:0'
         ]);
 
         $scanType->update(['name' => $request->name]);
@@ -102,9 +107,15 @@ class MasterController extends Controller
 
             foreach ($request->scans as $scanData) {
                 if (isset($scanData['id'])) {
-                    \App\Models\Scan::where('id', $scanData['id'])->update(['name' => $scanData['name']]);
+                    \App\Models\Scan::where('id', $scanData['id'])->update([
+                        'name' => $scanData['name'],
+                        'amount' => $scanData['amount'] ?? null
+                    ]);
                 } else {
-                    $scanType->scans()->create(['name' => $scanData['name']]);
+                    $scanType->scans()->create([
+                        'name' => $scanData['name'],
+                        'amount' => $scanData['amount'] ?? null
+                    ]);
                 }
             }
         }

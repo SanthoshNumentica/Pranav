@@ -25,6 +25,7 @@ class CaseReport extends Model
         'status',
         'expires_at',
         'sharing_token',
+        'branch_id',
         'added_by',
         'modified_by'
     ];
@@ -46,6 +47,11 @@ class CaseReport extends Model
     public function items(): HasMany
     {
         return $this->hasMany(CaseReportItem::class, 'case_report_id');
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
 }

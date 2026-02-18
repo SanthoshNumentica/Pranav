@@ -11,14 +11,14 @@
         <p class="text-sm text-slate-500 mt-1">Manage patient records.</p>
       </div>
       <div class="flex items-center gap-3">
-        <button
+        <router-link
           v-if="modulePermissions.canAdd"
-          @click="openAddModal"
+          :to="{ name: 'PatientCreate' }"
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
           <PlusIcon class="h-4 w-4" />
           Add Patient
-        </button>
+        </router-link>
       </div>
     </div>
 
@@ -45,7 +45,10 @@
           </div>
 
           <div class="relative w-full md:w-48">
-            <Select v-model="filters.status" @update:modelValue="fetchPatients">
+            <Select
+              v-model="filters.status"
+              @update:modelValue="() => fetchPatients(1)"
+            >
               <SelectTrigger class="w-full pl-10">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -85,17 +88,12 @@
     </div>
 
     <!-- Modals -->
-    <PatientFormDialog
-      :is-open="isFormModalOpen"
-      :patient="selectedPatient"
-      @close="isFormModalOpen = false"
-      @saved="fetchPatients"
-    />
 
     <PatientInfoDialog
       :is-open="isInfoModalOpen"
       :patient="selectedPatient"
       @close="isInfoModalOpen = false"
+      @edit="handleEditFromInfo"
     />
 
     <ConfirmationModal
@@ -104,7 +102,7 @@
       :description="`Are you sure you want to delete patient ${patientToDelete?.name}? This action will move the record to trash.`"
       confirm-label="Delete Patient"
       variant="danger"
-      :icon="Trash2Icon"
+      :icon="TrashIcon"
       :loading="isDeleting"
       @close="isDeleteModalOpen = false"
       @confirm="confirmDelete"
@@ -125,24 +123,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, computed, watch } from "vue";
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
   Filter as FilterIcon,
   ChevronDown as ChevronDownIcon,
-  Trash2 as Trash2Icon,
+  Trash2 as TrashIcon,
   AlertCircle as AlertCircleIcon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
 import PatientsTable from "../../components/patients/PatientsTable.vue";
-import PatientFormDialog from "../../components/patients/PatientFormDialog.vue";
 import PatientInfoDialog from "../../components/patients/PatientInfoDialog.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
 import { useToast } from "../../composables/useToast";
 import { usePermissions } from "../../composables/usePermissions";
+import { useBranchContext } from "../../composables/useBranchContext";
+import { useAuth } from "../../composables/useAuth";
 import {
   Select,
   SelectContent,
@@ -153,7 +153,13 @@ import {
 
 const { addToast } = useToast();
 const { getModulePermissions } = usePermissions();
+const { selectedBranchId } = useBranchContext();
+const { user: authUser } = useAuth();
 const modulePermissions = getModulePermissions("patients");
+
+const isSuperAdmin = computed(
+  () => authUser.value?.role?.name.toLowerCase() === "super-admin",
+);
 
 const patients = ref([]);
 const pagination = ref(null);
@@ -161,9 +167,9 @@ const loading = ref(true);
 const filters = reactive({
   search: "",
   status: "active",
+  branch_id: selectedBranchId.value,
 });
 
-const isFormModalOpen = ref(false);
 const isInfoModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
@@ -197,11 +203,6 @@ const handlePageChange = (page) => {
 
 const debouncedFetch = debounce(fetchPatients, 300);
 
-const openAddModal = () => {
-  selectedPatient.value = null;
-  isFormModalOpen.value = true;
-};
-
 const handleView = async (patient) => {
   try {
     const res = await axios.get(`/api/v1/patients/${patient.id}`);
@@ -215,6 +216,11 @@ const handleView = async (patient) => {
 const handleEdit = (patient) => {
   selectedPatient.value = patient;
   isFormModalOpen.value = true;
+};
+
+const handleEditFromInfo = (patient) => {
+  isInfoModalOpen.value = false;
+  handleEdit(patient);
 };
 
 const handleDelete = (patient) => {
@@ -277,6 +283,11 @@ const confirmToggleStatus = async () => {
     isStatusUpdating.value = false;
   }
 };
+
+watch(selectedBranchId, (newId) => {
+  filters.branch_id = newId;
+  fetchPatients(1);
+});
 
 onMounted(() => {
   fetchPatients(1);

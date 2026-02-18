@@ -29,40 +29,61 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-slate-100"
+              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
             >
-              <div class="bg-white px-6 py-6 border-b border-slate-100">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+              <!-- Header/Banner - Fixed -->
+              <div
+                class="relative bg-primary px-6 py-8 sm:px-10 text-white overflow-hidden shrink-0"
+              >
+                <div
+                  class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+                <div
+                  class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"
+                ></div>
+
+                <div class="relative flex items-center justify-between">
+                  <div class="flex items-center gap-4">
                     <div
-                      class="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center"
+                      class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <ScanIcon class="h-5 w-5 text-primary" />
+                      <ScanIcon class="h-6 w-6 text-white" />
                     </div>
-                    <DialogTitle
-                      as="h3"
-                      class="text-xl font-bold leading-6 text-slate-900"
-                    >
-                      {{
-                        mode === "view"
-                          ? "View Scan Type"
-                          : mode === "edit"
-                            ? "Edit Scan Type"
-                            : "Add Scan Type"
-                      }}
-                    </DialogTitle>
+                    <div>
+                      <DialogTitle
+                        as="h3"
+                        class="text-xl font-bold tracking-tight text-white"
+                      >
+                        {{
+                          mode === "view"
+                            ? "View Scan Type"
+                            : mode === "edit"
+                              ? "Edit Scan Type"
+                              : "Add New Scan Type"
+                        }}
+                      </DialogTitle>
+                      <p class="text-sm font-medium mt-1 opacity-90">
+                        {{
+                          mode === "view"
+                            ? "Viewing scan type and its included procedures."
+                            : "Define scan types and manage their sub-scans."
+                        }}
+                      </p>
+                    </div>
                   </div>
                   <button
                     @click.stop="onClose"
-                    class="text-slate-400 hover:text-slate-500 transition-colors"
+                    class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                   >
-                    <XIcon class="h-6 w-6" />
+                    <XIcon class="h-5 w-5 text-white" />
                   </button>
                 </div>
               </div>
 
               <form @submit.prevent="handleSubmit">
-                <div class="bg-white px-6 py-6 space-y-6">
+                <div
+                  class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar space-y-6"
+                >
                   <!-- Error Message -->
                   <div
                     v-if="error"
@@ -74,7 +95,8 @@
 
                   <!-- Name Field -->
                   <div class="space-y-1.5">
-                    <label class="text-sm font-bold text-slate-700 ml-1"
+                    <label
+                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
                       >Scan Type Name</label
                     >
                     <input
@@ -90,7 +112,8 @@
                   <!-- Multiple Scans Field -->
                   <div class="space-y-3">
                     <div class="flex items-center justify-between">
-                      <label class="text-sm font-bold text-slate-700 ml-1"
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
                         >Included Scans</label
                       >
                       <button
@@ -103,22 +126,31 @@
                       </button>
                     </div>
 
-                    <div
-                      class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1"
-                    >
+                    <div class="space-y-2">
                       <div
                         v-for="(scan, index) in form.scans"
                         :key="index"
                         class="flex items-center gap-2 group"
                       >
-                        <div class="relative flex-1">
+                        <div class="relative flex-[2]">
                           <input
                             v-model="scan.name"
                             type="text"
-                            placeholder="Enter scan name"
+                            placeholder="Scan Name"
                             class="w-full bg-slate-50/50 border-slate-100 group-hover:bg-white group-hover:border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed"
                             :disabled="mode === 'view' || loading"
                             required
+                          />
+                        </div>
+                        <div class="relative flex-1">
+                          <input
+                            v-model="scan.amount"
+                            type="number"
+                            placeholder="Amount"
+                            class="w-full bg-slate-50/50 border-slate-100 group-hover:bg-white group-hover:border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed"
+                            :disabled="mode === 'view' || loading"
+                            min="0"
+                            step="0.01"
                           />
                         </div>
                         <button
@@ -133,7 +165,7 @@
 
                       <div
                         v-if="form.scans.length === 0"
-                        class="text-center py-4 border-2 border-dashed border-slate-100 rounded-2xl"
+                        class="text-center py-8 border-2 border-dashed border-slate-100 rounded-3xl"
                       >
                         <p class="text-xs text-slate-400">
                           No scans added yet.
@@ -144,12 +176,12 @@
                 </div>
 
                 <div
-                  class="bg-slate-50 px-6 py-4 flex justify-end gap-3 rounded-b-3xl"
+                  class="bg-slate-50 px-6 py-6 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px] shrink-0"
                 >
                   <button
                     type="button"
                     @click.stop="onClose"
-                    class="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all active:scale-95"
+                    class="px-6 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all active:scale-95 bg-white shadow-sm"
                     :disabled="loading"
                   >
                     {{ mode === "view" ? "Close" : "Cancel" }}
@@ -157,7 +189,7 @@
                   <button
                     v-if="mode !== 'view'"
                     type="submit"
-                    class="px-6 py-2.5 rounded-xl bg-primary text-sm font-bold text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center min-w-[100px] active:scale-95"
+                    class="px-8 py-2.5 rounded-xl bg-primary text-sm font-bold text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center min-w-[120px] active:scale-95"
                     :disabled="loading"
                   >
                     <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
@@ -226,7 +258,10 @@ watch(
           id: props.initialData.id,
           name: props.initialData.name,
           scans: props.initialData.scans
-            ? props.initialData.scans.map((s) => ({ ...s }))
+            ? props.initialData.scans.map((s) => ({
+                name: s.name || s, // Handle if s is string or object
+                amount: s.amount || "",
+              }))
             : [],
         };
       } else {
@@ -240,7 +275,7 @@ watch(
 );
 
 const addScan = () => {
-  form.value.scans.push({ name: "" });
+  form.value.scans.push({ name: "", amount: "" });
 };
 
 const removeScan = (index) => {
