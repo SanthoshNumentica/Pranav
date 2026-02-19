@@ -16,6 +16,19 @@
               class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-100 bg-slate-50 text-slate-500 font-bold outline-none cursor-not-allowed"
             />
           </div>
+
+          <div class="space-y-2">
+            <label
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+              >MRN ID</label
+            >
+            <input
+              v-model="form.mrn_id"
+              type="text"
+              placeholder="MRN Number"
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+            />
+          </div>
         </div>
 
         <!-- Personal Info -->
@@ -215,54 +228,39 @@
           </h4>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="md:col-span-2 space-y-2">
+            <div class="space-y-2">
               <label
                 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Address Line <span class="text-rose-500">*</span></label
+                >Place <span class="text-rose-500">*</span></label
               >
               <input
-                v-model="form.address"
+                v-model="form.place"
                 type="text"
                 required
-                placeholder="Door No, Building, Area"
+                placeholder="City / Place"
                 class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
               />
             </div>
+
             <div class="space-y-2">
               <label
                 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Street</label
+                >Referer <span class="text-rose-500">*</span></label
               >
-              <input
-                v-model="form.street"
-                type="text"
-                placeholder="Street Name"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
-            </div>
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >City</label
-              >
-              <input
-                v-model="form.city"
-                type="text"
-                placeholder="City"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
-            </div>
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Pincode</label
-              >
-              <input
-                v-model="form.pincode"
-                type="text"
-                placeholder="6-digit Pincode"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <Select v-model="form.referer_id" v-model:open="isRefererOpen">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Referer" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="r in referers"
+                    :key="r.id"
+                    :value="r.id.toString()"
+                  >
+                    {{ r.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -286,50 +284,6 @@
               placeholder="Any additional notes..."
               class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none font-medium"
             ></textarea>
-          </div>
-        </div>
-
-        <!-- Branch Selection (Conditional for Super Admins) -->
-        <div class="space-y-6 pt-4">
-          <h4
-            class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
-          >
-            <div class="h-1 w-1 rounded-full bg-primary"></div>
-            Branch Assignment
-          </h4>
-
-          <div class="grid grid-cols-1 gap-6">
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Assigned Branch <span class="text-rose-500">*</span></label
-              >
-              <Select
-                v-model="form.branch_id"
-                v-model:open="isBranchOpen"
-                :disabled="!loggedInUserIsSuperAdmin"
-                required
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    :placeholder="
-                      !loggedInUserIsSuperAdmin
-                        ? authUser?.branch?.name
-                        : 'Select Branch'
-                    "
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="branch in filteredBranches"
-                    :key="branch.id"
-                    :value="branch.id.toString()"
-                  >
-                    {{ branch.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
       </form>
@@ -390,9 +344,10 @@ const emit = defineEmits(["submit", "cancel"]);
 const titles = ref([]);
 const genders = ref([]);
 const bloodGroups = ref([]);
-const doctors = ref([]);
+const referers = ref([]);
 
 const initialForm = {
+  mrn_id: "",
   title_fk_id: "",
   name: "",
   father_name: "",
@@ -400,15 +355,12 @@ const initialForm = {
   dob: "",
   mobile_no: "",
   whatsapp_no: "",
-  branch_id: "",
+
   blood_group_fk_id: "",
   gender_fk_id: "",
-  address: "",
-  street: "",
-  pincode: "",
-  city: "",
+  place: "",
   remarks: "",
-  doctor_id: "",
+  referer_id: "",
 };
 
 const form = reactive({ ...initialForm });
@@ -416,38 +368,27 @@ const form = reactive({ ...initialForm });
 const isTitleOpen = ref(false);
 const isGenderOpen = ref(false);
 const isBloodGroupOpen = ref(false);
-const isDoctorOpen = ref(false);
-const isBranchOpen = ref(false);
-const branches = ref([]);
+const isRefererOpen = ref(false);
 
 const loggedInUserIsSuperAdmin = computed(
   () => authUser.value?.role?.name.toLowerCase() === "super-admin",
 );
 
-const filteredBranches = computed(() => {
-  if (loggedInUserIsSuperAdmin.value) return branches.value;
-  if (!authUser.value?.branch_id) return [];
-  return branches.value.filter(
-    (b) => b.id.toString() === authUser.value.branch_id.toString(),
-  );
-});
-
 const fetchMasters = async () => {
   try {
-    const [tRes, gRes, bRes, brRes] = await Promise.all([
+    const [tRes, gRes, bRes] = await Promise.all([
       axios.get("/api/v1/masters/titles?status=active&nopaginate=1"),
       axios.get("/api/v1/masters/genders?status=active&nopaginate=1"),
       axios.get("/api/v1/masters/blood-groups?status=active&nopaginate=1"),
-      axios.get("/api/v1/masters/branches?status=active&nopaginate=1"),
     ]);
     titles.value = tRes.data.data;
     genders.value = gRes.data.data;
     bloodGroups.value = bRes.data.data;
-    branches.value = Array.isArray(brRes.data.data)
-      ? brRes.data.data
-      : brRes.data.data?.data || [];
-    const dRes = await axios.get("/api/v1/doctors?status=active&nopaginate=1");
-    doctors.value = dRes.data.data;
+
+    const dRes = await axios.get(
+      "/api/v1/masters/referers?status=active&nopaginate=1",
+    );
+    referers.value = dRes.data.data;
   } catch (err) {
     console.error("Failed to fetch masters", err);
   }
@@ -476,9 +417,7 @@ watch(
     } else {
       Object.assign(form, initialForm);
       // Auto-assign branch for non-super-admins
-      if (!loggedInUserIsSuperAdmin.value && authUser.value?.branch_id) {
-        form.branch_id = authUser.value.branch_id.toString();
-      }
+
       age.value = "";
     }
   },

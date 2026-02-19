@@ -6,19 +6,21 @@
     >
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
-          Patients
+          Referers
         </h1>
-        <p class="text-sm text-slate-500 mt-1">Manage patient records.</p>
+        <p class="text-sm text-slate-500 mt-1">
+          Manage referers and their details.
+        </p>
       </div>
       <div class="flex items-center gap-3">
-        <router-link
+        <button
           v-if="modulePermissions.canAdd"
-          :to="{ name: 'PatientCreate' }"
+          @click="openAddModal"
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
           <PlusIcon class="h-4 w-4" />
-          Add Patient
-        </router-link>
+          Add Referer
+        </button>
       </div>
     </div>
 
@@ -38,24 +40,21 @@
             <input
               v-model="filters.search"
               type="text"
-              placeholder="Search Name, ID, MRN, Mobile..."
+              placeholder="Search Name, Mobile..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               @input="debouncedFetch"
             />
           </div>
 
           <div class="relative w-full md:w-48">
-            <Select
-              v-model="filters.status"
-              @update:modelValue="() => fetchPatients(1)"
-            >
+            <Select v-model="filters.status" @update:modelValue="fetchReferers">
               <SelectTrigger class="w-full pl-10">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active Patients</SelectItem>
-                <SelectItem value="inactive">Inactive Patients</SelectItem>
-                <SelectItem value="all">All Patients</SelectItem>
+                <SelectItem value="active">Active Referers</SelectItem>
+                <SelectItem value="inactive">Inactive Referers</SelectItem>
+                <SelectItem value="all">All Referers</SelectItem>
               </SelectContent>
             </Select>
             <FilterIcon
@@ -70,11 +69,10 @@
     <div
       class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
     >
-      <PatientsTable
-        :patients="patients"
+      <ReferersTable
+        :referers="referers"
         :loading="loading"
         :permissions="modulePermissions"
-        @view-info="handleView"
         @edit="handleEdit"
         @delete="handleDelete"
         @toggle-status="handleToggleStatus"
@@ -88,21 +86,20 @@
     </div>
 
     <!-- Modals -->
-
-    <PatientInfoDialog
-      :is-open="isInfoModalOpen"
-      :patient="selectedPatient"
-      @close="isInfoModalOpen = false"
-      @edit="handleEditFromInfo"
+    <RefererFormDialog
+      :is-open="isFormModalOpen"
+      :referer="selectedReferer"
+      @close="isFormModalOpen = false"
+      @saved="fetchReferers"
     />
 
     <ConfirmationModal
       :is-open="isDeleteModalOpen"
-      title="Delete Patient"
-      :description="`Are you sure you want to delete patient ${patientToDelete?.name}? This action will move the record to trash.`"
-      confirm-label="Delete Patient"
+      title="Delete Referer"
+      :description="`Are you sure you want to delete referer ${refererToDelete?.name}? This action will move the record to trash.`"
+      confirm-label="Delete Referer"
       variant="danger"
-      :icon="TrashIcon"
+      :icon="Trash2Icon"
       :loading="isDeleting"
       @close="isDeleteModalOpen = false"
       @confirm="confirmDelete"
@@ -111,7 +108,7 @@
     <ConfirmationModal
       :is-open="isStatusModalOpen"
       title="Update Status"
-      :description="`Are you sure you want to change the status of ${patientToToggle?.name} to ${nextStatus}?`"
+      :description="`Are you sure you want to change the status of ${refererToToggle?.name} to ${nextStatus}?`"
       confirm-label="Update Status"
       variant="warning"
       :icon="AlertCircleIcon"
@@ -123,26 +120,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed, watch } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
   Filter as FilterIcon,
-  ChevronDown as ChevronDownIcon,
-  Trash2 as TrashIcon,
+  Trash2 as Trash2Icon,
   AlertCircle as AlertCircleIcon,
-  MapPin as MapPinIcon,
+  Stethoscope as StethoscopeIcon, // Fallback icon if needed
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
-import PatientsTable from "../../components/patients/PatientsTable.vue";
-import PatientInfoDialog from "../../components/patients/PatientInfoDialog.vue";
+import ReferersTable from "../../components/referers/ReferersTable.vue";
+import RefererFormDialog from "../../components/referers/RefererFormDialog.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
 import { useToast } from "../../composables/useToast";
 import { usePermissions } from "../../composables/usePermissions";
-
-import { useAuth } from "../../composables/useAuth";
 import {
   Select,
   SelectContent,
@@ -153,15 +147,9 @@ import {
 
 const { addToast } = useToast();
 const { getModulePermissions } = usePermissions();
+const modulePermissions = getModulePermissions("referers");
 
-const { user: authUser } = useAuth();
-const modulePermissions = getModulePermissions("patients");
-
-const isSuperAdmin = computed(
-  () => authUser.value?.role?.name.toLowerCase() === "super-admin",
-);
-
-const patients = ref([]);
+const referers = ref([]);
 const pagination = ref(null);
 const loading = ref(true);
 const filters = reactive({
@@ -169,81 +157,71 @@ const filters = reactive({
   status: "active",
 });
 
-const isInfoModalOpen = ref(false);
+const isFormModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 const isStatusModalOpen = ref(false);
 const isStatusUpdating = ref(false);
-const selectedPatient = ref(null);
-const patientToDelete = ref(null);
-const patientToToggle = ref(null);
+const selectedReferer = ref(null);
+const refererToDelete = ref(null);
+const refererToToggle = ref(null);
 const nextStatus = ref("");
 
-const fetchPatients = async (page = 1) => {
+const fetchReferers = async (page = 1) => {
   loading.value = true;
   try {
-    const response = await axios.get("/api/v1/patients", {
+    const response = await axios.get("/api/v1/referers", {
       params: { ...filters, page },
     });
     if (response.data.success) {
-      patients.value = response.data.data.data;
+      referers.value = response.data.data.data;
       pagination.value = response.data.data;
     }
   } catch (error) {
-    console.error("Failed to fetch patients", error);
+    console.error("Failed to fetch referers", error);
   } finally {
     loading.value = false;
   }
 };
 
 const handlePageChange = (page) => {
-  fetchPatients(page);
+  fetchReferers(page);
 };
 
-const debouncedFetch = debounce(fetchPatients, 300);
+const debouncedFetch = debounce(fetchReferers, 300);
 
-const handleView = async (patient) => {
-  try {
-    const res = await axios.get(`/api/v1/patients/${patient.id}`);
-    selectedPatient.value = res.data.data;
-    isInfoModalOpen.value = true;
-  } catch (err) {
-    console.error("Failed to fetch patient details", err);
-  }
-};
-
-const handleEdit = (patient) => {
-  selectedPatient.value = patient;
+const openAddModal = () => {
+  selectedReferer.value = null;
   isFormModalOpen.value = true;
 };
 
-const handleEditFromInfo = (patient) => {
-  isInfoModalOpen.value = false;
-  handleEdit(patient);
+const handleEdit = (referer) => {
+  selectedReferer.value = referer;
+  isFormModalOpen.value = true;
 };
 
-const handleDelete = (patient) => {
-  patientToDelete.value = patient;
+const handleDelete = (referer) => {
+  refererToDelete.value = referer;
   isDeleteModalOpen.value = true;
 };
 
 const confirmDelete = async () => {
-  if (!patientToDelete.value) return;
+  if (!refererToDelete.value) return;
   isDeleting.value = true;
   try {
-    await axios.delete(`/api/v1/patients/${patientToDelete.value.id}`);
-    fetchPatients();
+    await axios.delete(`/api/v1/referers/${refererToDelete.value.id}`);
+    fetchReferers();
     isDeleteModalOpen.value = false;
     addToast({
       title: "Success",
-      description: "Patient moved to trash successfully.",
+      description: "Referer moved to trash successfully.",
       variant: "success",
     });
   } catch (err) {
-    console.error("Failed to delete patient", err);
+    console.error("Failed to delete referer", err);
     addToast({
       title: "Error",
-      description: "Failed to delete patient.",
+      description: "Failed to delete referer.",
       variant: "error",
     });
   } finally {
@@ -251,31 +229,31 @@ const confirmDelete = async () => {
   }
 };
 
-const handleToggleStatus = (patient) => {
-  patientToToggle.value = patient;
-  nextStatus.value = patient.status === "active" ? "inactive" : "active";
+const handleToggleStatus = (referer) => {
+  refererToToggle.value = referer;
+  nextStatus.value = referer.status === "active" ? "inactive" : "active";
   isStatusModalOpen.value = true;
 };
 
 const confirmToggleStatus = async () => {
-  if (!patientToToggle.value) return;
+  if (!refererToToggle.value) return;
   isStatusUpdating.value = true;
   try {
-    await axios.post(`/api/v1/patients/${patientToToggle.value.id}/status`, {
+    await axios.post(`/api/v1/referers/${refererToToggle.value.id}/status`, {
       status: nextStatus.value,
     });
-    fetchPatients();
+    fetchReferers();
     isStatusModalOpen.value = false;
     addToast({
       title: "Success",
-      description: "Patient status updated successfully.",
+      description: "Referer status updated successfully.",
       variant: "success",
     });
   } catch (err) {
     console.error("Failed to toggle status", err);
     addToast({
       title: "Error",
-      description: "Failed to update patient status.",
+      description: "Failed to update referer status.",
       variant: "error",
     });
   } finally {
@@ -284,6 +262,6 @@ const confirmToggleStatus = async () => {
 };
 
 onMounted(() => {
-  fetchPatients(1);
+  fetchReferers(1);
 });
 </script>

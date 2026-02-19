@@ -1,0 +1,125 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Referer;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+
+class RefererController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        $query = Referer::with(['refererType', 'addedByUser', 'modifiedByUser'])->orderBy('name');
+
+        if ($request->has('status')) {
+            if ($request->status === 'inactive') {
+                $query->withTrashed()->where('status', 'inactive');
+            } elseif ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+        }
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('mobile_no', 'like', "%{$search}%")
+                    ->orWhere('place', 'like', "%{$search}%");
+            });
+        }
+
+        $data = $request->has('nopaginate') ? $query->get() : $query->paginate(10);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data
+        ]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'referer_type_id' => 'required|exists:referer_types,id',
+            'name' => 'required|string|max:255',
+            'mobile_no' => 'required|string|max:20',
+            'email_id' => 'nullable|email|max:255',
+            'place' => 'nullable|string|max:255',
+        ]);
+
+        $referer = Referer::create([
+            'referer_type_id' => $request->referer_type_id,
+            'name' => $request->name,
+            'mobile_no' => $request->mobile_no,
+            'email_id' => $request->email_id,
+            'place' => $request->place,
+            'status' => 'active',
+            'added_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referer created successfully',
+            'data' => $referer
+        ]);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $referer = Referer::findOrFail($id);
+
+        $request->validate([
+            'referer_type_id' => 'required|exists:referer_types,id',
+            'name' => 'required|string|max:255',
+            'mobile_no' => 'required|string|max:20',
+            'email_id' => 'nullable|email|max:255',
+            'place' => 'nullable|string|max:255',
+        ]);
+
+        $referer->update([
+            'referer_type_id' => $request->referer_type_id,
+            'name' => $request->name,
+            'mobile_no' => $request->mobile_no,
+            'email_id' => $request->email_id,
+            'place' => $request->place,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referer updated successfully',
+            'data' => $referer
+        ]);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $referer = Referer::findOrFail($id);
+        $referer->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
+        $referer->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referer deleted successfully'
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $referer = Referer::findOrFail($id);
+        $request->validate(['status' => 'required|in:active,inactive']);
+
+        $referer->update([
+            'status' => $request->status,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully',
+            'data' => $referer
+        ]);
+    }
+}

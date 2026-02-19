@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CaseReportController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\DoctorController;
+use App\Http\Controllers\Admin\RefererController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\FileController;
 use App\Http\Controllers\Admin\MasterController;
@@ -58,13 +58,12 @@ Route::prefix('v1')->group(function () {
         Route::delete('patients/{id}', [PatientController::class, 'destroy']);
         Route::post('patients/{id}/status', [PatientController::class, 'updateStatus']);
 
-        // Doctors
-        Route::get('doctors', [DoctorController::class, 'index']);
-        Route::post('doctors', [DoctorController::class, 'store']);
-        Route::get('doctors/{id}', [DoctorController::class, 'show']);
-        Route::put('doctors/{id}', [DoctorController::class, 'update']);
-        Route::delete('doctors/{id}', [DoctorController::class, 'destroy']);
-        Route::post('doctors/{id}/status', [DoctorController::class, 'updateStatus']);
+        // Referers
+        Route::get('referers', [RefererController::class, 'index']);
+        Route::post('referers', [RefererController::class, 'store']);
+        Route::put('referers/{id}', [RefererController::class, 'update']);
+        Route::delete('referers/{id}', [RefererController::class, 'destroy']);
+        Route::post('referers/{id}/status', [RefererController::class, 'updateStatus']);
 
         // Users
         Route::get('users', [UserController::class, 'index']);
@@ -94,7 +93,7 @@ Route::prefix('v1')->group(function () {
         Route::post('masters/scan-types/{id}/status', [MasterController::class, 'updateScanTypeStatus']);
 
         Route::get('masters/patients', [MasterController::class, 'patients']);
-        Route::get('masters/doctors', [MasterController::class, 'doctors']);
+        Route::get('masters/referers', [RefererController::class, 'index']); // Reusing index as it already returns list
         Route::get('masters/users', [MasterController::class, 'users']);
 
         Route::get('masters/genders', [MasterController::class, 'genders']);
@@ -114,6 +113,18 @@ Route::prefix('v1')->group(function () {
         Route::put('masters/titles/{id}', [MasterController::class, 'updateTitle']);
         Route::delete('masters/titles/{id}', [MasterController::class, 'destroyTitle']);
         Route::post('masters/titles/{id}/status', [MasterController::class, 'updateTitleStatus']);
+
+        Route::get('masters/referer-types', [MasterController::class, 'refererTypes']);
+        Route::post('masters/referer-types', [MasterController::class, 'storeRefererType']);
+        Route::put('masters/referer-types/{id}', [MasterController::class, 'updateRefererType']);
+        Route::delete('masters/referer-types/{id}', [MasterController::class, 'destroyRefererType']);
+        Route::post('masters/referer-types/{id}/status', [MasterController::class, 'updateRefererTypeStatus']);
+
+        Route::get('masters/discounts', [MasterController::class, 'discounts']);
+        Route::post('masters/discounts', [MasterController::class, 'storeDiscount']);
+        Route::put('masters/discounts/{id}', [MasterController::class, 'updateDiscount']);
+        Route::delete('masters/discounts/{id}', [MasterController::class, 'destroyDiscount']);
+        Route::post('masters/discounts/{id}/status', [MasterController::class, 'updateDiscountStatus']);
 
         // Branches
         Route::post('branches/{id}/status', [BranchController::class, 'updateStatus']);

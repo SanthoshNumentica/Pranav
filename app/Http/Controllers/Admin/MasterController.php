@@ -11,6 +11,199 @@ use Illuminate\Http\JsonResponse;
 
 class MasterController extends Controller
 {
+    public function discounts(Request $request): JsonResponse
+    {
+        $query = \App\Models\Discount::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
+
+        if ($request->has('status')) {
+            if ($request->status === 'inactive') {
+                $query->withTrashed()->where('status', 'inactive');
+            } elseif ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+        }
+
+        $data = $request->has('nopaginate') ? $query->get() : $query->paginate(10);
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    public function storeDiscount(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('discounts', 'name')->whereNull('deleted_at')
+            ],
+            'percentage' => 'required|numeric|min:0|max:100'
+        ]);
+
+        $discount = \App\Models\Discount::create([
+            'name' => $request->name,
+            'percentage' => $request->percentage,
+            'status' => 'active',
+            'added_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Discount created successfully',
+            'data' => $discount
+        ]);
+    }
+
+    public function updateDiscount(Request $request, $id): JsonResponse
+    {
+        $discount = \App\Models\Discount::findOrFail($id);
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('discounts', 'name')->ignore($id)->whereNull('deleted_at')
+            ],
+            'percentage' => 'required|numeric|min:0|max:100'
+        ]);
+
+        $discount->update([
+            'name' => $request->name,
+            'percentage' => $request->percentage,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Discount updated successfully',
+            'data' => $discount
+        ]);
+    }
+
+    public function destroyDiscount($id): JsonResponse
+    {
+        $discount = \App\Models\Discount::findOrFail($id);
+        $discount->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
+        $discount->delete(); // Soft delete
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Discount deleted successfully'
+        ]);
+    }
+
+    public function updateDiscountStatus(Request $request, $id): JsonResponse
+    {
+        $discount = \App\Models\Discount::findOrFail($id);
+        $request->validate(['status' => 'required|in:active,inactive']);
+        $discount->update([
+            'status' => $request->status,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully',
+            'data' => $discount
+        ]);
+    }
+
+    public function refererTypes(Request $request): JsonResponse
+    {
+        $query = \App\Models\RefererType::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
+
+        if ($request->has('status')) {
+            if ($request->status === 'inactive') {
+                $query->withTrashed()->where('status', 'inactive');
+            } elseif ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+        }
+
+        $data = $request->has('nopaginate') ? $query->get() : $query->paginate(10);
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    public function storeRefererType(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('referer_types', 'name')->whereNull('deleted_at')
+            ]
+        ]);
+
+        $refererType = \App\Models\RefererType::create([
+            'name' => $request->name,
+            'status' => 'active',
+            'added_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referer type created successfully',
+            'data' => $refererType
+        ]);
+    }
+
+    public function updateRefererType(Request $request, $id): JsonResponse
+    {
+        $refererType = \App\Models\RefererType::findOrFail($id);
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('referer_types', 'name')->ignore($id)->whereNull('deleted_at')
+            ]
+        ]);
+
+        $refererType->update([
+            'name' => $request->name,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referer type updated successfully',
+            'data' => $refererType
+        ]);
+    }
+
+    public function destroyRefererType($id): JsonResponse
+    {
+        $refererType = \App\Models\RefererType::findOrFail($id);
+        $refererType->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
+        $refererType->delete(); // Soft delete
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Referer type deleted successfully'
+        ]);
+    }
+
+    public function updateRefererTypeStatus(Request $request, $id): JsonResponse
+    {
+        $refererType = \App\Models\RefererType::findOrFail($id);
+        $request->validate(['status' => 'required|in:active,inactive']);
+        $refererType->update([
+            'status' => $request->status,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully',
+            'data' => $refererType
+        ]);
+    }
     public function roles(): JsonResponse
     {
         return response()->json([

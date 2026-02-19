@@ -219,6 +219,8 @@ import {
   CaseSensitive as CaseSensitiveIcon,
   Shield as ShieldIcon,
   Building2 as BuildingsIcon,
+  Building as BuildingIcon,
+  Tag as TagIcon,
 } from "lucide-vue-next";
 import SidebarNavItem from "../ui/SidebarNavItem.vue";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
@@ -262,7 +264,7 @@ const navMain = computed(() => {
       icon: PatientsIcon,
       module: "patients",
     },
-    { title: "Doctors", url: "/doctors", icon: DoctorsIcon, module: "doctors" },
+    { title: "Referers", url: "/referers", icon: UserIcon, module: "referers" },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));
 });
@@ -305,6 +307,18 @@ const navMaster = computed(() => {
       icon: CaseSensitiveIcon,
       module: "titles",
     },
+    {
+      title: "Referer Types",
+      url: "/masters/referer-types",
+      icon: BuildingIcon,
+      module: "referer-types",
+    },
+    {
+      title: "Discounts",
+      url: "/masters/discounts",
+      icon: TagIcon,
+      module: "discounts",
+    },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));
 });
@@ -313,7 +327,12 @@ const navSystem = computed(() => {
   const items = [
     { title: "Users", url: "/users", icon: UserIcon, module: "user" },
     { title: "Roles", url: "/roles", icon: ShieldIcon, module: "role" },
-    { title: "Branches", url: "/branches", icon: BuildingsIcon, module: "branch" },
+    {
+      title: "Branches",
+      url: "/branches",
+      icon: BuildingsIcon,
+      module: "branch",
+    },
     { title: "Settings", url: "/profile", icon: SettingsIcon },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));

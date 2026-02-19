@@ -59,10 +59,10 @@ const routes = [
                 meta: { title: "Create Patient", action: "create", subject: "patients" },
             },
             {
-                path: 'doctors',
-                name: 'Doctors',
-                component: () => import('../views/doctors/DoctorList.vue'),
-                meta: { module: 'doctors' }
+                path: 'referers',
+                name: 'Referers',
+                component: () => import('../views/referers/RefererList.vue'),
+                meta: { module: 'referers' }
             },
             {
                 path: 'users',
@@ -105,6 +105,18 @@ const routes = [
                 name: 'Titles',
                 component: () => import('../views/masters/TitleList.vue'),
                 meta: { module: 'titles' }
+            },
+            {
+                path: 'masters/referer-types',
+                name: 'RefererTypes',
+                component: () => import('../views/masters/RefererTypeList.vue'),
+                meta: { module: 'referer-types' }
+            },
+            {
+                path: 'masters/discounts',
+                name: 'Discounts',
+                component: () => import('../views/masters/DiscountList.vue'),
+                meta: { module: 'discounts' }
             },
             {
                 path: 'reports/patients',

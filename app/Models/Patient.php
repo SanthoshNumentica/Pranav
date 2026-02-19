@@ -18,6 +18,7 @@ class Patient extends Model
 
     protected $fillable = [
         'patient_id',
+        'mrn_id',
         'title_fk_id',
         'name',
         'father_name',
@@ -27,14 +28,11 @@ class Patient extends Model
         'whatsapp_no',
         'blood_group_fk_id',
         'gender_fk_id',
-        'address',
-        'street',
-        'pincode',
-        'city',
+        'place',
         'remarks',
         'status',
-        'branch_id',
-        'doctor_id',
+
+        'referer_id',
         'added_by',
         'modified_by'
     ];
@@ -58,14 +56,11 @@ class Patient extends Model
         return $this->hasMany(CaseReport::class, 'patient_fk_id');
     }
 
-    public function branch(): BelongsTo
-    {
-        return $this->belongsTo(Branch::class, 'branch_id');
-    }
 
-    public function doctor(): BelongsTo
+
+    public function referer(): BelongsTo
     {
-        return $this->belongsTo(Doctor::class, 'doctor_id');
+        return $this->belongsTo(Referer::class, 'referer_id');
     }
 
 }

@@ -36,28 +36,25 @@ class PatientController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
+            'patient_id' => 'nullable|string',
+            'mrn_id' => 'nullable|string',
             'title_fk_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
             'father_name' => 'nullable|string|max:255',
             'email_id' => 'nullable|email|unique:patients,email_id',
             'mobile_no' => 'required|string',
             'gender_fk_id' => 'required|exists:genders,id',
-            'address' => 'required|string',
-            'street' => 'nullable|string',
-            'pincode' => 'nullable|string',
-            'city' => 'nullable|string',
+            'place' => 'nullable|string',
             'dob' => 'required|date',
             'whatsapp_no' => 'nullable|string',
             'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
             'remarks' => 'nullable|string',
-            'branch_id' => 'nullable|exists:branches,id',
+
             'doctor_id' => 'nullable|exists:doctors,id',
         ]);
 
         $data = $request->all();
-        if (auth()->user()->branch_id) {
-            $data['branch_id'] = auth()->user()->branch_id;
-        }
+
 
         $patient = $this->patientService->createPatient($data);
 
@@ -86,16 +83,14 @@ class PatientController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $request->validate([
+            'mrn_id' => 'sometimes|nullable|string',
             'title_fk_id' => 'sometimes|nullable|exists:titles,id',
             'name' => 'sometimes|required|string|max:255',
             'father_name' => 'sometimes|nullable|string|max:255',
             'email_id' => 'sometimes|nullable|email|unique:patients,email_id,' . $id,
             'mobile_no' => 'sometimes|required|string',
             'gender_fk_id' => 'sometimes|required|exists:genders,id',
-            'address' => 'sometimes|required|string',
-            'street' => 'sometimes|nullable|string',
-            'pincode' => 'sometimes|nullable|string',
-            'city' => 'sometimes|nullable|string',
+            'place' => 'sometimes|nullable|string',
             'dob' => 'nullable|date',
             'whatsapp_no' => 'nullable|string',
             'blood_group_fk_id' => 'nullable|exists:blood_groups,id',

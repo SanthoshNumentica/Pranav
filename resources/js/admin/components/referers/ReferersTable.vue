@@ -16,12 +16,7 @@
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Patient ID
-          </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
-            MRN ID
+            Type
           </th>
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -32,17 +27,6 @@
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
             Place
-          </th>
-
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
-            Gender
-          </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
-            DOB
           </th>
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -67,7 +51,6 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
-        <!-- Skeleton Loading State -->
         <template v-if="loading">
           <tr v-for="i in 5" :key="i" class="animate-pulse">
             <td class="px-3 py-4">
@@ -80,20 +63,10 @@
               <div class="h-4 bg-slate-100 rounded-md w-24"></div>
             </td>
             <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
-            </td>
-            <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-28"></div>
             </td>
             <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-20"></div>
-            </td>
-
-            <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-16"></div>
-            </td>
-            <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
+              <div class="h-4 bg-slate-100 rounded-md w-36"></div>
             </td>
             <td class="px-3 py-4">
               <div class="h-6 bg-slate-100 rounded-full w-20"></div>
@@ -112,8 +85,8 @@
 
         <template v-else>
           <tr
-            v-for="(patient, index) in patients"
-            :key="patient.id"
+            v-for="(referer, index) in referers"
+            :key="referer.id"
             class="group hover:bg-primary/5 transition-colors duration-300"
           >
             <td class="px-3 py-4 text-sm text-slate-500">
@@ -121,36 +94,30 @@
             </td>
             <td class="px-3 py-4">
               <span class="text-sm font-semibold text-slate-900">{{
-                patient.name
+                referer.name
               }}</span>
             </td>
-            <td class="px-3 py-4 text-sm text-primary font-medium">
-              {{ patient.patient_id || "N/A" }}
-            </td>
-            <td class="px-3 py-4 text-sm text-slate-600 font-mono">
-              {{ patient.mrn_id || "-" }}
+            <td class="px-3 py-4 text-sm text-slate-600">
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700"
+              >
+                {{ referer.referer_type?.name || "N/A" }}
+              </span>
             </td>
             <td class="px-3 py-4 text-sm text-slate-600">
-              {{ patient.mobile_no || "N/A" }}
+              {{ referer.mobile_no || "N/A" }}
             </td>
             <td class="px-3 py-4 text-sm text-slate-600">
-              {{ patient.place || "-" }}
-            </td>
-
-            <td class="px-3 py-4 text-sm text-slate-600">
-              {{ patient.gender?.gender_name || "N/A" }}
-            </td>
-            <td class="px-3 py-4 text-sm text-slate-600">
-              {{ formatDate(patient.dob) }}
+              {{ referer.place || "N/A" }}
             </td>
             <td class="px-3 py-4">
               <button
                 type="button"
-                @click="$emit('toggle-status', patient)"
+                @click="$emit('toggle-status', referer)"
                 :class="
                   cn(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
-                    patient.status === 'active'
+                    'inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
+                    referer.status === 'active'
                       ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                       : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
                   )
@@ -158,54 +125,56 @@
               >
                 <CircleIcon
                   class="h-2 w-2 mr-1.5 fill-current"
-                  v-if="patient.status === 'active'"
+                  v-if="referer.status === 'active'"
                 />
-                {{ patient.status }}
+                {{ referer.status }}
               </button>
             </td>
             <td class="px-3 py-4">
               <div class="flex flex-col">
                 <span class="text-xs text-slate-600">{{
-                  formatDate(patient.created_at)
+                  formatDate(referer.created_at)
                 }}</span>
                 <span
-                  v-if="patient.added_by_user"
+                  v-if="referer.added_by_user"
                   class="text-[10px] text-slate-400"
                 >
-                  by {{ patient.added_by_user?.name || "Unknown" }}
+                  by {{ referer.added_by_user?.name || "Unknown" }}
                 </span>
               </div>
             </td>
             <td class="px-3 py-4">
               <div class="flex flex-col">
                 <span class="text-xs text-slate-600">{{
-                  formatDate(patient.updated_at)
+                  formatDate(referer.updated_at)
                 }}</span>
                 <span
-                  v-if="patient.modified_by_user"
+                  v-if="referer.modified_by_user"
                   class="text-[10px] text-slate-400"
                 >
-                  by {{ patient.modified_by_user?.name || "Unknown" }}
-                </span>
-                <span
-                  v-else-if="patient.added_by_user"
-                  class="text-[10px] text-slate-400"
-                >
-                  by {{ patient.added_by_user?.name || "Unknown" }}
+                  by {{ referer.modified_by_user?.name || "Unknown" }}
                 </span>
               </div>
             </td>
             <td class="px-3 py-4 text-right">
-              <TableActions
-                :item="patient"
-                :permissions="permissions"
-                view-title="View Info"
-                edit-title="Edit Patient"
-                delete-title="Delete Patient"
-                @view="$emit('view-info', $event)"
-                @edit="$emit('edit', $event)"
-                @delete="$emit('delete', $event)"
-              />
+              <div class="flex items-center justify-end gap-2">
+                <button
+                  v-if="permissions.canEdit"
+                  @click="$emit('edit', referer)"
+                  class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                  title="Edit Referer"
+                >
+                  <EditIcon class="h-4 w-4" />
+                </button>
+                <button
+                  v-if="permissions.canDelete"
+                  @click="$emit('delete', referer)"
+                  class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                  title="Delete Referer"
+                >
+                  <Trash2Icon class="h-4 w-4" />
+                </button>
+              </div>
             </td>
           </tr>
         </template>
@@ -213,7 +182,7 @@
     </table>
 
     <div
-      v-if="!loading && patients.length === 0"
+      v-if="!loading && referers.length === 0"
       class="text-center py-20 animate-in fade-in duration-500"
     >
       <div
@@ -222,19 +191,23 @@
         <UserIcon class="h-6 w-6 text-slate-400" />
       </div>
       <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-        No patients found.
+        No referers found.
       </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { User as UserIcon, Circle as CircleIcon } from "lucide-vue-next";
+import {
+  Circle as CircleIcon,
+  User as UserIcon, // Using UserIcon as generic fallback
+  Edit as EditIcon,
+  Trash2 as Trash2Icon,
+} from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
-import TableActions from "../ui/TableActions.vue";
 
 defineProps({
-  patients: {
+  referers: {
     type: Array,
     required: true,
   },
@@ -248,7 +221,7 @@ defineProps({
   },
 });
 
-defineEmits(["view-info", "edit", "delete", "toggle-status"]);
+defineEmits(["edit", "delete", "toggle-status"]);
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
