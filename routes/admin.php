@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\WhatsappController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\InvoiceController;
+use App\Http\Controllers\Admin\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +40,7 @@ Route::prefix('v1')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
 
         // Case Reports
+        Route::get('case-reports/next-id', [CaseReportController::class, 'getNextCaseId']);
         Route::get('case-reports', [CaseReportController::class, 'index']);
         Route::post('/case-reports', [CaseReportController::class, 'store']);
         Route::get('/case-reports/{id}', [CaseReportController::class, 'show']);
@@ -125,6 +128,20 @@ Route::prefix('v1')->group(function () {
         Route::put('masters/discounts/{id}', [MasterController::class, 'updateDiscount']);
         Route::delete('masters/discounts/{id}', [MasterController::class, 'destroyDiscount']);
         Route::post('masters/discounts/{id}/status', [MasterController::class, 'updateDiscountStatus']);
+
+        // Invoices
+        Route::get('invoices/next-no', [InvoiceController::class, 'getNextInvoiceNo']);
+        Route::apiResource('invoices', InvoiceController::class);
+
+        // Payments
+        Route::apiResource('payments', PaymentController::class)->only(['index', 'store']);
+
+        // Master Data for Invoices
+        Route::get('masters/payment-methods', [MasterController::class, 'paymentMethods']);
+        Route::post('masters/payment-methods', [MasterController::class, 'storePaymentMethod']);
+        Route::put('masters/payment-methods/{id}', [MasterController::class, 'updatePaymentMethod']);
+        Route::delete('masters/payment-methods/{id}', [MasterController::class, 'destroyPaymentMethod']);
+        Route::post('masters/payment-methods/{id}/status', [MasterController::class, 'updatePaymentMethodStatus']);
 
         // Branches
         Route::post('branches/{id}/status', [BranchController::class, 'updateStatus']);

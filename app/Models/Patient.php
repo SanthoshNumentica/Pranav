@@ -32,7 +32,6 @@ class Patient extends Model
         'remarks',
         'status',
 
-        'referer_id',
         'added_by',
         'modified_by'
     ];
@@ -58,9 +57,6 @@ class Patient extends Model
 
 
 
-    public function referer(): BelongsTo
-    {
-        return $this->belongsTo(Referer::class, 'referer_id');
-    }
+
 
 }

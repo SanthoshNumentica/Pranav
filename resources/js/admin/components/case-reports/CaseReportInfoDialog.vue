@@ -54,7 +54,11 @@
                         Case Report Details
                       </h3>
                       <div class="flex items-center gap-2 mt-1 opacity-90">
-                        <span class="text-sm font-medium">{{
+                        <span
+                          class="text-xs font-bold uppercase tracking-wider opacity-60"
+                          >SRF No:</span
+                        >
+                        <span class="text-sm font-bold">{{
                           report?.case_id
                         }}</span>
                         <span class="h-1 w-1 rounded-full bg-white/50"></span>
@@ -170,7 +174,7 @@
                       <h4
                         class="text-sm font-bold uppercase tracking-widest text-slate-400"
                       >
-                        Doctor Details
+                        Referer Details
                       </h4>
                     </div>
 
@@ -182,15 +186,15 @@
                           >Name</span
                         >
                         <span class="text-sm font-bold text-slate-900">{{
-                          report?.doctor?.name || "N/A"
+                          report?.referer?.name || "N/A"
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
                         <span class="text-xs font-semibold text-slate-500"
-                          >Doctor ID</span
+                          >Type</span
                         >
                         <span class="text-sm font-medium text-primary">{{
-                          report?.doctor?.doctor_id || "N/A"
+                          report?.referer?.referer_type?.name || "N/A"
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
@@ -198,7 +202,81 @@
                           >Mobile</span
                         >
                         <span class="text-sm font-medium text-slate-700">{{
-                          report?.doctor?.mobile_no || "N/A"
+                          report?.referer?.mobile_no || "N/A"
+                        }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Case Metadata Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- RCT Info -->
+                  <div
+                    class="bg-slate-50/50 p-5 rounded-3xl border border-slate-100 space-y-2"
+                  >
+                    <div class="flex items-center gap-2 text-slate-400">
+                      <ClockIcon class="h-3.5 w-3.5" />
+                      <span
+                        class="text-[10px] font-bold uppercase tracking-wider"
+                        >RCT Completion</span
+                      >
+                    </div>
+                    <div
+                      class="text-sm font-bold text-slate-900 flex items-center gap-2"
+                    >
+                      <span>{{
+                        report?.rct_date ? formatDate(report.rct_date) : "N/A"
+                      }}</span>
+                      <span
+                        v-if="report?.rct_hour"
+                        class="text-xs font-medium text-slate-400"
+                        >{{ report.rct_hour }}</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Status Badges -->
+                  <div
+                    class="bg-slate-50/50 p-5 rounded-3xl border border-slate-100 flex items-center gap-4"
+                  >
+                    <!-- STAT Badge -->
+                    <div v-if="report?.is_stat" class="flex flex-col gap-1">
+                      <span
+                        class="text-[10px] font-bold uppercase tracking-wider text-rose-400"
+                        >Priority</span
+                      >
+                      <div
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-100"
+                      >
+                        <ZapIcon class="h-3 w-3 fill-rose-600" />
+                        <span class="text-[10px] font-black uppercase"
+                          >STAT</span
+                        >
+                      </div>
+                    </div>
+
+                    <!-- Patient Type Badge -->
+                    <div class="flex flex-col gap-1 flex-grow">
+                      <span
+                        class="text-[10px] font-bold uppercase tracking-wider text-slate-400"
+                        >Patient Type</span
+                      >
+                      <div
+                        class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-primary border border-blue-100 self-start"
+                      >
+                        <component
+                          :is="
+                            report?.patient_type === 'in_patient'
+                              ? HospitalIcon
+                              : UserIcon
+                          "
+                          class="h-3 w-3"
+                        />
+                        <span class="text-[10px] font-bold uppercase">{{
+                          report?.patient_type === "in_patient"
+                            ? "In Patient"
+                            : "Out Patient"
                         }}</span>
                       </div>
                     </div>
@@ -483,6 +561,10 @@ import {
   Edit as EditIcon,
   Clock as ClockIcon,
   MapPin as MapPinIcon,
+  Hash as HashIcon,
+  Calendar as CalendarIcon,
+  Zap as ZapIcon,
+  Building2 as HospitalIcon,
 } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { formatDate } from "../../utils/format";

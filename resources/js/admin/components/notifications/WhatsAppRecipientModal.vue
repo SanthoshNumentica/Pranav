@@ -54,13 +54,13 @@
 
                 <!-- Recipient Options -->
                 <div class="space-y-3">
-                  <!-- Doctor Option -->
+                  <!-- Referer Option -->
                   <div
-                    @click="toggleRecipient('doctor')"
+                    @click="toggleRecipient('referer')"
                     :class="
                       cn(
                         'flex items-center justify-between p-4 rounded-2xl border-2 transition-all cursor-pointer group',
-                        selectedRecipients.includes('doctor')
+                        selectedRecipients.includes('referer')
                           ? 'border-primary bg-primary/5'
                           : 'border-slate-100 hover:border-slate-200 bg-slate-50/50',
                       )
@@ -71,27 +71,27 @@
                         :class="
                           cn(
                             'w-5 h-5 rounded-md border flex items-center justify-center transition-all',
-                            selectedRecipients.includes('doctor')
+                            selectedRecipients.includes('referer')
                               ? 'bg-primary border-primary text-white'
                               : 'border-slate-300 group-hover:border-slate-400',
                           )
                         "
                       >
                         <CheckIcon
-                          v-if="selectedRecipients.includes('doctor')"
+                          v-if="selectedRecipients.includes('referer')"
                           class="h-3.5 w-3.5"
                         />
                       </div>
                       <div>
-                        <p class="text-sm font-bold text-slate-900">Doctor</p>
+                        <p class="text-sm font-bold text-slate-900">Referer</p>
                         <p class="text-xs text-slate-500">
-                          {{ report?.doctor?.name || "N/A" }}
+                          {{ report?.referer?.name || "N/A" }}
                         </p>
                       </div>
                     </div>
                     <div class="text-right">
                       <p class="text-xs font-medium text-slate-400">
-                        {{ report?.doctor?.mobile_no || "No mobile" }}
+                        {{ report?.referer?.mobile_no || "No mobile" }}
                       </p>
                     </div>
                   </div>
@@ -219,7 +219,7 @@ const props = defineProps({
   loading: Boolean,
   initialRecipients: {
     type: Array,
-    default: () => ["doctor"],
+    default: () => ["referer"],
   },
 });
 

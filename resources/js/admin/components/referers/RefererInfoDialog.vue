@@ -29,7 +29,7 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
+              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[80vh] sm:h-auto sm:max-h-[85vh]"
             >
               <!-- Header/Banner - Fixed -->
               <div
@@ -47,24 +47,39 @@
                     <div
                       class="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                     >
-                      <StethoscopeIcon class="h-6 w-6 text-white" />
+                      <UserIcon class="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <h3 class="text-xl font-bold tracking-tight">
-                        Doctor Details
+                        Referer Details
                       </h3>
-                      <p class="text-sm font-medium mt-1 opacity-90">
-                        {{ doctor?.name }} ({{ doctor?.doctor_id }})
-                      </p>
+                      <div class="flex items-center gap-2 mt-1 opacity-90">
+                        <span class="text-sm font-medium">{{
+                          referer?.name
+                        }}</span>
+                        <span class="h-1 w-1 rounded-full bg-white/50"></span>
+                        <span
+                          class="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full border border-white/20"
+                        >
+                          {{ referer?.referer_type?.name || "N/A" }}
+                        </span>
+                        <span class="h-1 w-1 rounded-full bg-white/50"></span>
+                        <div class="flex items-center gap-1.5 opacity-80">
+                          <MapPinIcon class="h-3 w-3" />
+                          <span class="text-xs font-semibold">{{
+                            referer?.place || "N/A"
+                          }}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
                     <button
-                      @click="$emit('edit', doctor)"
+                      @click="$emit('edit', referer)"
                       class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-all active:scale-95"
                     >
                       <EditIcon class="h-4 w-4" />
-                      Edit Doctor
+                      Edit
                     </button>
                     <button
                       @click.stop="close"
@@ -76,9 +91,9 @@
                 </div>
               </div>
 
-              <!-- Content Body -->
+              <!-- Content - Scrollable -->
               <div
-                class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar space-y-8"
+                class="p-6 sm:p-8 space-y-8 overflow-y-auto flex-grow custom-scrollbar"
               >
                 <!-- Status Badge -->
                 <div class="flex justify-end">
@@ -86,13 +101,13 @@
                     :class="
                       cn(
                         'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider',
-                        doctor?.status === 'active'
+                        referer?.status === 'active'
                           ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                           : 'bg-slate-50 text-slate-600 border border-slate-100',
                       )
                     "
                   >
-                    {{ doctor?.status }}
+                    {{ referer?.status }}
                   </span>
                 </div>
 
@@ -114,50 +129,37 @@
                     </p>
                   </div>
                 </div>
-
-                <!-- Referring Activity -->
-                <div
-                  v-if="doctor?.case_reports?.length > 0"
-                  class="space-y-4 pt-4 border-t border-slate-100"
-                >
-                  <h4
-                    class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
-                  >
-                    <div class="h-1 w-1 rounded-full bg-primary"></div>
-                    Recent Referrals
-                  </h4>
-                  <div
-                    class="divide-y divide-slate-50 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden"
-                  >
-                    <div
-                      v-for="report in doctor.case_reports.slice(0, 5)"
-                      :key="report.id"
-                      class="p-4 flex items-center justify-between hover:bg-white transition-colors"
-                    >
-                      <div>
-                        <p class="text-sm font-bold text-slate-900">
-                          {{ report.case_id }}
-                        </p>
-                        <p class="text-[10px] text-slate-500">
-                          {{ formatDate(report.created_at) }}
-                        </p>
-                      </div>
-                      <span class="text-xs font-bold text-primary">{{
-                        report.status
-                      }}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              <!-- Footer Actions -->
+              <!-- Footer - Fixed -->
               <div
-                class="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0"
+                class="bg-slate-50 px-6 py-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 shrink-0 border-t border-slate-200 rounded-b-[32px]"
               >
+                <div
+                  class="flex flex-col items-center sm:items-start text-center sm:text-left"
+                >
+                  <span
+                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                  >
+                    Created on {{ formatDate(referer?.created_at) }}
+                    <template v-if="referer?.added_by_user">
+                      by {{ referer.added_by_user.name }}
+                    </template>
+                  </span>
+                  <span
+                    v-if="
+                      referer?.modified_by_user &&
+                      referer?.modified_by !== referer?.added_by
+                    "
+                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+                  >
+                    Last modified by {{ referer.modified_by_user.name }}
+                  </span>
+                </div>
                 <button
-                  @click.stop="close"
                   type="button"
-                  class="px-8 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-900/10"
+                  class="inline-flex w-full justify-center rounded-xl bg-white px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 sm:w-auto transition-all active:scale-95"
+                  @click="close"
                 >
                   Close
                 </button>
@@ -180,14 +182,15 @@ import {
 } from "@headlessui/vue";
 import {
   X as XIcon,
-  Stethoscope as StethoscopeIcon,
+  User as UserIcon,
   Edit as EditIcon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
 
 const props = defineProps({
   isOpen: Boolean,
-  doctor: Object,
+  referer: Object,
 });
 
 const emit = defineEmits(["close", "edit"]);
@@ -202,20 +205,30 @@ function cn(...classes) {
 }
 
 const detailedInfo = computed(() => {
-  if (!props.doctor) return {};
+  if (!props.referer) return {};
   return {
-    "Doctor Name": props.doctor.name,
-    Gender: props.doctor.gender?.gender_name,
-    "Blood Group": props.doctor.blood_group?.name,
-    DOB: formatDate(props.doctor.dob),
-    "Email ID": props.doctor.email_id,
-    "Mobile No": props.doctor.mobile_no,
-    "Clinic Address": props.doctor.address,
-    Street: props.doctor.street,
-    City: props.doctor.city,
-    Pincode: props.doctor.pincode,
-    "Added By": props.doctor.added_by_user?.name || "N/A",
-    "Modified By": props.doctor.modified_by_user?.name || "N/A",
+    "Referer Name": props.referer.name,
+    "Referer Type": props.referer.referer_type?.name,
+    "Mobile No": props.referer.mobile_no,
+    "Email ID": props.referer.email_id,
+    Place: props.referer.place,
+    "Hospital Name": props.referer.hospital_name,
+    "Hospital ID": props.referer.hospital_id,
+    "Added By": props.referer.added_by_user?.name || "N/A",
+    "Modified By": props.referer.modified_by_user?.name || "N/A",
   };
 });
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 20px;
+}
+</style>

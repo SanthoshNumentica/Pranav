@@ -13,10 +13,13 @@ class Referer extends Model
 
     protected $fillable = [
         'referer_type_id',
+        'title_id',
         'name',
         'mobile_no',
         'email_id',
         'place',
+        'hospital_name',
+        'hospital_id',
         'status',
         'added_by',
         'modified_by'
@@ -25,6 +28,11 @@ class Referer extends Model
     public function refererType()
     {
         return $this->belongsTo(RefererType::class);
+    }
+
+    public function title()
+    {
+        return $this->belongsTo(Title::class);
     }
 
     public function addedByUser()

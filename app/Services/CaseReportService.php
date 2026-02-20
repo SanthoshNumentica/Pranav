@@ -20,7 +20,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         return CaseReport::query()
-            ->with(['patient.gender', 'doctor', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])
+            ->with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -46,7 +46,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'doctor', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
@@ -57,15 +57,39 @@ class CaseReportService
     }
 
     /**
-     * Generate a new Case ID in the format CAS0001.
+     * Generate a unique Case ID (e.g., CAS0001).
      */
-    protected function generateCaseId(): string
+    private function generateCaseId(): string
     {
-        $lastCase = CaseReport::withTrashed()->orderBy('id', 'desc')->first();
-        $nextId = $lastCase ? $lastCase->id + 1 : 1;
-        return 'CAS' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
+        try {
+            $latest = CaseReport::latest('id')->first();
+            if (!$latest) {
+                return 'CAS0001';
+            }
+
+            // Handle potential null case_id in legacy records
+            $lastId = $latest->case_id ?? '';
+
+            if ($lastId && preg_match('/CAS(\d+)/', $lastId, $matches)) {
+                $nextNum = intval($matches[1]) + 1;
+                return 'CAS' . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+            }
+
+            // Fallback: Use ID increment
+            return 'CAS' . str_pad($latest->id + 1, 4, '0', STR_PAD_LEFT);
+        } catch (\Exception $e) {
+            \Log::error("Case ID Generation Failed: " . $e->getMessage());
+            return 'CAS' . date('ymdHis'); // Fallback to timestamp to prevent blocking
+        }
     }
 
+    /**
+     * Get the next available Case ID.
+     */
+    public function getNextCaseId(): string
+    {
+        return $this->generateCaseId();
+    }
     /**
      * Create a new case report with items and documents.
      */
@@ -82,16 +106,36 @@ class CaseReportService
 
             // 2. Create the Case Report
             $caseReport = CaseReport::create([
-                'case_id' => $this->generateCaseId(),
+                'case_id' => $data['case_id'],
                 'patient_fk_id' => $data['patient_fk_id'],
-                'doc_ref_fk_id' => $data['doc_ref_fk_id'],
+                'referer_id' => $data['referer_id'],
                 'description' => $data['description'] ?? null,
                 'documents' => $generalDocPaths,
-                'status' => 'available',
+                'status' => 'pending',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
-                'expires_at' => now()->addDays(7),
+                'expires_at' => null,
                 'branch_id' => $data['branch_id'] ?? null,
+                'rct_date' => $data['rct_date'] ?? null,
+                'rct_hour' => $data['rct_hour'] ?? null,
+                'is_stat' => $data['is_stat'] ?? false,
+                'patient_type' => $data['patient_type'] ?? 'out_patient',
             ]);
+
+            // 2.1 Update Patient Details if provided (Name, Place, WhatsApp)
+            $patient = $caseReport->patient;
+            if ($patient) {
+                $patientUpdate = [];
+                if (isset($data['patient_name']))
+                    $patientUpdate['name'] = $data['patient_name'];
+                if (isset($data['patient_place']))
+                    $patientUpdate['place'] = $data['patient_place'];
+                if (isset($data['whatsapp_no_patient']))
+                    $patientUpdate['whatsapp_no'] = $data['whatsapp_no_patient'];
+
+                if (!empty($patientUpdate)) {
+                    $patient->update($patientUpdate);
+                }
+            }
 
             // 3. Process Items
             foreach ($data['items'] as $index => $itemData) {
@@ -106,22 +150,46 @@ class CaseReportService
                     'scan_id' => $itemData['scan_id'],
                     'documents' => $documentPaths,
                     'remarks' => $itemData['remarks'] ?? null,
+                    'amount' => $itemData['amount'] ?? null,
                 ]);
             }
 
-            // 3. Update Status and Expiry
-            // 3. Status and Expiry are already set to available/10 days by default.
-            // If documents exist, they are already covered. 
-            // If No documents exist, it stays available as per default request.
+            // 5. Create Invoice
+            if (isset($data['invoice_date'])) {
+                $invoice = $caseReport->invoice()->create([
+                    'invoice_no' => app(InvoiceService::class)->generateInvoiceNo(),
+                    'patient_id' => $caseReport->patient_fk_id,
+                    'branch_id' => $caseReport->branch_id,
+                    'sub_total' => 0,
+                    'discount_amount' => $data['discount_amount'] ?? 0,
+                    'tax_amount' => $data['tax_amount'] ?? 0,
+                    'total_amount' => 0,
+                    'status' => 'pending',
+                    'invoice_date' => $data['invoice_date'],
+                    'notes' => $data['notes'] ?? null,
+                ]);
 
-            // 4. Post-save Hook: Orthanc Sync
+                foreach ($caseReport->items as $item) {
+                    $invoice->items()->create([
+                        'case_report_item_id' => $item->id,
+                        'description' => $item->scan->name ?? 'Scan',
+                        'quantity' => 1,
+                        'unit_price' => $item->amount ?? 0,
+                        'amount' => $item->amount ?? 0,
+                    ]);
+                }
+
+                app(InvoiceService::class)->updateTotals($invoice);
+            }
+
+            // 6. Post-save Hook: Orthanc Sync
             try {
                 app(OrthancService::class)->uploadCaseReport($caseReport->id);
             } catch (\Exception $e) {
                 \Log::error("CaseReportService Sync Failed: " . $e->getMessage());
             }
 
-            return $caseReport->load(['patient', 'doctor', 'items']);
+            return $caseReport->load(['patient', 'referer', 'items', 'invoice']);
         });
     }
 
@@ -148,10 +216,31 @@ class CaseReportService
             // 2. Update main Case Report fields
             $caseReport->update([
                 'patient_fk_id' => $data['patient_fk_id'],
-                'doc_ref_fk_id' => $data['doc_ref_fk_id'],
+                'referer_id' => $data['referer_id'],
                 'description' => $data['description'] ?? null,
                 'documents' => $generalDocPaths,
+                'rct_date' => $data['rct_date'] ?? null,
+                'rct_hour' => $data['rct_hour'] ?? null,
+                'is_stat' => $data['is_stat'] ?? false,
+                'patient_type' => $data['patient_type'] ?? 'out_patient',
+                'branch_id' => $data['branch_id'] ?? $caseReport->branch_id,
             ]);
+
+            // 2.1 Update Patient Details if provided
+            $patient = $caseReport->patient;
+            if ($patient) {
+                $patientUpdate = [];
+                if (isset($data['patient_name']))
+                    $patientUpdate['name'] = $data['patient_name'];
+                if (isset($data['patient_place']))
+                    $patientUpdate['place'] = $data['patient_place'];
+                if (isset($data['whatsapp_no_patient']))
+                    $patientUpdate['whatsapp_no'] = $data['whatsapp_no_patient'];
+
+                if (!empty($patientUpdate)) {
+                    $patient->update($patientUpdate);
+                }
+            }
 
             // 3. Refresh Items
             // Before deleting, let's collect old item docs to check for changes
@@ -181,6 +270,7 @@ class CaseReportService
                     'scan_id' => $itemData['scan_id'],
                     'documents' => $documentPaths,
                     'remarks' => $itemData['remarks'] ?? null,
+                    'amount' => $itemData['amount'] ?? null,
                 ]);
             }
 
@@ -197,14 +287,47 @@ class CaseReportService
 
             $caseReport->update($updateData);
 
-            // 5. Update Orthanc Sync
+            // 6. Update/Create Invoice
+            if (isset($data['invoice_date'])) {
+                $invoice = $caseReport->invoice()->updateOrCreate(
+                    ['case_report_id' => $caseReport->id],
+                    [
+                        'patient_id' => $caseReport->patient_fk_id,
+                        'branch_id' => $caseReport->branch_id ?? $caseReport->branch_id,
+                        'discount_amount' => $data['discount_amount'] ?? 0,
+                        'tax_amount' => $data['tax_amount'] ?? 0,
+                        'invoice_date' => $data['invoice_date'],
+                        'notes' => $data['notes'] ?? null,
+                    ]
+                );
+
+                if (!$invoice->wasRecentlyCreated) {
+                    $invoice->items()->delete();
+                } else {
+                    $invoice->update(['invoice_no' => app(InvoiceService::class)->generateInvoiceNo()]);
+                }
+
+                foreach ($caseReport->items as $item) {
+                    $invoice->items()->create([
+                        'case_report_item_id' => $item->id,
+                        'description' => $item->scan->name ?? 'Scan',
+                        'quantity' => 1,
+                        'unit_price' => $item->amount ?? 0,
+                        'amount' => $item->amount ?? 0,
+                    ]);
+                }
+
+                app(InvoiceService::class)->updateTotals($invoice);
+            }
+
+            // 7. Update Orthanc Sync
             try {
                 app(OrthancService::class)->uploadCaseReport($caseReport->id);
             } catch (\Exception $e) {
                 \Log::error("CaseReportService Update Sync Failed: " . $e->getMessage());
             }
 
-            return $caseReport->load(['patient', 'doctor', 'items']);
+            return $caseReport->load(['patient', 'referer', 'items', 'invoice']);
         });
     }
 
@@ -242,7 +365,7 @@ class CaseReportService
     /**
      * Send WhatsApp notification for the case report.
      */
-    public function sendWhatsAppNotification(int $id, array $recipients = ['doctor'], array $customNumbers = []): array
+    public function sendWhatsAppNotification(int $id, array $recipients = ['referer'], array $customNumbers = []): array
     {
         $caseReport = $this->getCaseReport($id);
         $whatsAppService = app(WhatsAppService::class);
@@ -257,7 +380,8 @@ class CaseReportService
 
         // 2. Prepare common data
         $commonData = [
-            'doctorName' => $caseReport->doctor->name ?? 'Doctor',
+            'doctorName' => $caseReport->referer->name ?? 'Referer', // Keep for backward compatibility
+            'refererName' => $caseReport->referer->name ?? 'Referer',
             'patientName' => $caseReport->patient->name ?? 'Patient',
             'reportId' => $caseReport->case_id,
             'reportDate' => $caseReport->created_at->format('d-m-Y'),
@@ -269,8 +393,8 @@ class CaseReportService
         foreach ($recipients as $type) {
             $mobileNo = $customNumbers[$type] ?? null;
             if (!$mobileNo) {
-                if ($type === 'doctor') {
-                    $mobileNo = $caseReport->doctor->mobile_no ?? null;
+                if ($type === 'referer') {
+                    $mobileNo = $caseReport->referer->mobile_no ?? null;
                 } elseif ($type === 'patient') {
                     $mobileNo = $caseReport->patient->whatsapp_no ?? $caseReport->patient->mobile_no ?? null;
                 }
@@ -317,7 +441,7 @@ class CaseReportService
     public function getPublicCaseReport(string $token): array
     {
         $caseReport = CaseReport::where('sharing_token', $token)
-            ->with(['patient.gender', 'doctor', 'items.scanType', 'items.scan'])
+            ->with(['patient.gender', 'referer', 'items.scanType', 'items.scan'])
             ->firstOrFail();
 
         // Auto-expire if needed

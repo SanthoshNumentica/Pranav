@@ -50,18 +50,24 @@ class CaseReportController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
+            'case_id' => ['required', 'string', 'max:255'],
             'patient_fk_id' => ['required', 'exists:patients,id'],
-            'doc_ref_fk_id' => ['required', 'exists:doctors,id'],
+            'referer_id' => ['required', 'exists:referers,id'],
             'description' => ['nullable', 'string'],
             'documents' => ['nullable', 'array'],
-            'documents.*' => ['required', 'string'], // Pre-uploaded paths
+            'documents.*' => ['required', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
             'items.*.scan_id' => ['required', 'exists:scans,id'],
-            'items.*.documents' => ['required', 'array'],
-            'items.*.documents.*' => ['required', 'string'], // Pre-uploaded paths
+            'items.*.documents' => ['nullable', 'array'],
+            'items.*.documents.*' => ['required', 'string'],
             'items.*.remarks' => ['nullable', 'string'],
+            'items.*.amount' => ['nullable', 'numeric', 'min:0'],
             'branch_id' => ['nullable', 'exists:branches,id'],
+            'rct_date' => ['nullable', 'date'],
+            'rct_hour' => ['nullable', 'string'],
+            'is_stat' => ['nullable', 'boolean'],
+            'patient_type' => ['nullable', 'in:in_patient,out_patient'],
         ]);
 
         if (auth()->user()->branch_id) {
@@ -83,17 +89,24 @@ class CaseReportController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $data = $request->validate([
+            'case_id' => ['required', 'string', 'max:255'],
             'patient_fk_id' => ['required', 'exists:patients,id'],
-            'doc_ref_fk_id' => ['required', 'exists:doctors,id'],
+            'referer_id' => ['required', 'exists:referers,id'],
             'description' => ['nullable', 'string'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
             'items.*.scan_id' => ['required', 'exists:scans,id'],
-            'items.*.documents' => ['required', 'array'],
+            'items.*.documents' => ['nullable', 'array'],
             'items.*.documents.*' => ['required', 'string'],
             'items.*.remarks' => ['nullable', 'string'],
+            'items.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'rct_date' => ['nullable', 'date'],
+            'rct_hour' => ['nullable', 'string'],
+            'is_stat' => ['nullable', 'boolean'],
+            'patient_type' => ['nullable', 'in:in_patient,out_patient'],
+            'branch_id' => ['nullable', 'exists:branches,id'],
         ]);
 
         $caseReport = $this->caseReportService->updateCaseReport($id, $data);
@@ -125,6 +138,19 @@ class CaseReportController extends Controller
         ]);
     }
 
+    public function getNextCaseId(): JsonResponse
+    {
+        \Log::info("Fetching next Case ID");
+        try {
+            $nextId = $this->caseReportService->getNextCaseId();
+            \Log::info("Next Case ID generated: " . $nextId);
+            return response()->json(['success' => true, 'next_case_id' => $nextId]);
+        } catch (\Exception $e) {
+            \Log::error("Error in getNextCaseId: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Failed to generate ID'], 500);
+        }
+    }
+
     /**
      * Remove the specified case report from storage.
      */
@@ -145,9 +171,9 @@ class CaseReportController extends Controller
     {
         $request->validate([
             'recipients' => ['required', 'array', 'min:1'],
-            'recipients.*' => ['required', 'in:doctor,patient'],
+            'recipients.*' => ['required', 'in:referer,patient'],
             'custom_numbers' => ['nullable', 'array'],
-            'custom_numbers.doctor' => ['nullable', 'string'],
+            'custom_numbers.referer' => ['nullable', 'string'],
             'custom_numbers.patient' => ['nullable', 'string'],
         ]);
 

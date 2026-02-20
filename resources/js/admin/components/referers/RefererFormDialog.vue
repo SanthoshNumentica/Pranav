@@ -29,7 +29,7 @@
             leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <DialogPanel
-              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-xl border border-slate-200 flex flex-col"
+              class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-xl border border-slate-200 flex flex-col max-h-[90vh] sm:max-h-[85vh]"
             >
               <!-- Header -->
               <div
@@ -68,7 +68,9 @@
               </div>
 
               <!-- Form Body -->
-              <div class="p-6 sm:p-8">
+              <div
+                class="p-6 sm:p-8 overflow-y-auto flex-grow custom-scrollbar"
+              >
                 <form
                   id="refererForm"
                   @submit.prevent="handleSubmit"
@@ -99,19 +101,46 @@
                     </Select>
                   </div>
 
-                  <div class="space-y-2">
-                    <label
-                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                    >
-                      Name <span class="text-rose-500">*</span>
-                    </label>
-                    <input
-                      v-model="form.name"
-                      type="text"
-                      required
-                      placeholder="Referer Name"
-                      class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-                    />
+                  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="space-y-2 md:col-span-1">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                      >
+                        Title
+                      </label>
+                      <Select
+                        v-model="form.title_id"
+                        v-model:open="isTitleOpen"
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem
+                            v-for="t in titles"
+                            :key="t.id"
+                            :value="t.id.toString()"
+                          >
+                            {{ t.title_name }}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div class="space-y-2 md:col-span-3">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                      >
+                        Name <span class="text-rose-500">*</span>
+                      </label>
+                      <input
+                        v-model="form.name"
+                        type="text"
+                        required
+                        placeholder="Referer Name"
+                        class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+                      />
+                    </div>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -144,6 +173,35 @@
                     </div>
                   </div>
 
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                      >
+                        Hospital Name
+                      </label>
+                      <input
+                        v-model="form.hospital_name"
+                        type="text"
+                        placeholder="Hospital Name"
+                        class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+                      />
+                    </div>
+                    <div class="space-y-2">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                      >
+                        Hospital ID
+                      </label>
+                      <input
+                        v-model="form.hospital_id"
+                        type="text"
+                        placeholder="Hospital ID"
+                        class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+                      />
+                    </div>
+                  </div>
+
                   <div class="space-y-2">
                     <label
                       class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
@@ -162,7 +220,7 @@
 
               <!-- Footer Actions -->
               <div
-                class="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0"
+                class="bg-slate-50 px-6 py-4 sm:px-8 border-t border-slate-200 flex items-center justify-end gap-3 shrink-0 rounded-b-[32px]"
               >
                 <button
                   @click.stop="close"
@@ -226,17 +284,22 @@ const emit = defineEmits(["close", "saved"]);
 
 const loading = ref(false);
 const refererTypes = ref([]);
+const titles = ref([]);
 
 const initialForm = {
   referer_type_id: "",
+  title_id: "",
   name: "",
   mobile_no: "",
   email_id: "",
   place: "",
+  hospital_name: "",
+  hospital_id: "",
 };
 
 const form = reactive({ ...initialForm });
 const isTypeOpen = ref(false);
+const isTitleOpen = ref(false);
 
 const fetchMasters = async () => {
   try {
@@ -244,6 +307,10 @@ const fetchMasters = async () => {
       "/api/v1/masters/referer-types?status=active&nopaginate=1",
     );
     refererTypes.value = response.data.data;
+    const titleResponse = await axios.get(
+      "/api/v1/masters/titles?status=active&nopaginate=1",
+    );
+    titles.value = titleResponse.data.data;
   } catch (err) {
     console.error("Failed to fetch referer types", err);
   }
@@ -274,8 +341,45 @@ watch(
   { immediate: true },
 );
 
+// Auto-select title based on referer type
+// Auto-select title based on referer type
+watch(
+  () => form.referer_type_id,
+  (newTypeId) => {
+    if (!props.referer && newTypeId) {
+      // Only auto-select for new referers or if manually changed
+      const selectedType = refererTypes.value.find(
+        (t) => t.id.toString() === newTypeId.toString(),
+      );
+      if (selectedType) {
+        let targetTitle = null;
+        const typeName = selectedType.name.toLowerCase().trim();
+        const typeSlug = selectedType.slug
+          ? selectedType.slug.toLowerCase().trim()
+          : "";
+
+        if (typeSlug === "doctor" || typeName === "doctor") {
+          targetTitle = titles.value.find((t) => {
+            const tName = t.title_name.toLowerCase().replace(".", "").trim();
+            return tName === "dr" || tName === "doctor";
+          });
+        } else {
+          targetTitle = titles.value.find((t) => {
+            const tName = t.title_name.toLowerCase().replace(".", "").trim();
+            return tName === "mr";
+          });
+        }
+
+        if (targetTitle) {
+          form.title_id = targetTitle.id.toString();
+        }
+      }
+    }
+  },
+);
+
 const close = () => {
-  if (isTypeOpen.value) return;
+  if (isTypeOpen.value || isTitleOpen.value) return;
   if (!props.isOpen) return;
   emit("close");
 };
@@ -283,25 +387,35 @@ const close = () => {
 const handleSubmit = async () => {
   loading.value = true;
   try {
+    let response;
     if (props.referer) {
-      await axios.put(`/api/v1/referers/${props.referer.id}`, form);
+      response = await axios.put(`/api/v1/referers/${props.referer.id}`, form);
     } else {
-      await axios.post("/api/v1/referers", form);
+      response = await axios.post("/api/v1/referers", form);
     }
     addToast({
       title: "Success",
-      description: `Referer ${props.referer ? "updated" : "created"} successfully.`,
+      description: `Referer ${
+        props.referer ? "updated" : "created"
+      } successfully.`,
       variant: "success",
     });
-    emit("saved");
+    emit("saved", response.data.data);
     close();
   } catch (err) {
     console.error("Failed to save referer", err);
+    let errorDescription = "Failed to save referer. Please check your data.";
+
+    if (err.response?.status === 422 && err.response?.data?.errors) {
+      const errors = err.response.data.errors;
+      errorDescription = Object.values(errors).flat().join(" ");
+    } else if (err.response?.data?.message) {
+      errorDescription = err.response.data.message;
+    }
+
     addToast({
       title: "Error",
-      description:
-        err.response?.data?.message ||
-        "Failed to save referer. Please check your data.",
+      description: errorDescription,
       variant: "error",
     });
   } finally {
@@ -309,3 +423,17 @@ const handleSubmit = async () => {
   }
 };
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 20px;
+}
+</style>

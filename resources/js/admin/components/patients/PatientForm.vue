@@ -241,27 +241,6 @@
                 class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
               />
             </div>
-
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Referer <span class="text-rose-500">*</span></label
-              >
-              <Select v-model="form.referer_id" v-model:open="isRefererOpen">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Referer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="r in referers"
-                    :key="r.id"
-                    :value="r.id.toString()"
-                  >
-                    {{ r.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
 
@@ -360,7 +339,6 @@ const initialForm = {
   gender_fk_id: "",
   place: "",
   remarks: "",
-  referer_id: "",
 };
 
 const form = reactive({ ...initialForm });

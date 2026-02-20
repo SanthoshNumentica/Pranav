@@ -363,9 +363,9 @@ class MasterController extends Controller
         ]);
     }
 
-    public function doctors(Request $request): JsonResponse
+    public function referers(Request $request): JsonResponse
     {
-        $query = \App\Models\Doctor::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
+        $query = \App\Models\Referer::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
                 $query->withTrashed()->where('status', 'inactive');
@@ -572,5 +572,108 @@ class MasterController extends Controller
         $request->validate(['status' => 'required|in:active,inactive']);
         $title->update(['status' => $request->status]);
         return response()->json(['success' => true, 'message' => 'Status updated', 'data' => $title]);
+    }
+
+    public function paymentMethods(Request $request): JsonResponse
+    {
+        try {
+            $query = \App\Models\PaymentMethod::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
+
+            if ($request->has('status')) {
+                if ($request->status === 'inactive') {
+                    $query->withTrashed()->where('status', 'inactive');
+                } elseif ($request->status !== 'all') {
+                    $query->where('status', $request->status);
+                }
+            }
+
+            $data = $request->has('nopaginate') ? $query->get() : $query->paginate(10);
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
+
+    public function storePaymentMethod(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('payment_methods', 'name')->whereNull('deleted_at')
+            ]
+        ]);
+
+        $paymentMethod = \App\Models\PaymentMethod::create([
+            'name' => $request->name,
+            'status' => 'active',
+            'added_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment method created successfully',
+            'data' => $paymentMethod
+        ]);
+    }
+
+    public function updatePaymentMethod(Request $request, $id): JsonResponse
+    {
+        $paymentMethod = \App\Models\PaymentMethod::findOrFail($id);
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('payment_methods', 'name')->ignore($id)->whereNull('deleted_at')
+            ]
+        ]);
+
+        $paymentMethod->update([
+            'name' => $request->name,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment method updated successfully',
+            'data' => $paymentMethod
+        ]);
+    }
+
+    public function destroyPaymentMethod($id): JsonResponse
+    {
+        $paymentMethod = \App\Models\PaymentMethod::findOrFail($id);
+        $paymentMethod->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
+        $paymentMethod->delete(); // Soft delete
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment method deleted successfully'
+        ]);
+    }
+
+    public function updatePaymentMethodStatus(Request $request, $id): JsonResponse
+    {
+        $paymentMethod = \App\Models\PaymentMethod::findOrFail($id);
+        $request->validate(['status' => 'required|in:active,inactive']);
+        $paymentMethod->update([
+            'status' => $request->status,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully',
+            'data' => $paymentMethod
+        ]);
     }
 }

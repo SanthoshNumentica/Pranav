@@ -192,57 +192,35 @@
       @page-change="handlePageChange"
     />
 
-    <!-- Dialog (Custom for Discount to include Percentage) -->
-    <div
-      v-if="dialogOpen"
-      class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+    <!-- Dialog -->
+    <MasterDataDialog
+      :is-open="dialogOpen"
+      :mode="dialogMode"
+      title="Discount"
+      label="Discount"
+      :icon="TagIcon"
+      :initial-data="selectedDiscount"
+      :loading="dialogLoading"
+      :error="dialogError"
+      @close="dialogOpen = false"
+      @submit="handleDialogSubmit"
     >
-      <div
-        class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
-        @click="dialogOpen = false"
-      ></div>
-
-      <div
-        class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl transform transition-all flex flex-col max-h-[90vh]"
-      >
-        <div
-          class="p-6 border-b border-slate-100 flex items-center justify-between shrink-0"
-        >
-          <h3 class="text-lg font-bold text-slate-900">
-            {{
-              dialogMode === "add"
-                ? "Add Discount"
-                : dialogMode === "edit"
-                  ? "Edit Discount"
-                  : "View Discount"
-            }}
-          </h3>
-          <button
-            @click="dialogOpen = false"
-            class="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <XIcon class="h-5 w-5" />
-          </button>
-        </div>
-
-        <form
-          @submit.prevent="handleDialogSubmit"
-          class="p-6 space-y-4 overflow-y-auto"
-        >
-          <div class="space-y-2">
+      <template #default="{ form, mode, loading }">
+        <div class="space-y-4">
+          <div class="space-y-1.5">
             <label
-              class="text-xs font-bold uppercase tracking-wider text-slate-500"
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
             >
-              Discount Name <span class="text-rose-500">*</span>
+              Discount Name
             </label>
             <div class="relative">
               <input
-                v-model="formData.name"
+                v-model="form.name"
                 type="text"
                 required
-                :disabled="dialogMode === 'view'"
+                :disabled="mode === 'view' || loading"
                 placeholder="Enter discount name"
-                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed text-slate-700"
               />
               <TagIcon
                 class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
@@ -250,61 +228,32 @@
             </div>
           </div>
 
-          <div class="space-y-2">
+          <div class="space-y-1.5">
             <label
-              class="text-xs font-bold uppercase tracking-wider text-slate-500"
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
             >
-              Percentage (%) <span class="text-rose-500">*</span>
+              Percentage (%)
             </label>
             <div class="relative">
               <input
-                v-model="formData.percentage"
+                v-model="form.percentage"
                 type="number"
                 step="0.01"
                 min="0"
                 max="100"
                 required
-                :disabled="dialogMode === 'view'"
+                :disabled="mode === 'view' || loading"
                 placeholder="0.00"
-                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed text-slate-700"
               />
               <PercentIcon
                 class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400"
               />
             </div>
           </div>
-
-          <div
-            v-if="dialogError"
-            class="p-3 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-600 font-medium flex items-center gap-2"
-          >
-            <AlertCircleIcon class="h-4 w-4 shrink-0" />
-            {{ dialogError }}
-          </div>
-        </form>
-
-        <div
-          class="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-slate-50/50 rounded-b-3xl"
-        >
-          <button
-            type="button"
-            @click="dialogOpen = false"
-            class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-95"
-          >
-            Close
-          </button>
-          <button
-            v-if="dialogMode !== 'view'"
-            @click="handleDialogSubmit"
-            :disabled="dialogLoading"
-            class="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            <Loader2Icon v-if="dialogLoading" class="h-4 w-4 animate-spin" />
-            {{ dialogMode === "add" ? "Create" : "Update" }}
-          </button>
         </div>
-      </div>
-    </div>
+      </template>
+    </MasterDataDialog>
 
     <!-- Confirmation Modal -->
     <ConfirmationModal
@@ -333,6 +282,7 @@ import {
   Loader2 as Loader2Icon,
 } from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
+import MasterDataDialog from "../../components/master-data/MasterDataDialog.vue";
 import TableActions from "../../components/ui/TableActions.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
@@ -406,25 +356,29 @@ const openAddDialog = () => {
 
 const openEditDialog = (discount) => {
   dialogMode.value = "edit";
-  selectedDiscount.value = discount;
-  formData.id = discount.id;
-  formData.name = discount.name;
-  formData.percentage = discount.percentage;
+  selectedDiscount.value = {
+    id: discount.id,
+    name: discount.name,
+    percentage: discount.percentage,
+  };
   dialogError.value = null;
   dialogOpen.value = true;
 };
 
 const openViewDialog = (discount) => {
   dialogMode.value = "view";
-  selectedDiscount.value = discount;
-  formData.id = discount.id;
-  formData.name = discount.name;
-  formData.percentage = discount.percentage;
+  selectedDiscount.value = {
+    id: discount.id,
+    name: discount.name,
+    percentage: discount.percentage,
+    added_by_user: discount.added_by_user,
+    modified_by_user: discount.modified_by_user,
+  };
   dialogError.value = null;
   dialogOpen.value = true;
 };
 
-const handleDialogSubmit = async () => {
+const handleDialogSubmit = async (formData) => {
   dialogLoading.value = true;
   dialogError.value = null;
   try {

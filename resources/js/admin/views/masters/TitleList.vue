@@ -214,6 +214,7 @@ import {
   Plus as PlusIcon,
   Circle as CircleIcon,
   UserCircle as TitleIcon,
+  CaseSensitive as CaseSensitiveIcon,
 } from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
 import MasterDataDialog from "../../components/master-data/MasterDataDialog.vue";

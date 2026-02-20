@@ -201,24 +201,35 @@ function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
+const calculateAge = (dob) => {
+  if (!dob) return "N/A";
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
+
 const detailedInfo = computed(() => {
   if (!props.patient) return {};
   return {
     "Patient Name": props.patient.name,
-    Branch: props.patient.branch?.name || "N/A",
-    "Father / Guardian": props.patient.father_name,
-    Gender: props.patient.gender?.gender_name,
+    "Patient ID": props.patient.patient_id || "N/A",
+    "MRN ID": props.patient.mrn_id || "N/A",
+    Age: calculateAge(props.patient.dob),
     DOB: formatDate(props.patient.dob),
+    Gender: props.patient.gender?.gender_name,
     "Blood Group": props.patient.blood_group?.name,
-    "Email ID": props.patient.email_id,
+    "Father / Guardian": props.patient.father_name,
     "Mobile No": props.patient.mobile_no,
     "WhatsApp No": props.patient.whatsapp_no,
-    Address: props.patient.address,
-    Street: props.patient.street,
-    City: props.patient.city,
-    Pincode: props.patient.pincode,
+    "Email ID": props.patient.email_id,
+    Place: props.patient.place,
     Remarks: props.patient.remarks,
-    "Added By": props.patient.added_by_user?.name || "N/A",
+    "Created By": props.patient.added_by_user?.name || "N/A",
     "Modified By": props.patient.modified_by_user?.name || "N/A",
   };
 });

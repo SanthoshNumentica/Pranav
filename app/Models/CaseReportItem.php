@@ -19,6 +19,7 @@ class CaseReportItem extends Model
         'scan_id',
         'documents',
         'remarks',
+        'amount',
     ];
 
     protected $casts = [

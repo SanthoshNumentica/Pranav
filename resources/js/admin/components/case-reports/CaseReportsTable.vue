@@ -11,7 +11,7 @@
           <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Scan Report ID
+            SRF No
           </th>
           <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -31,7 +31,7 @@
           <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Doctor
+            Referer
           </th>
           <th
             class="px-4 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -118,12 +118,15 @@
               }}</span>
             </td>
             <td class="px-4 py-4 text-sm text-slate-600">
+              {{ report.branch?.name || "N/A" }}
+            </td>
+            <td class="px-4 py-4 text-sm text-slate-600">
               {{ report.patient?.mobile_no || "N/A" }}
             </td>
             <td class="px-4 py-4 text-sm text-slate-600">
-              {{ report.doctor?.name || "N/A" }}
+              {{ report.referer?.name || "N/A" }}
             </td>
-            <td class="px-4 py-4">
+            <td class="px-4 py-4 text-sm">
               <span
                 :class="
                   cn(
@@ -168,11 +171,8 @@
                 </span>
               </div>
             </td>
-            <td class="px-4 py-4 text-sm font-medium">
-              <span v-if="report.expires_at" class="text-rose-500">
-                {{ formatDate(report.expires_at) }}
-              </span>
-              <span v-else class="text-slate-400">---</span>
+            <td class="px-4 py-4 text-sm font-medium text-slate-600">
+              {{ report.expires_at ? formatDate(report.expires_at) : "-" }}
             </td>
             <td class="px-3 py-4 text-right">
               <TableActions

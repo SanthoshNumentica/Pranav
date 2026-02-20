@@ -76,6 +76,7 @@
         @edit="handleEdit"
         @delete="handleDelete"
         @toggle-status="handleToggleStatus"
+        @view-info="handleView"
       />
       <!-- Pagination -->
       <Pagination
@@ -86,6 +87,13 @@
     </div>
 
     <!-- Modals -->
+    <RefererInfoDialog
+      :is-open="isInfoModalOpen"
+      :referer="selectedReferer"
+      @close="isInfoModalOpen = false"
+      @edit="handleEditFromInfo"
+    />
+
     <RefererFormDialog
       :is-open="isFormModalOpen"
       :referer="selectedReferer"
@@ -133,6 +141,7 @@ import axios from "axios";
 import { debounce } from "lodash";
 import ReferersTable from "../../components/referers/ReferersTable.vue";
 import RefererFormDialog from "../../components/referers/RefererFormDialog.vue";
+import RefererInfoDialog from "../../components/referers/RefererInfoDialog.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
 import { useToast } from "../../composables/useToast";
@@ -158,6 +167,7 @@ const filters = reactive({
 });
 
 const isFormModalOpen = ref(false);
+const isInfoModalOpen = ref(false); // New state
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 const isStatusModalOpen = ref(false);
@@ -195,9 +205,21 @@ const openAddModal = () => {
   isFormModalOpen.value = true;
 };
 
+const handleView = (referer) => {
+  // New handler
+  selectedReferer.value = referer;
+  isInfoModalOpen.value = true;
+};
+
 const handleEdit = (referer) => {
   selectedReferer.value = referer;
   isFormModalOpen.value = true;
+};
+
+const handleEditFromInfo = (referer) => {
+  // Optional: Edit from Info modal
+  isInfoModalOpen.value = false;
+  handleEdit(referer);
 };
 
 const handleDelete = (referer) => {

@@ -453,6 +453,7 @@ const fetchMasters = async () => {
       axios.get("/api/v1/masters/genders?status=active&nopaginate=1"),
       axios.get("/api/v1/masters/blood-groups?status=active&nopaginate=1"),
     ]);
+    titles.value = tRes.data.data;
     genders.value = gRes.data.data;
     bloodGroups.value = bRes.data.data;
 
@@ -488,6 +489,7 @@ watch(
     } else {
       Object.assign(form, initialForm);
       // Auto-assign branch for non-super-admins
+      form.title_fk_id = "1"; // Default to Mr
 
       age.value = "";
     }
@@ -543,25 +545,35 @@ const close = () => {
 const handleSubmit = async () => {
   loading.value = true;
   try {
+    let response;
     if (props.patient) {
-      await axios.put(`/api/v1/patients/${props.patient.id}`, form);
+      response = await axios.put(`/api/v1/patients/${props.patient.id}`, form);
     } else {
-      await axios.post("/api/v1/patients", form);
+      response = await axios.post("/api/v1/patients", form);
     }
     addToast({
       title: "Success",
-      description: `Patient ${props.patient ? "updated" : "created"} successfully.`,
+      description: `Patient ${
+        props.patient ? "updated" : "created"
+      } successfully.`,
       variant: "success",
     });
-    emit("saved");
+    emit("saved", response.data.data);
     close();
   } catch (err) {
     console.error("Failed to save patient", err);
+    let errorDescription = "Failed to save patient. Please check your data.";
+
+    if (err.response?.status === 422 && err.response?.data?.errors) {
+      const errors = err.response.data.errors;
+      errorDescription = Object.values(errors).flat().join(" ");
+    } else if (err.response?.data?.message) {
+      errorDescription = err.response.data.message;
+    }
+
     addToast({
       title: "Error",
-      description:
-        err.response?.data?.message ||
-        "Failed to save patient. Please check your data.",
+      description: errorDescription,
       variant: "error",
     });
   } finally {

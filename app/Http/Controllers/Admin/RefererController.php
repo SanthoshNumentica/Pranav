@@ -12,7 +12,7 @@ class RefererController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Referer::with(['refererType', 'addedByUser', 'modifiedByUser'])->orderBy('name');
+        $query = Referer::with(['refererType', 'title', 'addedByUser', 'modifiedByUser'])->orderBy('name');
 
         if ($request->has('status')) {
             if ($request->status === 'inactive') {
@@ -43,18 +43,24 @@ class RefererController extends Controller
     {
         $request->validate([
             'referer_type_id' => 'required|exists:referer_types,id',
+            'title_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
             'mobile_no' => 'required|string|max:20',
             'email_id' => 'nullable|email|max:255',
             'place' => 'nullable|string|max:255',
+            'hospital_name' => 'nullable|string|max:255',
+            'hospital_id' => 'nullable|string|max:100', // Adjusted max length
         ]);
 
         $referer = Referer::create([
             'referer_type_id' => $request->referer_type_id,
+            'title_id' => $request->title_id,
             'name' => $request->name,
             'mobile_no' => $request->mobile_no,
             'email_id' => $request->email_id,
             'place' => $request->place,
+            'hospital_name' => $request->hospital_name,
+            'hospital_id' => $request->hospital_id,
             'status' => 'active',
             'added_by' => auth()->id()
         ]);
@@ -72,18 +78,24 @@ class RefererController extends Controller
 
         $request->validate([
             'referer_type_id' => 'required|exists:referer_types,id',
+            'title_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
             'mobile_no' => 'required|string|max:20',
             'email_id' => 'nullable|email|max:255',
             'place' => 'nullable|string|max:255',
+            'hospital_name' => 'nullable|string|max:255',
+            'hospital_id' => 'nullable|string|max:100',
         ]);
 
         $referer->update([
             'referer_type_id' => $request->referer_type_id,
+            'title_id' => $request->title_id,
             'name' => $request->name,
             'mobile_no' => $request->mobile_no,
             'email_id' => $request->email_id,
             'place' => $request->place,
+            'hospital_name' => $request->hospital_name,
+            'hospital_id' => $request->hospital_id,
             'modified_by' => auth()->id()
         ]);
 

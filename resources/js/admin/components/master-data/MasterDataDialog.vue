@@ -93,20 +93,22 @@
                     <span>{{ error }}</span>
                   </div>
 
-                  <div class="space-y-1.5">
-                    <label
-                      class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                      >{{ label }} Name</label
-                    >
-                    <input
-                      v-model="form.name"
-                      type="text"
-                      :placeholder="`Enter ${label.toLowerCase()} name`"
-                      class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed font-medium text-slate-700"
-                      :disabled="mode === 'view' || loading"
-                      required
-                    />
-                  </div>
+                  <slot :form="form" :mode="mode" :loading="loading">
+                    <div class="space-y-1.5">
+                      <label
+                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                        >{{ label }} Name</label
+                      >
+                      <input
+                        v-model="form.name"
+                        type="text"
+                        :placeholder="`Enter ${label.toLowerCase()} name`"
+                        class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed font-medium text-slate-700"
+                        :disabled="mode === 'view' || loading"
+                        required
+                      />
+                    </div>
+                  </slot>
 
                   <!-- Audit Info -->
                   <div
@@ -204,26 +206,15 @@ const props = defineProps({
 
 const emit = defineEmits(["close", "submit"]);
 
-const form = ref({
-  name: "",
-});
+const form = ref({});
 
 watch(
   () => props.isOpen,
   (val) => {
     if (val) {
-      if (
-        (props.mode === "edit" || props.mode === "view") &&
-        props.initialData
-      ) {
-        form.value = {
-          id: props.initialData.id,
-          name: props.initialData.name || props.initialData.gender_name || "",
-        };
-      } else {
-        form.value = {
-          name: "",
-        };
+      form.value = { ...props.initialData };
+      if (!form.value.name && props.mode === "add") {
+        form.value.name = "";
       }
     }
   },

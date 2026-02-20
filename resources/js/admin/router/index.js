@@ -53,10 +53,16 @@ const routes = [
                 meta: { title: "Patients", action: "view", subject: "patients" },
             },
             {
-                path: "patients/create",
-                name: "PatientCreate",
-                component: () => import("../views/patients/PatientCreate.vue"),
-                meta: { title: "Create Patient", action: "create", subject: "patients" },
+                path: 'invoices',
+                name: 'Invoices',
+                component: () => import("../views/invoices/InvoiceList.vue"),
+                meta: { module: 'invoices' },
+            },
+            {
+                path: 'invoices/:id',
+                name: 'InvoiceDetail',
+                component: () => import("../views/invoices/InvoiceDetail.vue"),
+                meta: { module: 'invoices' },
             },
             {
                 path: 'referers',
@@ -117,6 +123,12 @@ const routes = [
                 name: 'Discounts',
                 component: () => import('../views/masters/DiscountList.vue'),
                 meta: { module: 'discounts' }
+            },
+            {
+                path: 'masters/payment-methods',
+                name: 'PaymentMethods',
+                component: () => import('../views/masters/PaymentMethodList.vue'),
+                meta: { module: 'payment-methods' }
             },
             {
                 path: 'reports/patients',

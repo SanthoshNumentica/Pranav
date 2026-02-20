@@ -221,6 +221,8 @@ import {
   Building2 as BuildingsIcon,
   Building as BuildingIcon,
   Tag as TagIcon,
+  CreditCard as CreditCardIcon,
+  Wallet as WalletIcon,
 } from "lucide-vue-next";
 import SidebarNavItem from "../ui/SidebarNavItem.vue";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
@@ -265,6 +267,12 @@ const navMain = computed(() => {
       module: "patients",
     },
     { title: "Referers", url: "/referers", icon: UserIcon, module: "referers" },
+    {
+      title: "Invoices",
+      url: "/invoices",
+      icon: CreditCardIcon,
+      module: "invoices",
+    },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));
 });
@@ -318,6 +326,12 @@ const navMaster = computed(() => {
       url: "/masters/discounts",
       icon: TagIcon,
       module: "discounts",
+    },
+    {
+      title: "Payment Methods",
+      url: "/masters/payment-methods",
+      icon: WalletIcon,
+      module: "payment-methods",
     },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));

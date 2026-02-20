@@ -15,9 +15,10 @@ export function useCaseReportForm(isEdit = false) {
     const error = ref(null);
 
     const patients = ref([]);
-    const doctors = ref([]);
+    const referers = ref([]);
     const scanTypes = ref([]);
     const branches = ref([]);
+    const paymentMethods = ref([]);
     const processingGeneral = ref(false);
 
     // WhatsApp Modal State
@@ -26,20 +27,40 @@ export function useCaseReportForm(isEdit = false) {
     const sendingWhatsapp = ref(false);
     const initialRecipients = ref([]);
 
-    // Form State
     const form = reactive({
         id: null,
         case_id: "",
         patient_fk_id: "",
-        doc_ref_fk_id: "",
+        patient_name: "",
+        patient_place: "",
         send_whatsapp_patient: true,
-        send_whatsapp_doctor: true,
+        send_whatsapp_referer: true,
         whatsapp_no_patient: "",
-        whatsapp_no_doctor: "",
+        whatsapp_no_referer: "",
         description: "",
         documents: [], // General documents
         items: [],
         branch_id: "",
+        referer_id: "",
+        referer_name: "",
+        hospital_name: "",
+        hospital_id: "",
+        rct_date: (() => {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        })(),
+        rct_hour: new Date().toTimeString().slice(0, 5),
+        is_stat: false,
+        patient_type: "out_patient",
+
+        // Invoice Details
+        invoice_date: (() => {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        })(),
+        discount_amount: 0,
+        tax_amount: 0,
+        notes: "",
     });
 
     // Default item structure
@@ -50,6 +71,7 @@ export function useCaseReportForm(isEdit = false) {
         folderName: "",
         remarks: "",
         processing: false,
+        amount: "",
     });
 
     // Initialize form with one item if not editing or empty
@@ -73,32 +95,58 @@ export function useCaseReportForm(isEdit = false) {
         pendingItemIndex: null,
     });
 
+    const fetchNextCaseId = async () => {
+        console.log("Fetching next case ID...");
+        try {
+            const response = await axios.get("/api/v1/case-reports/next-id");
+            console.log("Next case ID response:", response.data);
+            if (response.data.success) {
+                form.case_id = response.data.next_case_id;
+                console.log("Set form.case_id to:", form.case_id);
+            }
+        } catch (err) {
+            console.error("Failed to fetch next case ID", err);
+        }
+    };
+
     // --- Master Data Fetching ---
     const fetchMasters = async () => {
         try {
-            const [pRes, dRes, sRes, bRes] = await Promise.all([
+            const [pRes, rRes, sRes, bRes, pmRes] = await Promise.all([
                 axios.get("/api/v1/masters/patients?status=active&nopaginate=1"),
-                axios.get("/api/v1/masters/doctors?status=active&nopaginate=1"),
+                axios.get("/api/v1/masters/referers?status=active&nopaginate=1"),
                 axios.get("/api/v1/masters/scan-types?status=active&nopaginate=1"),
                 axios.get("/api/v1/masters/branches?status=active&nopaginate=1"),
+                axios.get("/api/v1/masters/payment-methods?status=active&nopaginate=1"),
             ]);
 
             patients.value = Array.isArray(pRes.data.data)
                 ? pRes.data.data
                 : pRes.data.data?.data || [];
-            doctors.value = Array.isArray(dRes.data.data)
-                ? dRes.data.data
-                : dRes.data.data?.data || [];
+            referers.value = Array.isArray(rRes.data.data)
+                ? rRes.data.data
+                : rRes.data.data?.data || [];
             scanTypes.value = Array.isArray(sRes.data.data)
                 ? sRes.data.data
                 : sRes.data.data?.data || [];
             branches.value = Array.isArray(bRes.data.data)
                 ? bRes.data.data
                 : bRes.data.data?.data || [];
+            paymentMethods.value = Array.isArray(pmRes.data.data)
+                ? pmRes.data.data
+                : pmRes.data.data?.data || [];
 
             // Auto-assign branch for non-super-admins on creation
-            if (!isEdit && !loggedInUserIsSuperAdmin.value && authUser.value?.branch_id) {
-                form.branch_id = authUser.value.branch_id.toString();
+            if (!isEdit) {
+                console.log("Creation mode identified. User:", authUser.value);
+                if (authUser.value?.branch_id) {
+                    form.branch_id = authUser.value.branch_id.toString();
+                    console.log("Auto-assigned branch_id:", form.branch_id);
+                }
+                console.log("Initial case_id is:", form.case_id);
+                if (!form.case_id) {
+                    await fetchNextCaseId();
+                }
             }
         } catch (err) {
             console.error("Failed to fetch master data", err);
@@ -116,13 +164,31 @@ export function useCaseReportForm(isEdit = false) {
             form.id = data.id;
             form.case_id = data.case_id;
             form.patient_fk_id = data.patient_fk_id?.toString() || "";
-            form.doc_ref_fk_id = data.doc_ref_fk_id?.toString() || "";
+            form.patient_name = data.patient?.name || "";
+            form.patient_place = data.patient?.place || "";
+            form.referer_id = data.referer_id?.toString() || "";
+            form.referer_name = data.referer?.name || "";
             form.whatsapp_no_patient = data.whatsapp_no_patient || "";
-            form.whatsapp_no_doctor = data.whatsapp_no_doctor || "";
+            form.whatsapp_no_referer = data.whatsapp_no_referer || "";
+            form.hospital_name = data.referer?.hospital_name || "";
+            form.hospital_id = data.referer?.hospital_id || "";
             form.send_whatsapp_patient = data.send_whatsapp_patient ?? true;
-            form.send_whatsapp_doctor = data.send_whatsapp_doctor ?? true;
+            form.send_whatsapp_referer = data.send_whatsapp_referer ?? true;
             form.description = data.description || "";
             form.branch_id = data.branch_id?.toString() || "";
+            form.case_id = data.case_id || "";
+            form.rct_date = data.rct_date ? data.rct_date.split('T')[0] : "";
+            form.rct_hour = data.rct_hour || "";
+            form.is_stat = data.is_stat ?? false;
+            form.patient_type = data.patient_type || "out_patient";
+
+            // If invoice exists (one-to-one with case report in this context)
+            if (data.invoice) {
+                form.discount_amount = data.invoice.discount_amount || 0;
+                form.tax_amount = data.invoice.tax_amount || 0;
+                form.invoice_date = data.invoice.invoice_date ? data.invoice.invoice_date.split('T')[0] : "";
+                form.notes = data.invoice.notes || "";
+            }
 
             form.documents = (data.documents || []).map((path) => ({
                 name: typeof path === 'string' ? path.split("/").pop() : path.name,
@@ -138,6 +204,7 @@ export function useCaseReportForm(isEdit = false) {
                 })),
                 remarks: item.remarks || "",
                 processing: false,
+                amount: item.amount || "",
             }));
 
         } catch (err) {
@@ -158,21 +225,26 @@ export function useCaseReportForm(isEdit = false) {
                 : patients.value.data || [];
             const p = list.find((p) => String(p.id) === String(newVal));
             if (p) {
+                form.patient_name = p.name || "";
+                form.patient_place = p.place || "";
                 form.whatsapp_no_patient = p.whatsapp_no || p.mobile_no || "";
             }
         },
     );
 
     watch(
-        () => form.doc_ref_fk_id,
+        () => form.referer_id,
         (newVal) => {
             if (!newVal || fetching.value) return;
-            const list = Array.isArray(doctors.value)
-                ? doctors.value
-                : doctors.value.data || [];
-            const d = list.find((d) => String(d.id) === String(newVal));
-            if (d) {
-                form.whatsapp_no_doctor = d.mobile_no || "";
+            const list = Array.isArray(referers.value)
+                ? referers.value
+                : referers.value.data || [];
+            const r = list.find((d) => String(d.id) === String(newVal));
+            if (r) {
+                form.referer_name = r.name || "";
+                form.whatsapp_no_referer = r.mobile_no || "";
+                form.hospital_name = r.hospital_name || "";
+                form.hospital_id = r.hospital_id || "";
             }
         },
     );
@@ -349,6 +421,15 @@ export function useCaseReportForm(isEdit = false) {
         await Promise.all(promises);
         return files;
     };
+
+    // --- Computed Values ---
+    const subTotal = computed(() => {
+        return form.items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    });
+
+    const totalAmount = computed(() => {
+        return (subTotal.value - (parseFloat(form.discount_amount) || 0)) + (parseFloat(form.tax_amount) || 0);
+    });
 
     const handleFiles = async (event, index) => {
         const files = Array.from(event.target.files);
@@ -571,14 +652,22 @@ export function useCaseReportForm(isEdit = false) {
         // Validation
         const validationErrors = [];
         if (!form.patient_fk_id) validationErrors.push("Patient selection is required.");
-        if (!form.doc_ref_fk_id) validationErrors.push("Referring Doctor selection is required.");
-        if (form.documents.length === 0) validationErrors.push("At least one Case Document is required.");
+        if (!form.referer_id) validationErrors.push("Referer selection is required.");
 
         form.items.forEach((item, idx) => {
             if (!item.scan_type_id) validationErrors.push(`Scan Item #${idx + 1}: Scan Type is required.`);
             if (!item.scan_id) validationErrors.push(`Scan Item #${idx + 1}: Specific Scan is required.`);
-            if (item.documents.length === 0) validationErrors.push(`Scan Item #${idx + 1}: At least one DICOM file is required.`);
+            // DICOM files are now optional at creation/edit stage (can be added later)
         });
+
+        if (!isEdit && !form.case_id) {
+            await fetchNextCaseId();
+            if (!form.case_id) {
+                console.error("Case ID generation failed in handleSubmit");
+                validationErrors.push("System failed to generate SRF No (Case ID). Please refresh the page.");
+            }
+        }
+        console.log("Submitting Case Report with ID:", form.case_id);
 
         if (validationErrors.length > 0) {
             uploadModal.state = "alert";
@@ -592,8 +681,9 @@ export function useCaseReportForm(isEdit = false) {
 
         try {
             const payload = {
+                case_id: form.case_id,
                 patient_fk_id: form.patient_fk_id,
-                doc_ref_fk_id: form.doc_ref_fk_id,
+                referer_id: form.referer_id,
                 description: form.description,
                 documents: form.documents.map((d) => d.path || d), // Handle objects/strings
                 items: form.items.map((item) => ({
@@ -601,8 +691,13 @@ export function useCaseReportForm(isEdit = false) {
                     scan_id: item.scan_id,
                     documents: item.documents.map((d) => d.path || d),
                     remarks: item.remarks,
+                    amount: item.amount,
                 })),
                 branch_id: form.branch_id,
+                rct_date: form.rct_date,
+                rct_hour: form.rct_hour,
+                is_stat: form.is_stat,
+                patient_type: form.patient_type,
             };
 
             let response;
@@ -688,6 +783,7 @@ export function useCaseReportForm(isEdit = false) {
         );
     });
 
+
     return {
         // State
         loading,
@@ -695,7 +791,7 @@ export function useCaseReportForm(isEdit = false) {
         error,
         form,
         patients,
-        doctors,
+        referers,
         scanTypes,
         processingGeneral,
         uploadModal,
@@ -704,8 +800,11 @@ export function useCaseReportForm(isEdit = false) {
         sendingWhatsapp,
         initialRecipients,
         branches,
+        paymentMethods,
         loggedInUserIsSuperAdmin,
         filteredBranches,
+        subTotal,
+        totalAmount,
 
         // Methods
         fetchMasters,

@@ -23,11 +23,13 @@
           >
             Mobile No
           </th>
+
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Place
+            Hospital
           </th>
+
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
@@ -65,18 +67,14 @@
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-28"></div>
             </td>
-            <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-36"></div>
-            </td>
+
             <td class="px-3 py-4">
               <div class="h-6 bg-slate-100 rounded-full w-20"></div>
             </td>
             <td class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-24"></div>
             </td>
-            <td class="px-3 py-4">
-              <div class="h-4 bg-slate-100 rounded-md w-24"></div>
-            </td>
+
             <td class="px-3 py-4 text-right">
               <div class="h-8 bg-slate-100 rounded-lg w-28 ml-auto"></div>
             </td>
@@ -93,9 +91,9 @@
               {{ index + 1 }}
             </td>
             <td class="px-3 py-4">
-              <span class="text-sm font-semibold text-slate-900">{{
-                referer.name
-              }}</span>
+              <span class="text-sm font-semibold text-slate-900">
+                {{ referer.title?.title_name }} {{ referer.name }}
+              </span>
             </td>
             <td class="px-3 py-4 text-sm text-slate-600">
               <span
@@ -107,9 +105,11 @@
             <td class="px-3 py-4 text-sm text-slate-600">
               {{ referer.mobile_no || "N/A" }}
             </td>
+
             <td class="px-3 py-4 text-sm text-slate-600">
-              {{ referer.place || "N/A" }}
+              {{ referer.hospital_name || "N/A" }}
             </td>
+
             <td class="px-3 py-4">
               <button
                 type="button"
@@ -157,24 +157,16 @@
               </div>
             </td>
             <td class="px-3 py-4 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <button
-                  v-if="permissions.canEdit"
-                  @click="$emit('edit', referer)"
-                  class="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
-                  title="Edit Referer"
-                >
-                  <EditIcon class="h-4 w-4" />
-                </button>
-                <button
-                  v-if="permissions.canDelete"
-                  @click="$emit('delete', referer)"
-                  class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                  title="Delete Referer"
-                >
-                  <Trash2Icon class="h-4 w-4" />
-                </button>
-              </div>
+              <TableActions
+                :item="referer"
+                :permissions="permissions"
+                view-title="View Info"
+                edit-title="Edit Referer"
+                delete-title="Delete Referer"
+                @view="$emit('view-info', $event)"
+                @edit="$emit('edit', $event)"
+                @delete="$emit('delete', $event)"
+              />
             </td>
           </tr>
         </template>
@@ -201,10 +193,9 @@
 import {
   Circle as CircleIcon,
   User as UserIcon, // Using UserIcon as generic fallback
-  Edit as EditIcon,
-  Trash2 as Trash2Icon,
 } from "lucide-vue-next";
 import { formatDate } from "../../utils/format";
+import TableActions from "../ui/TableActions.vue";
 
 defineProps({
   referers: {
@@ -221,7 +212,7 @@ defineProps({
   },
 });
 
-defineEmits(["edit", "delete", "toggle-status"]);
+defineEmits(["edit", "delete", "toggle-status", "view-info"]);
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");

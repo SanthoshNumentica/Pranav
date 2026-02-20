@@ -86,7 +86,7 @@
                 <th
                   class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest"
                 >
-                  Doctor
+                  Referer
                 </th>
                 <th
                   class="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right"
@@ -125,7 +125,7 @@
                     {{ report.patient?.name }}
                   </td>
                   <td class="px-6 py-4 text-sm text-slate-500">
-                    Dr. {{ report.doctor?.name }}
+                    {{ report.referer?.name }}
                   </td>
                   <td class="px-6 py-4 text-xs text-slate-400 text-right">
                     {{ formatDate(report.created_at) }}
@@ -201,7 +201,7 @@ import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import {
   Users as PatientsIcon,
-  Stethoscope as DoctorsIcon,
+  User as RefererIcon,
   FolderTree as CaseIcon,
   Activity as PulseIcon,
   Calendar as TodayIcon,
@@ -224,9 +224,9 @@ const statsCards = computed(() => [
       "bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white",
   },
   {
-    label: "Referring Doctors",
-    value: dashboardData.value.stats.total_doctors || 0,
-    icon: DoctorsIcon,
+    label: "Total Referers",
+    value: dashboardData.value.stats.total_referers || 0,
+    icon: RefererIcon,
     colorClass:
       "bg-indigo-50 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white",
   },

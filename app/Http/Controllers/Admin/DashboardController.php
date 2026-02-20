@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CaseReport;
 use App\Models\Patient;
-use App\Models\Doctor;
+use App\Models\Referer;
 use App\Models\ScanType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -17,12 +17,12 @@ class DashboardController extends Controller
     {
         $stats = [
             'total_patients' => Patient::count(),
-            'total_doctors' => Doctor::count(),
+            'total_referers' => Referer::count(),
             'total_case_reports' => CaseReport::count(),
             'today_case_reports' => CaseReport::whereDate('created_at', Carbon::today())->count(),
         ];
 
-        $recent_reports = CaseReport::with(['patient', 'doctor'])
+        $recent_reports = CaseReport::with(['patient', 'referer'])
             ->latest()
             ->limit(5)
             ->get();

@@ -11,14 +11,14 @@
         <p class="text-sm text-slate-500 mt-1">Manage patient records.</p>
       </div>
       <div class="flex items-center gap-3">
-        <router-link
+        <button
           v-if="modulePermissions.canAdd"
-          :to="{ name: 'PatientCreate' }"
+          @click="openCreateModal"
           class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
         >
           <PlusIcon class="h-4 w-4" />
           Add Patient
-        </router-link>
+        </button>
       </div>
     </div>
 
@@ -89,6 +89,13 @@
 
     <!-- Modals -->
 
+    <PatientFormDialog
+      :is-open="isFormModalOpen"
+      :patient="selectedPatientForForm"
+      @close="closeFormModal"
+      @saved="handleSaved"
+    />
+
     <PatientInfoDialog
       :is-open="isInfoModalOpen"
       :patient="selectedPatient"
@@ -137,6 +144,7 @@ import axios from "axios";
 import { debounce } from "lodash";
 import PatientsTable from "../../components/patients/PatientsTable.vue";
 import PatientInfoDialog from "../../components/patients/PatientInfoDialog.vue";
+import PatientFormDialog from "../../components/patients/PatientFormDialog.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
 import { useToast } from "../../composables/useToast";
@@ -170,11 +178,13 @@ const filters = reactive({
 });
 
 const isInfoModalOpen = ref(false);
+const isFormModalOpen = ref(false);
 const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 const isStatusModalOpen = ref(false);
 const isStatusUpdating = ref(false);
 const selectedPatient = ref(null);
+const selectedPatientForForm = ref(null);
 const patientToDelete = ref(null);
 const patientToToggle = ref(null);
 const nextStatus = ref("");
@@ -212,9 +222,23 @@ const handleView = async (patient) => {
   }
 };
 
-const handleEdit = (patient) => {
-  selectedPatient.value = patient;
+const openCreateModal = () => {
+  selectedPatientForForm.value = null;
   isFormModalOpen.value = true;
+};
+
+const handleEdit = (patient) => {
+  selectedPatientForForm.value = patient;
+  isFormModalOpen.value = true;
+};
+
+const closeFormModal = () => {
+  isFormModalOpen.value = false;
+  selectedPatientForForm.value = null;
+};
+
+const handleSaved = () => {
+  fetchPatients(pagination.value?.current_page || 1);
 };
 
 const handleEditFromInfo = (patient) => {

@@ -31,18 +31,7 @@
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
           >
-            Place
-          </th>
-
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
-            Gender
-          </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
-            DOB
+            Age
           </th>
           <th
             class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
@@ -134,14 +123,7 @@
               {{ patient.mobile_no || "N/A" }}
             </td>
             <td class="px-3 py-4 text-sm text-slate-600">
-              {{ patient.place || "-" }}
-            </td>
-
-            <td class="px-3 py-4 text-sm text-slate-600">
-              {{ patient.gender?.gender_name || "N/A" }}
-            </td>
-            <td class="px-3 py-4 text-sm text-slate-600">
-              {{ formatDate(patient.dob) }}
+              {{ calculateAge(patient.dob) }}
             </td>
             <td class="px-3 py-4">
               <button
@@ -253,6 +235,18 @@ defineEmits(["view-info", "edit", "delete", "toggle-status"]);
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");
 }
+
+const calculateAge = (dob) => {
+  if (!dob) return "N/A";
+  const today = new Date();
+  const birthDate = new Date(dob);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+};
 </script>
 
 <style scoped>
