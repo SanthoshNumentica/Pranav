@@ -91,6 +91,7 @@
               :remove-folder="removeFolder"
               :remove-doc="removeDoc"
               :get-unique-folders="getUniqueFolders"
+              :processing="loading"
               @next="nextTab"
               @back="prevTab"
             />

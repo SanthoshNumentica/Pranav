@@ -77,27 +77,38 @@ class RefererController extends Controller
         $referer = Referer::findOrFail($id);
 
         $request->validate([
-            'referer_type_id' => 'required|exists:referer_types,id',
-            'title_id' => 'nullable|exists:titles,id',
-            'name' => 'required|string|max:255',
-            'mobile_no' => 'required|string|max:20',
-            'email_id' => 'nullable|email|max:255',
-            'place' => 'nullable|string|max:255',
-            'hospital_name' => 'nullable|string|max:255',
-            'hospital_id' => 'nullable|string|max:100',
+            'referer_type_id' => 'sometimes|nullable|exists:referer_types,id',
+            'title_id' => 'sometimes|nullable|exists:titles,id',
+            'name' => 'sometimes|required|string|max:255',
+            'mobile_no' => 'sometimes|required|string|max:20',
+            'email_id' => 'sometimes|nullable|email|max:255',
+            'place' => 'sometimes|nullable|string|max:255',
+            'hospital_name' => 'sometimes|nullable|string|max:255',
+            'hospital_id' => 'sometimes|nullable|string|max:100',
         ]);
 
-        $referer->update([
-            'referer_type_id' => $request->referer_type_id,
-            'title_id' => $request->title_id,
-            'name' => $request->name,
-            'mobile_no' => $request->mobile_no,
-            'email_id' => $request->email_id,
-            'place' => $request->place,
-            'hospital_name' => $request->hospital_name,
-            'hospital_id' => $request->hospital_id,
-            'modified_by' => auth()->id()
-        ]);
+        $updateData = array_filter([
+            'modified_by' => auth()->id(),
+        ], fn($v) => $v !== null);
+
+        if ($request->has('referer_type_id'))
+            $updateData['referer_type_id'] = $request->referer_type_id;
+        if ($request->has('title_id'))
+            $updateData['title_id'] = $request->title_id;
+        if ($request->has('name'))
+            $updateData['name'] = $request->name;
+        if ($request->has('mobile_no'))
+            $updateData['mobile_no'] = $request->mobile_no;
+        if ($request->has('email_id'))
+            $updateData['email_id'] = $request->email_id;
+        if ($request->has('place'))
+            $updateData['place'] = $request->place;
+        if ($request->has('hospital_name'))
+            $updateData['hospital_name'] = $request->hospital_name;
+        if ($request->has('hospital_id'))
+            $updateData['hospital_id'] = $request->hospital_id;
+
+        $referer->update($updateData);
 
         return response()->json([
             'success' => true,

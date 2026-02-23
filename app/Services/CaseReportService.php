@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\CaseReport;
+use App\Models\Patient;
+use App\Models\Referer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -122,7 +124,7 @@ class CaseReportService
             ]);
 
             // 2.1 Update Patient Details if provided (Name, Place, WhatsApp)
-            $patient = $caseReport->patient;
+            $patient = Patient::find($data['patient_fk_id']);
             if ($patient) {
                 $patientUpdate = [];
                 if (isset($data['patient_name']))
@@ -134,6 +136,24 @@ class CaseReportService
 
                 if (!empty($patientUpdate)) {
                     $patient->update($patientUpdate);
+                }
+            }
+
+            // 2.2 Update Referer Details if provided
+            $referer = Referer::find($data['referer_id']);
+            if ($referer) {
+                $refererUpdate = [];
+                if (isset($data['referer_name']))
+                    $refererUpdate['name'] = $data['referer_name'];
+                if (isset($data['whatsapp_no_referer']))
+                    $refererUpdate['mobile_no'] = $data['whatsapp_no_referer'];
+                if (isset($data['hospital_name']))
+                    $refererUpdate['hospital_name'] = $data['hospital_name'];
+                if (isset($data['hospital_id']))
+                    $refererUpdate['hospital_id'] = $data['hospital_id'];
+
+                if (!empty($refererUpdate)) {
+                    $referer->update($refererUpdate);
                 }
             }
 
@@ -240,7 +260,7 @@ class CaseReportService
             ]);
 
             // 2.1 Update Patient Details if provided
-            $patient = $caseReport->patient;
+            $patient = Patient::find($data['patient_fk_id']);
             if ($patient) {
                 $patientUpdate = [];
                 if (isset($data['patient_name']))
@@ -252,6 +272,24 @@ class CaseReportService
 
                 if (!empty($patientUpdate)) {
                     $patient->update($patientUpdate);
+                }
+            }
+
+            // 2.2 Update Referer Details if provided
+            $referer = Referer::find($data['referer_id']);
+            if ($referer) {
+                $refererUpdate = [];
+                if (isset($data['referer_name']))
+                    $refererUpdate['name'] = $data['referer_name'];
+                if (isset($data['whatsapp_no_referer']))
+                    $refererUpdate['mobile_no'] = $data['whatsapp_no_referer'];
+                if (isset($data['hospital_name']))
+                    $refererUpdate['hospital_name'] = $data['hospital_name'];
+                if (isset($data['hospital_id']))
+                    $refererUpdate['hospital_id'] = $data['hospital_id'];
+
+                if (!empty($refererUpdate)) {
+                    $referer->update($refererUpdate);
                 }
             }
 
@@ -287,15 +325,28 @@ class CaseReportService
                 ]);
             }
 
-            // 4. Update Status and Expiry
-            $status = $hasDocuments ? 'available' : 'pending';
+            // 4. Update Status and Expiry Logic (DICOM only)
+            // General documents no longer trigger 'available' status or expiry refresh
+            $hasDicom = count($newItemDocs) > 0;
 
-            $updateData = ['status' => $status];
-            if ($documentsChanged && $hasDocuments) {
-                $updateData['expires_at'] = now()->addDays(7);
-                $updateData['status'] = 'available'; // Ensure available if refreshed
-            } elseif (!$hasDocuments) {
-                $updateData['expires_at'] = null;
+            // Check if DICOM documents specifically have changed
+            $dicomChanged = (count(array_diff($newItemDocs, $oldItemDocs)) > 0 || count(array_diff($oldItemDocs, $newItemDocs)) > 0);
+
+            $updateData = [];
+
+            if ($hasDicom) {
+                // If has DICOMs, it can be available
+                $updateData['status'] = 'available';
+                // Only refresh expiry if DICOMs were added or changed
+                if ($dicomChanged || !$caseReport->expires_at) {
+                    $updateData['expires_at'] = now()->addDays(7);
+                }
+            } else {
+                // No DICOMs means it must stay pending (unless it was already something else like deleted)
+                if ($caseReport->status !== 'deleted') {
+                    $updateData['status'] = 'pending';
+                    $updateData['expires_at'] = null;
+                }
             }
 
             $caseReport->update($updateData);
@@ -450,11 +501,18 @@ class CaseReportService
         }
 
         // 4. Update expiry and status ONLY if at least one message was sent successfully
+        // AND the case actually has DICOM files (Scan Items with documents)
         if ($anySuccess) {
-            $caseReport->update([
-                'expires_at' => now()->addDays(7),
-                'status' => 'available'
-            ]);
+            $hasDicom = $caseReport->items()->where(function ($q) {
+                $q->whereNotNull('documents')->where('documents', '!=', '[]')->where('documents', '!=', '[""]');
+            })->exists();
+
+            if ($hasDicom) {
+                $caseReport->update([
+                    'expires_at' => now()->addDays(7),
+                    'status' => 'available'
+                ]);
+            }
         }
 
         return [

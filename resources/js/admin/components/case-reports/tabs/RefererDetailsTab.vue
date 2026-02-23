@@ -261,11 +261,14 @@
         >
           <button
             type="button"
-            @click="$emit('next')"
-            class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+            @click="handleNext"
+            :disabled="isSaving"
+            class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
+            <Loader2Icon v-if="isSaving" class="h-4 w-4 animate-spin" />
             Next: Case Information
             <ArrowRightIcon
+              v-if="!isSaving"
               class="h-4 w-4 group-hover:translate-x-1 transition-transform"
             />
           </button>
@@ -294,6 +297,7 @@ import {
   Phone as PhoneIcon,
   MapPin as MapPinIcon,
   ArrowRight as ArrowRightIcon,
+  Loader2 as Loader2Icon,
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
@@ -309,7 +313,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(["new-referer", "next"]);
+const emit = defineEmits(["new-referer", "next"]);
 
 const query = ref("");
 const selectedReferer = ref(null);
@@ -349,7 +353,7 @@ const internalReferers = ref([]);
 const isSearching = ref(false);
 
 const searchReferers = debounce(async (val) => {
-  if (!val || val.length < 2) {
+  if (!val || val.length < 4) {
     internalReferers.value = [];
     return;
   }
@@ -403,11 +407,41 @@ const filteredReferers = computed(() => {
   });
 });
 
+const isSaving = ref(false);
+
+const handleNext = async () => {
+  // If a referer is selected, sync any edited details before moving on
+  if (props.form.referer_id) {
+    isSaving.value = true;
+    try {
+      const payload = {};
+      if (props.form.referer_name) payload.name = props.form.referer_name;
+      if (props.form.whatsapp_no_referer)
+        payload.mobile_no = props.form.whatsapp_no_referer;
+      if (props.form.hospital_name !== undefined)
+        payload.hospital_name = props.form.hospital_name;
+      if (props.form.hospital_id !== undefined)
+        payload.hospital_id = props.form.hospital_id;
+
+      if (Object.keys(payload).length > 0) {
+        await axios.put(`/api/v1/referers/${props.form.referer_id}`, payload);
+      }
+    } catch (error) {
+      console.error("Failed to update referer details", error);
+    } finally {
+      isSaving.value = false;
+    }
+  }
+  emit("next");
+};
+
 const handleRefererSelect = (referer) => {
   if (referer) {
     props.form.referer_id = referer.id.toString();
-    // Watcher in useCaseReportForm handles the rest, but we can set it here too if needed.
-    // The watcher is more robust for master data refreshes.
+    props.form.referer_name = referer.name || "";
+    props.form.whatsapp_no_referer = referer.mobile_no || "";
+    props.form.hospital_name = referer.hospital_name || "";
+    props.form.hospital_id = referer.hospital_id || "";
   }
 };
 </script>

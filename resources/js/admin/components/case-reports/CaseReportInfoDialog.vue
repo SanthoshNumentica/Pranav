@@ -88,13 +88,6 @@
                   </div>
                   <div class="flex items-center gap-3">
                     <button
-                      @click="$router.push(`/case-reports/${report.id}/edit`)"
-                      class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-all active:scale-95"
-                    >
-                      <EditIcon class="h-4 w-4" />
-                      Edit Case
-                    </button>
-                    <button
                       @click.stop="close"
                       class="p-2 rounded-xl hover:bg-white/10 transition-colors"
                     >
@@ -558,7 +551,6 @@ import {
   FileSearch as FileSearchIcon,
   Download as DownloadIcon,
   MessageSquare as MessageSquareIcon,
-  Edit as EditIcon,
   Clock as ClockIcon,
   MapPin as MapPinIcon,
   Hash as HashIcon,

@@ -321,13 +321,13 @@
 
       <button
         type="submit"
-        :disabled="form.processing"
+        :disabled="processing"
         class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
       >
-        <Loader2Icon v-if="form.processing" class="h-4 w-4 animate-spin" />
+        <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
         {{ isEditMode ? "Update Case Report" : "Create Case Report" }}
         <ArrowRightIcon
-          v-if="!form.processing"
+          v-if="!processing"
           class="h-4 w-4 group-hover:translate-x-1 transition-transform"
         />
       </button>
@@ -384,6 +384,10 @@ const props = defineProps({
   removeFolder: { type: Function, required: true },
   removeDoc: { type: Function, required: true },
   getUniqueFolders: { type: Function, required: true },
+  processing: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(["next", "back"]);

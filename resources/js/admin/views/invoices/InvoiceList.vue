@@ -78,6 +78,11 @@
             <th
               class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
+              Case ID
+            </th>
+            <th
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+            >
               Patient
             </th>
             <th
@@ -110,7 +115,7 @@
           </tr>
           <tr v-else-if="invoices.length === 0">
             <td
-              colspan="7"
+              colspan="8"
               class="px-3 py-12 text-center text-slate-400 font-medium italic"
             >
               No invoices found.
@@ -131,6 +136,18 @@
               >
                 {{ invoice.invoice_no }}
               </span>
+            </td>
+            <td class="px-3 py-4">
+              <span
+                v-if="invoice.case_report?.case_id"
+                class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-xs font-bold cursor-pointer hover:bg-primary/20 transition-colors"
+                @click="
+                  $router.push(`/case-reports/${invoice.case_report_id}/edit`)
+                "
+              >
+                {{ invoice.case_report.case_id }}
+              </span>
+              <span v-else class="text-slate-400 text-xs">—</span>
             </td>
             <td class="px-3 py-4">
               <div class="flex flex-col">

@@ -260,11 +260,14 @@
         >
           <button
             type="button"
-            @click="$emit('next')"
-            class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+            @click="handleNext"
+            :disabled="isSaving"
+            class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
+            <Loader2Icon v-if="isSaving" class="h-4 w-4 animate-spin" />
             Next: Referer Details
             <ArrowRightIcon
+              v-if="!isSaving"
               class="h-4 w-4 group-hover:translate-x-1 transition-transform"
             />
           </button>
@@ -292,6 +295,7 @@ import {
   MapPin as MapPinIcon,
   Plus as PlusIcon,
   ArrowRight as ArrowRightIcon,
+  Loader2 as Loader2Icon,
 } from "lucide-vue-next";
 import axios from "axios";
 import { debounce } from "lodash";
@@ -307,7 +311,7 @@ const props = defineProps({
   },
 });
 
-defineEmits(["new-patient", "next"]);
+const emit = defineEmits(["new-patient", "next"]);
 
 const query = ref("");
 const selectedPatient = ref(null);
@@ -343,7 +347,7 @@ const internalPatients = ref([]);
 const isSearching = ref(false);
 
 const searchPatients = debounce(async (val) => {
-  if (!val || val.length < 2) {
+  if (!val || val.length < 4) {
     internalPatients.value = [];
     return;
   }
@@ -398,10 +402,41 @@ const filteredPatients = computed(() => {
   });
 });
 
+const isSaving = ref(false);
+
+const handleNext = async () => {
+  // If a patient is selected, sync any edited details before moving on
+  if (props.form.patient_fk_id) {
+    isSaving.value = true;
+    try {
+      const payload = {};
+      if (props.form.patient_name) payload.name = props.form.patient_name;
+      if (props.form.patient_place !== undefined)
+        payload.place = props.form.patient_place;
+      if (props.form.whatsapp_no_patient)
+        payload.whatsapp_no = props.form.whatsapp_no_patient;
+
+      if (Object.keys(payload).length > 0) {
+        await axios.put(
+          `/api/v1/patients/${props.form.patient_fk_id}`,
+          payload,
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update patient details", error);
+    } finally {
+      isSaving.value = false;
+    }
+  }
+  emit("next");
+};
+
 const handlePatientSelect = (patient) => {
   if (patient) {
     props.form.patient_fk_id = patient.id;
-    // Optionally auto-fill whatsapp if available
+    props.form.patient_name = patient.name || "";
+    props.form.patient_place = patient.place || "";
+    // Auto-fill whatsapp if mobile_no is available
     if (patient.mobile_no) {
       props.form.whatsapp_no_patient = patient.mobile_no;
     }
