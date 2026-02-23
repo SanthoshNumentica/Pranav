@@ -345,7 +345,7 @@
               leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
               <DialogPanel
-                class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-slate-200 flex flex-col"
+                class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-slate-200 flex flex-col h-[90vh] sm:h-[80vh]"
               >
                 <!-- Header/Banner - Fixed -->
                 <div
@@ -386,108 +386,116 @@
                   </div>
                 </div>
 
-                <form
-                  @submit.prevent="recordPayment"
-                  class="p-6 sm:p-8 space-y-6"
-                >
-                  <!-- Error Message Placeholder if needed -->
-                  <div
-                    v-if="totalDue <= 0"
-                    class="bg-amber-50 text-amber-600 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-amber-100"
+                <!-- Form Body - Scrollable -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar">
+                  <form
+                    @submit.prevent="recordPayment"
+                    class="p-6 sm:p-8 space-y-6"
                   >
-                    <AlertCircleIcon class="h-4 w-4 shrink-0" />
-                    <span>This invoice is already fully paid.</span>
-                  </div>
-
-                  <div class="space-y-4">
-                    <div class="space-y-1.5">
-                      <label
-                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                        >Payment Method</label
-                      >
-                      <select
-                        v-model="paymentForm.payment_method_id"
-                        class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-semibold text-slate-700"
-                        required
-                      >
-                        <option value="">Select Method</option>
-                        <option
-                          v-for="method in paymentMethods"
-                          :key="method.id"
-                          :value="method.id"
-                        >
-                          {{ method.name }}
-                        </option>
-                      </select>
+                    <!-- Error Message Placeholder if needed -->
+                    <div
+                      v-if="totalDue <= 0"
+                      class="bg-amber-50 text-amber-600 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 border border-amber-100"
+                    >
+                      <AlertCircleIcon class="h-4 w-4 shrink-0" />
+                      <span>This invoice is already fully paid.</span>
                     </div>
 
-                    <div class="space-y-1.5">
-                      <label
-                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                        >Amount Paid</label
-                      >
-                      <input
-                        v-model="paymentForm.amount"
-                        type="number"
-                        step="0.01"
-                        class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-bold text-slate-900"
-                        required
-                      />
-                      <div class="flex justify-between px-1">
-                        <span class="text-[10px] text-slate-400 font-medium"
-                          >Remaining Due: ₹{{ totalDue.toFixed(2) }}</span
+                    <div class="space-y-4">
+                      <div class="space-y-1.5">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Payment Method</label
                         >
+                        <Select
+                          v-model="paymentForm.payment_method_id"
+                          required
+                        >
+                          <SelectTrigger
+                            class="h-12 rounded-2xl border-slate-200"
+                          >
+                            <SelectValue placeholder="Select Method" />
+                          </SelectTrigger>
+                          <SelectContent class="rounded-2xl border-slate-100">
+                            <SelectItem
+                              v-for="method in paymentMethods"
+                              :key="method.id"
+                              :value="String(method.id)"
+                            >
+                              {{ method.name }}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Amount Paid</label
+                        >
+                        <input
+                          v-model="paymentForm.amount"
+                          type="number"
+                          step="0.01"
+                          class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-bold text-slate-900"
+                          required
+                        />
+                        <div class="flex justify-between px-1">
+                          <span class="text-[10px] text-slate-400 font-medium"
+                            >Remaining Due: ₹{{ totalDue.toFixed(2) }}</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Payment Date</label
+                        >
+                        <input
+                          v-model="paymentForm.payment_date"
+                          type="date"
+                          class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-semibold text-slate-700"
+                          required
+                        />
+                      </div>
+
+                      <div class="space-y-1.5">
+                        <label
+                          class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+                          >Short Note</label
+                        >
+                        <textarea
+                          v-model="paymentForm.notes"
+                          rows="2"
+                          placeholder="Optional remarks..."
+                          class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-medium text-slate-700 resize-none"
+                        ></textarea>
                       </div>
                     </div>
 
-                    <div class="space-y-1.5">
-                      <label
-                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                        >Payment Date</label
+                    <div class="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        @click="isPaymentDialogOpen = false"
+                        class="flex-1 px-6 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95"
                       >
-                      <input
-                        v-model="paymentForm.payment_date"
-                        type="date"
-                        class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-semibold text-slate-700"
-                        required
-                      />
-                    </div>
-
-                    <div class="space-y-1.5">
-                      <label
-                        class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                        >Short Note</label
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        :disabled="isSubmitting || totalDue <= 0"
+                        class="flex-1 px-6 py-2.5 rounded-xl bg-primary text-sm font-bold text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                       >
-                      <textarea
-                        v-model="paymentForm.notes"
-                        rows="2"
-                        placeholder="Optional remarks..."
-                        class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-medium text-slate-700 resize-none"
-                      ></textarea>
+                        <Loader2Icon
+                          v-if="isSubmitting"
+                          class="h-4 w-4 animate-spin"
+                        />
+                        Record Payment
+                      </button>
                     </div>
-                  </div>
-
-                  <div class="flex gap-3 pt-4">
-                    <button
-                      type="button"
-                      @click="isPaymentDialogOpen = false"
-                      class="flex-1 px-6 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all active:scale-95"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      :disabled="isSubmitting || totalDue <= 0"
-                      class="flex-1 px-6 py-2.5 rounded-xl bg-primary text-sm font-bold text-white hover:opacity-90 shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
-                    >
-                      <Loader2Icon
-                        v-if="isSubmitting"
-                        class="h-4 w-4 animate-spin"
-                      />
-                      Record Payment
-                    </button>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </DialogPanel>
             </TransitionChild>
           </div>
@@ -520,6 +528,13 @@ import {
   AlertCircle as AlertCircleIcon,
 } from "lucide-vue-next";
 import { useToast } from "../../composables/useToast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 const route = useRoute();
 const router = useRouter();

@@ -21,13 +21,21 @@ axios.interceptors.response.use(
     response => response,
     error => {
         if (error.response && error.response.status === 401) {
-            // Clear auth token and redirect to login
+            console.warn('Unauthorized request detected. Clearing session...');
+
+            // Clear all auth-related data
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+            localStorage.removeItem('auth_permissions');
+
+            // Clear default headers
             delete axios.defaults.headers.common['Authorization'];
 
-            // Avoid redirecting if already on login page
-            if (router.currentRoute.value.name !== 'Login') {
-                router.push({ name: 'Login' });
+            // Ensure we are not in an infinite redirect loop
+            const currentPath = window.location.pathname;
+            if (currentPath !== '/login' && !currentPath.includes('public')) {
+                console.log('Redirecting to login...');
+                window.location.href = '/login';
             }
         }
         return Promise.reject(error);

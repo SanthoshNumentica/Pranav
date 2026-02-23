@@ -28,15 +28,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@gmail.com',
             'password' => bcrypt('test@123'),
         ]);
-        $this->call([
-            BloodGroupSeeder::class,
-            GenderSeeder::class,
-            TitleSeeder::class,
-            ScanSeeder::class
-        ]);
+        // $this->call([
+        //     BloodGroupSeeder::class,
+        //     GenderSeeder::class,
+        //     TitleSeeder::class,
+        //     ScanSeeder::class
+        // ]);
 
-        $role = Role::create(['name' => 'Admin']);
-        $user1->assignRole($role);
+        // $role = Role::create(['name' => 'Admin']);
+        // $user1->assignRole($role);
         // $user->assignRole($role);
 
 

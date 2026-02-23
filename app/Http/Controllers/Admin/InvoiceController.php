@@ -22,15 +22,17 @@ class InvoiceController extends Controller
     {
         $query = Invoice::with(['patient', 'branch', 'caseReport']);
 
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('invoice_no', 'like', "%$search%")
-                ->orWhereHas('patient', function ($q) use ($search) {
-                    $q->where('name', 'like', "%$search%");
-                });
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_no', 'like', "%$search%")
+                    ->orWhereHas('patient', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%$search%");
+                    });
+            });
         }
 
-        if ($request->has('status')) {
+        if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 

@@ -21,6 +21,14 @@
       </svg>
     </button>
     <button
+      v-if="showPrint"
+      @click="$emit('print', item)"
+      class="flex h-8 w-8 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-500/10 transition-all active:scale-90"
+      :title="printTitle"
+    >
+      <Printer class="h-4 w-4" />
+    </button>
+    <button
       v-if="showEdit && permissions.canEdit"
       @click="$emit('edit', item)"
       class="flex h-8 w-8 items-center justify-center rounded-xl text-primary hover:bg-primary/10 transition-all active:scale-90"
@@ -40,7 +48,7 @@
 </template>
 
 <script setup>
-import { Eye, Edit, Trash2 } from "lucide-vue-next";
+import { Eye, Edit, Trash2, Printer } from "lucide-vue-next";
 
 defineProps({
   item: {
@@ -63,6 +71,10 @@ defineProps({
     type: Boolean,
     default: true,
   },
+  showPrint: {
+    type: Boolean,
+    default: false,
+  },
   showWhatsapp: {
     type: Boolean,
     default: false,
@@ -79,11 +91,15 @@ defineProps({
     type: String,
     default: "Delete Item",
   },
+  printTitle: {
+    type: String,
+    default: "Print Item",
+  },
   whatsappTitle: {
     type: String,
     default: "Send WhatsApp",
   },
 });
 
-defineEmits(["view", "edit", "delete", "whatsapp"]);
+defineEmits(["view", "edit", "delete", "whatsapp", "print"]);
 </script>

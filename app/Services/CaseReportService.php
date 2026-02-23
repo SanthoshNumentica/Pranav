@@ -20,7 +20,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         return CaseReport::query()
-            ->with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])
+            ->with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -46,7 +46,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
@@ -169,14 +169,27 @@ class CaseReportService
                     'notes' => $data['notes'] ?? null,
                 ]);
 
-                foreach ($caseReport->items as $item) {
-                    $invoice->items()->create([
-                        'case_report_item_id' => $item->id,
-                        'description' => $item->scan->name ?? 'Scan',
-                        'quantity' => 1,
-                        'unit_price' => $item->amount ?? 0,
-                        'amount' => $item->amount ?? 0,
-                    ]);
+                // Create invoice items from payload if provided, otherwise from case items
+                if (isset($data['invoice_items']) && count($data['invoice_items']) > 0) {
+                    foreach ($data['invoice_items'] as $itemData) {
+                        $invoice->items()->create([
+                            'case_report_item_id' => $itemData['case_report_item_id'] ?? null,
+                            'description' => $itemData['description'] ?? 'Scan',
+                            'quantity' => $itemData['quantity'] ?? 1,
+                            'unit_price' => $itemData['unit_price'] ?? 0,
+                            'amount' => $itemData['amount'] ?? 0,
+                        ]);
+                    }
+                } else {
+                    foreach ($caseReport->items as $item) {
+                        $invoice->items()->create([
+                            'case_report_item_id' => $item->id,
+                            'description' => $item->scan->name ?? 'Scan',
+                            'quantity' => 1,
+                            'unit_price' => $item->amount ?? 0,
+                            'amount' => $item->amount ?? 0,
+                        ]);
+                    }
                 }
 
                 app(InvoiceService::class)->updateTotals($invoice);
@@ -289,32 +302,48 @@ class CaseReportService
 
             // 6. Update/Create Invoice
             if (isset($data['invoice_date'])) {
-                $invoice = $caseReport->invoice()->updateOrCreate(
-                    ['case_report_id' => $caseReport->id],
-                    [
-                        'patient_id' => $caseReport->patient_fk_id,
-                        'branch_id' => $caseReport->branch_id ?? $caseReport->branch_id,
-                        'discount_amount' => $data['discount_amount'] ?? 0,
-                        'tax_amount' => $data['tax_amount'] ?? 0,
-                        'invoice_date' => $data['invoice_date'],
-                        'notes' => $data['notes'] ?? null,
-                    ]
-                );
+                $invoice = $caseReport->invoice()->firstOrNew(['case_report_id' => $caseReport->id]);
 
-                if (!$invoice->wasRecentlyCreated) {
-                    $invoice->items()->delete();
-                } else {
-                    $invoice->update(['invoice_no' => app(InvoiceService::class)->generateInvoiceNo()]);
+                if (!$invoice->exists) {
+                    $invoice->invoice_no = app(InvoiceService::class)->generateInvoiceNo();
+                    $invoice->status = 'pending';
                 }
 
-                foreach ($caseReport->items as $item) {
-                    $invoice->items()->create([
-                        'case_report_item_id' => $item->id,
-                        'description' => $item->scan->name ?? 'Scan',
-                        'quantity' => 1,
-                        'unit_price' => $item->amount ?? 0,
-                        'amount' => $item->amount ?? 0,
-                    ]);
+                $invoice->fill([
+                    'patient_id' => $caseReport->patient_fk_id,
+                    'branch_id' => $data['branch_id'] ?? $caseReport->branch_id,
+                    'sub_total' => $invoice->sub_total ?? 0,
+                    'discount_amount' => $data['discount_amount'] ?? 0,
+                    'tax_amount' => $data['tax_amount'] ?? 0,
+                    'total_amount' => $invoice->total_amount ?? 0,
+                    'invoice_date' => $data['invoice_date'],
+                    'notes' => $data['notes'] ?? null,
+                ]);
+                $invoice->save();
+
+                $invoice->items()->delete();
+
+                // Create invoice items from payload if provided, otherwise from case items
+                if (isset($data['invoice_items']) && count($data['invoice_items']) > 0) {
+                    foreach ($data['invoice_items'] as $itemData) {
+                        $invoice->items()->create([
+                            'case_report_item_id' => $itemData['case_report_item_id'] ?? null,
+                            'description' => $itemData['description'] ?? 'Scan',
+                            'quantity' => $itemData['quantity'] ?? 1,
+                            'unit_price' => $itemData['unit_price'] ?? 0,
+                            'amount' => $itemData['amount'] ?? 0,
+                        ]);
+                    }
+                } else {
+                    foreach ($caseReport->items as $item) {
+                        $invoice->items()->create([
+                            'case_report_item_id' => $item->id,
+                            'description' => $item->scan->name ?? 'Scan',
+                            'quantity' => 1,
+                            'unit_price' => $item->amount ?? 0,
+                            'amount' => $item->amount ?? 0,
+                        ]);
+                    }
                 }
 
                 app(InvoiceService::class)->updateTotals($invoice);

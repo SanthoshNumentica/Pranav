@@ -68,6 +68,17 @@ class CaseReportController extends Controller
             'rct_hour' => ['nullable', 'string'],
             'is_stat' => ['nullable', 'boolean'],
             'patient_type' => ['nullable', 'in:in_patient,out_patient'],
+            // Invoice Fields
+            'invoice_date' => ['nullable', 'date'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'notes' => ['nullable', 'string'],
+            'invoice_items' => ['nullable', 'array'],
+            'invoice_items.*.case_report_item_id' => ['nullable', 'exists:case_report_items,id'],
+            'invoice_items.*.description' => ['sometimes', 'required', 'string'],
+            'invoice_items.*.quantity' => ['sometimes', 'required', 'numeric', 'min:1'],
+            'invoice_items.*.unit_price' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'invoice_items.*.amount' => ['sometimes', 'required', 'numeric', 'min:0'],
         ]);
 
         if (auth()->user()->branch_id) {
@@ -107,6 +118,17 @@ class CaseReportController extends Controller
             'is_stat' => ['nullable', 'boolean'],
             'patient_type' => ['nullable', 'in:in_patient,out_patient'],
             'branch_id' => ['nullable', 'exists:branches,id'],
+            // Invoice Fields
+            'invoice_date' => ['nullable', 'date'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
+            'tax_amount' => ['nullable', 'numeric', 'min:0'],
+            'notes' => ['nullable', 'string'],
+            'invoice_items' => ['nullable', 'array'],
+            'invoice_items.*.case_report_item_id' => ['nullable', 'exists:case_report_items,id'],
+            'invoice_items.*.description' => ['sometimes', 'required', 'string'],
+            'invoice_items.*.quantity' => ['sometimes', 'required', 'numeric', 'min:1'],
+            'invoice_items.*.unit_price' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'invoice_items.*.amount' => ['sometimes', 'required', 'numeric', 'min:0'],
         ]);
 
         $caseReport = $this->caseReportService->updateCaseReport($id, $data);

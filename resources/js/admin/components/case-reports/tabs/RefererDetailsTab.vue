@@ -3,13 +3,13 @@
     <div
       class="bg-white rounded-[32px] border border-slate-200 p-8 shadow-soft-xl space-y-6"
     >
-      <div class="flex items-center gap-3 text-slate-900 mb-2">
-        <div
-          class="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center"
+      <div class="flex items-center gap-2 mb-2">
+        <h4
+          class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
         >
-          <UserIcon class="h-5 w-5 text-primary" />
-        </div>
-        <h3 class="font-bold text-lg">Referer Details</h3>
+          <div class="h-1 w-1 rounded-full bg-primary"></div>
+          Referer Details
+        </h4>
       </div>
 
       <!-- Referer Selection -->
@@ -156,7 +156,7 @@
             <button
               type="button"
               @click="$emit('new-referer')"
-              class="mt-1 h-[52px] px-6 rounded-2xl bg-primary/5 text-primary border border-primary/10 font-bold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap group shadow-sm shadow-primary/5"
+              class="mt-1 h-[48px] px-6 rounded-xl bg-primary/5 text-primary border border-primary/10 font-bold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap group shadow-sm shadow-primary/5"
             >
               <div
                 class="h-6 w-6 rounded-lg bg-primary/10 group-hover:bg-white/20 flex items-center justify-center transition-colors"
@@ -262,7 +262,7 @@
           <button
             type="button"
             @click="$emit('next')"
-            class="group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-3xl font-bold text-sm shadow-xl shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+            class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
           >
             Next: Case Information
             <ArrowRightIcon
@@ -295,6 +295,8 @@ import {
   MapPin as MapPinIcon,
   ArrowRight as ArrowRightIcon,
 } from "lucide-vue-next";
+import axios from "axios";
+import { debounce } from "lodash";
 
 const props = defineProps({
   form: {
@@ -343,14 +345,50 @@ watch(
   },
 );
 
+const internalReferers = ref([]);
+const isSearching = ref(false);
+
+const searchReferers = debounce(async (val) => {
+  if (!val || val.length < 2) {
+    internalReferers.value = [];
+    return;
+  }
+
+  isSearching.value = true;
+  try {
+    const response = await axios.get("/api/v1/referers", {
+      params: { search: val, limit: 10 },
+    });
+    // The endpoint returns paginated data under data.data
+    internalReferers.value = response.data.data.data || [];
+  } catch (error) {
+    console.error("Referer search failed", error);
+  } finally {
+    isSearching.value = false;
+  }
+}, 300);
+
+watch(query, (newVal) => {
+  searchReferers(newVal);
+});
+
 const filteredReferers = computed(() => {
-  if (query.value === "") return props.referers;
+  // Combine internal search results with the currently selected referer (from props.referers)
+  const combined = [...internalReferers.value];
+
+  props.referers.forEach((r) => {
+    if (!combined.find((cr) => cr.id === r.id)) {
+      combined.push(r);
+    }
+  });
+
+  if (query.value === "") return combined;
 
   const lowerQuery = query.value.toLowerCase().replace(/\s+/g, "");
 
-  return props.referers.filter((referer) => {
+  return combined.filter((referer) => {
     const nameMatch = referer.name
-      .toLowerCase()
+      ?.toLowerCase()
       .replace(/\s+/g, "")
       .includes(lowerQuery);
     const mobileMatch = referer.mobile_no

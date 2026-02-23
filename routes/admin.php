@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PrintController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,7 @@ Route::prefix('v1')->group(function () {
     // Public Routes
     Route::post('login', [AuthController::class, 'login']);
     Route::get('public/case-reports/{token}', [CaseReportController::class, 'showPublic']);
+    Route::get('print/{type}/{id}', [PrintController::class, 'print']);
 
     // Protected Routes
     Route::middleware(['auth:sanctum'])->group(function () {

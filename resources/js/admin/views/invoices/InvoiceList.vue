@@ -31,7 +31,7 @@
               type="text"
               placeholder="Search by invoice no or patient name..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              @input="fetchInvoices"
+              @input="debouncedFetch"
             />
           </div>
 
@@ -66,57 +66,65 @@
         <thead>
           <tr class="border-b border-slate-200 bg-slate-50/50">
             <th
-              class="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+            >
+              S.No
+            </th>
+            <th
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
               Invoice No
             </th>
             <th
-              class="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
               Patient
             </th>
             <th
-              class="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
               Date
             </th>
             <th
-              class="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
               Amount
             </th>
             <th
-              class="px-6 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
               Status
             </th>
             <th
-              class="px-6 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              class="px-3 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider"
             >
-              Actions
+              Action
             </th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           <tr v-if="loading" v-for="i in 5" :key="i" class="animate-pulse">
-            <td colspan="6" class="px-6 py-4">
+            <td colspan="7" class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-full"></div>
             </td>
           </tr>
           <tr v-else-if="invoices.length === 0">
             <td
-              colspan="6"
-              class="px-6 py-12 text-center text-slate-400 font-medium italic"
+              colspan="7"
+              class="px-3 py-12 text-center text-slate-400 font-medium italic"
             >
               No invoices found.
             </td>
           </tr>
           <tr
-            v-for="invoice in invoices"
+            v-for="(invoice, index) in invoices"
             :key="invoice.id"
             class="group hover:bg-primary/5 transition-colors duration-300"
           >
-            <td class="px-6 py-4">
+            <td class="px-3 py-4 text-sm text-slate-500">
+              {{ index + 1 }}
+            </td>
+            <td class="px-3 py-4">
               <span
                 class="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors cursor-pointer"
                 @click="viewInvoice(invoice.id)"
@@ -124,7 +132,7 @@
                 {{ invoice.invoice_no }}
               </span>
             </td>
-            <td class="px-6 py-4">
+            <td class="px-3 py-4">
               <div class="flex flex-col">
                 <span class="text-sm font-semibold text-slate-900">{{
                   invoice.patient?.name
@@ -134,15 +142,15 @@
                 }}</span>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-slate-600 font-medium">
+            <td class="px-3 py-4 text-sm text-slate-600 font-medium">
               {{ formatDate(invoice.invoice_date) }}
             </td>
-            <td class="px-6 py-4">
+            <td class="px-3 py-4">
               <span class="text-sm font-bold text-slate-900"
                 >₹{{ parseFloat(invoice.total_amount).toFixed(2) }}</span
               >
             </td>
-            <td class="px-6 py-4">
+            <td class="px-3 py-4">
               <span
                 :class="[
                   'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
@@ -156,23 +164,18 @@
                 {{ invoice.status }}
               </span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <button
-                  @click="viewInvoice(invoice.id)"
-                  class="p-2 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-xl transition-all"
-                  title="View Details"
-                >
-                  <EyeIcon class="h-4 w-4" />
-                </button>
-                <button
-                  @click="printInvoice(invoice.id)"
-                  class="p-2 hover:bg-primary/10 text-slate-400 hover:text-primary rounded-xl transition-all"
-                  title="Print Invoice"
-                >
-                  <PrinterIcon class="h-4 w-4" />
-                </button>
-              </div>
+            <td class="px-3 py-4 text-right">
+              <TableActions
+                :item="invoice"
+                :permissions="modulePermissions"
+                :show-edit="false"
+                :show-delete="false"
+                :show-print="true"
+                view-title="View Details"
+                print-title="Print Invoice"
+                @view="viewInvoice(invoice.id)"
+                @print="printInvoice(invoice.id)"
+              />
             </td>
           </tr>
         </tbody>
@@ -192,13 +195,9 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import {
-  Search as SearchIcon,
-  Eye as EyeIcon,
-  Printer as PrinterIcon,
-  Filter as FilterIcon,
-} from "lucide-vue-next";
+import { Search as SearchIcon, Filter as FilterIcon } from "lucide-vue-next";
 import Pagination from "../../components/ui/Pagination.vue";
+import TableActions from "../../components/ui/TableActions.vue";
 import {
   Select,
   SelectContent,
@@ -206,8 +205,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import { usePermissions } from "../../composables/usePermissions";
+import { useAuth } from "../../composables/useAuth";
+import { debounce } from "lodash";
 
 const router = useRouter();
+const { getModulePermissions } = usePermissions();
+const modulePermissions = getModulePermissions("invoices");
 const invoices = ref([]);
 const loading = ref(true);
 const search = ref("");
@@ -242,6 +246,8 @@ const fetchInvoices = async (page = 1) => {
     loading.value = false;
   }
 };
+
+const debouncedFetch = debounce(() => fetchInvoices(1), 300);
 
 const formatDate = (date) => {
   if (!date) return "N/A";

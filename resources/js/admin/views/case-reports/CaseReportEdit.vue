@@ -2,23 +2,24 @@
   <div class="max-w-5xl mx-auto space-y-8 pb-20">
     <!-- Page Header -->
     <div
-      class="flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500"
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500"
     >
       <div>
-        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
           Edit Case Report
         </h1>
-        <p class="text-slate-500 mt-2 font-medium">
-          Update diagnostic case details and generate invoice, upload DICOM
-          files.
+        <p class="text-sm text-slate-500 mt-1">
+          Update diagnostic case details and management.
         </p>
       </div>
-      <button
-        @click="$router.push('/case-reports')"
-        class="px-5 py-2.5 rounded-2xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-all active:scale-95"
-      >
-        Cancel
-      </button>
+      <div class="flex items-center gap-3">
+        <button
+          @click="$router.push('/case-reports')"
+          class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-all active:scale-95 flex items-center gap-2"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
 
     <!-- Skeleton Loading State -->
@@ -102,10 +103,15 @@
           >
             <InvoiceDetailsTab
               :form="form"
+              :processing="loading"
               :sub-total="subTotal"
               :total-amount="totalAmount"
+              :discounts="discounts"
+              :add-invoice-item="addInvoiceItem"
+              :remove-invoice-item="removeInvoiceItem"
               @next="nextTab"
               @back="prevTab"
+              @submit="handleSubmit"
             />
           </TabPanel>
 
@@ -117,6 +123,7 @@
               :form="form"
               :scan-types="scanTypes"
               :processing-general="processingGeneral"
+              :processing="loading"
               :get-scans="getScans"
               :get-unique-folders="getUniqueFolders"
               :handle-general-files="handleGeneralFiles"
@@ -127,50 +134,20 @@
               :handle-files="handleFiles"
               :remove-folder="removeFolder"
               :remove-doc="removeDoc"
+              @back="prevTab"
+              @submit="handleSubmit"
             />
           </TabPanel>
         </TabPanels>
       </TabGroup>
 
-      <!-- Final Actions -->
+      <!-- Error Display (global) -->
       <div
-        class="mt-12 flex items-center justify-end gap-4 border-t border-slate-100 pt-8"
+        v-if="error"
+        class="mt-4 text-xs text-rose-500 font-bold px-4 flex items-center gap-2 animate-in fade-in"
       >
-        <div
-          v-if="error"
-          class="text-xs text-rose-500 font-bold px-4 flex items-center gap-2 animate-in fade-in"
-        >
-          <AlertCircleIcon class="h-3.5 w-3.5" />
-          {{ error }}
-        </div>
-
-        <button
-          type="button"
-          v-if="selectedTab > 0 && selectedTab !== 2"
-          @click="prevTab"
-          class="px-6 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all active:scale-[0.98]"
-        >
-          Back
-        </button>
-
-        <button
-          type="button"
-          v-if="selectedTab >= 3 && selectedTab < categories.length - 1"
-          @click="nextTab"
-          class="px-10 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all"
-        >
-          Next
-        </button>
-
-        <button
-          v-else-if="selectedTab > 2"
-          type="submit"
-          :disabled="loading"
-          class="px-10 py-4 bg-primary text-white rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-3"
-        >
-          <Loader2Icon v-if="loading" class="h-4 w-4 animate-spin" />
-          {{ loading ? "Updating..." : "Update Case Report" }}
-        </button>
+        <AlertCircleIcon class="h-3.5 w-3.5" />
+        {{ error }}
       </div>
     </form>
 
@@ -276,6 +253,7 @@ const {
   patients,
   referers,
   scanTypes,
+  discounts,
   processingGeneral,
   uploadModal,
   isWhatsappModalOpen,
@@ -303,6 +281,8 @@ const {
   filteredBranches,
   subTotal,
   totalAmount,
+  addInvoiceItem,
+  removeInvoiceItem,
 } = useCaseReportForm(true);
 
 const isInitialLoading = ref(true);

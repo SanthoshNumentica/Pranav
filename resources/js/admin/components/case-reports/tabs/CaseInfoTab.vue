@@ -3,14 +3,13 @@
     <div
       class="bg-white rounded-[32px] border border-slate-200 p-8 shadow-soft-xl space-y-8"
     >
-      <!-- Header -->
-      <div class="flex items-center gap-3 text-slate-900 mb-2">
-        <div
-          class="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center"
+      <div class="flex items-center gap-2 mb-2">
+        <h4
+          class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
         >
-          <InfoIcon class="h-5 w-5 text-primary" />
-        </div>
-        <h3 class="font-bold text-lg">Case Information</h3>
+          <div class="h-1 w-1 rounded-full bg-primary"></div>
+          Case Information
+        </h4>
       </div>
 
       <!-- Main Grid -->
@@ -99,7 +98,7 @@
           <button
             type="button"
             @click="form.is_stat = !form.is_stat"
-            class="p-5 rounded-[32px] border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
+            class="p-5 rounded-2xl border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
             :class="
               form.is_stat
                 ? 'bg-rose-50/50 border-rose-200 shadow-sm ring-1 ring-rose-200'
@@ -147,7 +146,7 @@
           <button
             type="button"
             @click="form.patient_type = 'out_patient'"
-            class="p-5 rounded-[32px] border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
+            class="p-5 rounded-2xl border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
             :class="
               form.patient_type === 'out_patient'
                 ? 'bg-primary/5 border-primary shadow-sm ring-1 ring-primary'
@@ -196,7 +195,7 @@
           <button
             type="button"
             @click="form.patient_type = 'in_patient'"
-            class="p-5 rounded-[32px] border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
+            class="p-5 rounded-2xl border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
             :class="
               form.patient_type === 'in_patient'
                 ? 'bg-primary/5 border-primary shadow-sm ring-1 ring-primary'
@@ -315,7 +314,7 @@
       <button
         type="button"
         @click="$emit('back')"
-        class="px-6 py-4 bg-slate-100 text-slate-600 rounded-[24px] font-bold text-sm hover:bg-slate-200 transition-all active:scale-95"
+        class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95"
       >
         Back
       </button>
@@ -323,7 +322,7 @@
       <button
         type="submit"
         :disabled="form.processing"
-        class="group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-[24px] font-bold text-sm shadow-xl shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+        class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
       >
         <Loader2Icon v-if="form.processing" class="h-4 w-4 animate-spin" />
         {{ isEditMode ? "Update Case Report" : "Create Case Report" }}

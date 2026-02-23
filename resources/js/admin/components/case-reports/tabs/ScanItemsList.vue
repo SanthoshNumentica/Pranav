@@ -1,15 +1,13 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-3">
-        <div
-          class="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center"
+      <div class="flex items-center gap-2">
+        <h4
+          class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
         >
-          <ActivityIcon class="h-5 w-5 text-primary" />
-        </div>
-        <h3 class="font-bold text-lg text-slate-900">
+          <div class="h-1 w-1 rounded-full bg-primary"></div>
           {{ showUpload ? "Scan Items & DICOM" : "Scan Items" }}
-        </h3>
+        </h4>
         <span
           v-if="totalCost > 0"
           class="ml-3 px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-bold text-xs border border-slate-200"

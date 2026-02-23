@@ -4,13 +4,13 @@
     <div
       class="bg-white rounded-[32px] border border-slate-200 p-8 shadow-soft-xl space-y-6"
     >
-      <div class="flex items-center gap-3 text-slate-900 mb-2">
-        <div
-          class="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center"
+      <div class="flex items-center gap-2 mb-2">
+        <h4
+          class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
         >
-          <FileTextIcon class="h-5 w-5 text-primary" />
-        </div>
-        <h3 class="font-bold text-lg">General Documents</h3>
+          <div class="h-1 w-1 rounded-full bg-primary"></div>
+          General Documents
+        </h4>
       </div>
 
       <div class="space-y-2">
@@ -87,6 +87,26 @@
       :remove-doc="removeDoc"
       :get-unique-folders="getUniqueFolders"
     />
+    <!-- Actions -->
+    <div class="flex justify-between gap-4 pt-2">
+      <button
+        type="button"
+        @click="$emit('back')"
+        class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95"
+      >
+        Back
+      </button>
+      <button
+        type="button"
+        @click="$emit('submit')"
+        :disabled="processing"
+        class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+      >
+        <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
+        <SaveIcon v-else class="h-4 w-4" />
+        Save
+      </button>
+    </div>
   </div>
 </template>
 
@@ -97,6 +117,7 @@ import {
   Loader2 as Loader2Icon,
   Check as CheckIcon,
   X as XIcon,
+  Save as SaveIcon,
 } from "lucide-vue-next";
 import ScanItemsList from "./ScanItemsList.vue";
 
@@ -153,5 +174,11 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  processing: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+defineEmits(["back", "submit"]);
 </script>
