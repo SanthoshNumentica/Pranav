@@ -113,6 +113,14 @@
             />
           </div>
         </div>
+
+        <SidebarNavItem
+          v-for="item in navReports"
+          :key="item.title"
+          :item="item"
+          :isCollapsed="isCollapsed"
+          :isActive="isActive(item.url)"
+        />
       </div>
 
       <!-- Section: System -->
@@ -280,8 +288,8 @@ const navMain = computed(() => {
 const navReports = computed(() => {
   const items = [
     {
-      title: "Patient Report",
-      url: "/reports/patients",
+      title: "Reports",
+      url: "/reports",
       icon: ReportsIcon,
       module: "reports",
     },

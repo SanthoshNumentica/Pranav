@@ -58,6 +58,13 @@ class PaymentController extends Controller
             $query->where('invoice_id', $request->invoice_id);
         }
 
-        return response()->json($query->paginate(15));
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween('payment_date', [$request->from_date, $request->to_date]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $query->latest('payment_date')->paginate($request->get('limit', 15))
+        ]);
     }
 }

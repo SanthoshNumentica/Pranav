@@ -138,26 +138,23 @@
               </span>
             </td>
             <td class="px-3 py-4">
-              <span
-                v-if="invoice.case_report?.case_id"
-                class="px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-xs font-bold cursor-pointer hover:bg-primary/20 transition-colors"
-                @click="
-                  $router.push(`/case-reports/${invoice.case_report_id}/edit`)
-                "
-              >
-                {{ invoice.case_report.case_id }}
-              </span>
+              <div v-if="invoice.case_report?.case_id" class="flex flex-col">
+                <span
+                  class="w-fit px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[11px] font-bold cursor-pointer hover:bg-primary/20 transition-colors mb-1"
+                  @click="$router.push(`/case-reports/${invoice.case_report_id}/edit`)"
+                >
+                  {{ invoice.case_report.case_id }}
+                </span>
+                <span class="text-[10px] text-slate-500 font-medium ml-1">
+                  {{ invoice.branch?.name }}
+                </span>
+              </div>
               <span v-else class="text-slate-400 text-xs">—</span>
             </td>
             <td class="px-3 py-4">
-              <div class="flex flex-col">
-                <span class="text-sm font-semibold text-slate-900">{{
-                  invoice.patient?.name
-                }}</span>
-                <span class="text-[10px] text-slate-500 font-medium">{{
-                  invoice.branch?.name
-                }}</span>
-              </div>
+              <span class="text-sm font-semibold text-slate-900">{{
+                invoice.patient?.name
+              }}</span>
             </td>
             <td class="px-3 py-4 text-sm text-slate-600 font-medium">
               {{ formatDate(invoice.invoice_date) }}
@@ -209,7 +206,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { Search as SearchIcon, Filter as FilterIcon } from "lucide-vue-next";
@@ -224,10 +221,12 @@ import {
 } from "../../components/ui/select";
 import { usePermissions } from "../../composables/usePermissions";
 import { useAuth } from "../../composables/useAuth";
+import { useBranchContext } from "../../composables/useBranchContext";
 import { debounce } from "lodash";
 
 const router = useRouter();
 const { getModulePermissions } = usePermissions();
+const { selectedBranchId } = useBranchContext();
 const modulePermissions = getModulePermissions("invoices");
 const invoices = ref([]);
 const loading = ref(true);
@@ -248,15 +247,27 @@ const fetchInvoices = async (page = 1) => {
         page,
         search: search.value,
         status: statusFilter.value === "all" ? "" : statusFilter.value,
+        branch_id: selectedBranchId.value,
       },
     });
-    invoices.value = response.data.data;
-    pagination.value = {
-      current_page: response.data.current_page,
-      last_page: response.data.last_page,
-      total: response.data.total,
-      per_page: response.data.per_page,
-    };
+    if (response.data.success) {
+      invoices.value = response.data.data.data;
+      pagination.value = {
+        current_page: response.data.data.current_page,
+        last_page: response.data.data.last_page,
+        total: response.data.data.total,
+        per_page: response.data.data.per_page,
+      };
+    } else {
+      // Fallback for old style if success key is missing
+      invoices.value = response.data.data;
+      pagination.value = {
+        current_page: response.data.current_page,
+        last_page: response.data.last_page,
+        total: response.data.total,
+        per_page: response.data.per_page,
+      };
+    }
   } catch (error) {
     console.error("Failed to fetch invoices", error);
   } finally {
@@ -278,6 +289,14 @@ const viewInvoice = (id) => {
 const printInvoice = (id) => {
   window.open(`/api/v1/print/invoice/${id}`, "_blank");
 };
+
+watch(selectedBranchId, (newId) => {
+  if (newId === "all") {
+    window.location.reload();
+  } else {
+    fetchInvoices(1);
+  }
+});
 
 onMounted(() => {
   fetchInvoices();

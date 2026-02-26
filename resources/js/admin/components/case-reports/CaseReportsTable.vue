@@ -107,8 +107,11 @@
             class="group hover:bg-primary/5 transition-colors duration-300"
           >
             <td class="px-3 py-3 text-sm text-slate-500">{{ index + 1 }}</td>
-            <td class="px-3 py-3 text-sm font-semibold text-slate-900">
-              {{ report.case_id }}
+            <td class="px-3 py-3">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold text-slate-900 leading-none mb-1">{{ report.case_id }}</span>
+                <span class="text-[10px] text-slate-500 font-medium">{{ report.branch?.name }}</span>
+              </div>
             </td>
             <td class="px-3 py-3">
               <span class="text-sm font-medium text-slate-900">{{

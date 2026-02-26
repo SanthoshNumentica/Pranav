@@ -41,7 +41,7 @@
           <component :is="stat.icon" :class="cn('h-6 w-6', stat.color)" />
         </div>
         <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          <p class="text-sm font-bold text-slate-400 font-bold uppercase tracking-widest mb-1">
             {{ stat.label }}
           </p>
           <p class="text-2xl font-bold text-slate-900 mt-0.5">
@@ -71,35 +71,26 @@
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-slate-50/50 border-b border-slate-100">
-              <th
-                class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
-              >
+            <tr class="bg-slate-50/50 border-b border-slate-100 text-slate-500">
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+                S.No
+              </th>
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
                 Patient ID
               </th>
-              <th
-                class="px-6 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
-              >
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
                 Full Name
               </th>
-              <th
-                class="px-6 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
-              >
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
                 Contact
               </th>
-              <th
-                class="px-6 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
-              >
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
                 Gender
               </th>
-              <th
-                class="px-6 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
-              >
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
                 City
               </th>
-              <th
-                class="px-8 py-5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]"
-              >
+              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
                 Status
               </th>
             </tr>
@@ -107,35 +98,38 @@
           <tbody class="divide-y divide-slate-50">
             <template v-if="loading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">
-                <td v-for="j in 6" :key="j" class="px-6 py-6">
+                <td v-for="j in 7" :key="j" class="px-6 py-4">
                   <div class="h-4 bg-slate-100 rounded-md"></div>
                 </td>
               </tr>
             </template>
             <template v-else>
               <tr
-                v-for="patient in patients"
+                v-for="(patient, index) in patients"
                 :key="patient.id"
-                class="hover:bg-slate-50/50 transition-colors group"
+                class="hover:bg-primary/5 transition-colors group"
               >
-                <td class="px-8 py-5">
+                <td class="px-3 py-4 text-sm text-slate-500">
+                  {{ index + 1 }}
+                </td>
+                <td class="px-3 py-4">
                   <span
-                    class="text-xs font-bold font-mono text-slate-900 bg-slate-100 px-2 py-1 rounded-lg"
+                    class="text-sm font-semibold text-slate-900"
                     >{{ patient.patient_id }}</span
                   >
                 </td>
-                <td class="px-6 py-5">
+                <td class="px-3 py-4">
                   <div class="flex flex-col">
-                    <span class="text-sm font-bold text-slate-700">{{
+                    <span class="text-sm font-semibold text-slate-900">{{
                       patient.name
                     }}</span>
                     <span
-                      class="text-[10px] text-slate-400 uppercase font-medium mt-0.5"
+                      class="text-xs text-slate-400 uppercase font-medium mt-0.5"
                       >{{ patient.father_name }} (G)</span
                     >
                   </div>
                 </td>
-                <td class="px-6 py-5">
+                <td class="px-3 py-4">
                   <div class="flex flex-col">
                     <span class="text-sm font-medium text-slate-600">{{
                       patient.mobile_no
@@ -145,20 +139,20 @@
                     }}</span>
                   </div>
                 </td>
-                <td class="px-6 py-5">
+                <td class="px-3 py-4">
                   <span
-                    class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full"
+                    class="text-sm font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full"
                     >{{ patient.gender?.gender_name || "N/A" }}</span
                   >
                 </td>
-                <td class="px-6 py-5 text-sm text-slate-600">
+                <td class="px-3 py-4 text-sm text-slate-600">
                   {{ patient.city }}
                 </td>
-                <td class="px-8 py-5">
+                <td class="px-3 py-4">
                   <span
                     :class="
                       cn(
-                        'px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                        'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
                         patient.status === 'active'
                           ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                           : 'bg-rose-50 text-rose-500 border border-rose-100',

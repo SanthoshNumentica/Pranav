@@ -280,8 +280,12 @@ const handleSendWhatsApp = async (recipients) => {
 };
 
 watch(selectedBranchId, (newId) => {
-  filters.branch_id = newId;
-  fetchReports(1);
+  if (newId === "all") {
+    window.location.reload();
+  } else {
+    filters.branch_id = newId;
+    fetchReports(1);
+  }
 });
 
 onMounted(() => {

@@ -131,27 +131,27 @@ const routes = [
                 meta: { module: 'payment-methods' }
             },
             {
-                path: 'reports/patients',
-                name: 'PatientReports',
-                component: () => import('../views/reports/PatientReport.vue'),
-                meta: { module: 'reports' }
-            },
-            {
-                path: 'reports/payments',
-                name: 'PaymentReports',
-                component: PlaceholderView,
+                path: 'reports',
+                name: 'ReportsOverview',
+                component: () => import('../views/reports/ReportsOverview.vue'),
                 meta: { module: 'reports' }
             },
             {
                 path: 'reports/invoices',
                 name: 'InvoiceReports',
-                component: PlaceholderView,
+                component: () => import('../views/reports/InvoiceReport.vue'),
                 meta: { module: 'reports' }
             },
             {
                 path: 'reports/orders',
                 name: 'OrderReports',
-                component: PlaceholderView,
+                component: () => import('../views/reports/OrderReport.vue'),
+                meta: { module: 'reports' }
+            },
+            {
+                path: 'reports/profit-loss',
+                name: 'ProfitLossReport',
+                component: () => import('../views/reports/ProfitLossReport.vue'),
                 meta: { module: 'reports' }
             }
         ]

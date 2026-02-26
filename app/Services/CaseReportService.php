@@ -39,6 +39,9 @@ class CaseReportService
             ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('branch_id', $filters['branch_id']);
             })
+            ->when(isset($filters['from_date']) && isset($filters['to_date']), function (Builder $query) use ($filters) {
+                $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
+            })
             ->latest()
             ->paginate($perPage);
     }
@@ -440,6 +443,26 @@ class CaseReportService
     {
         $caseReport->update(['status' => $status]);
         return $caseReport;
+    }
+
+    /**
+     * Get summary statistics for reports based on filters.
+     */
+    public function getReportStats(array $filters = []): array
+    {
+        $query = CaseReport::query()
+            ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
+                $query->where('branch_id', $filters['branch_id']);
+            })
+            ->when(isset($filters['from_date']) && isset($filters['to_date']), function (Builder $query) use ($filters) {
+                $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
+            });
+
+        return [
+            'total' => (clone $query)->count(),
+            'completed' => (clone $query)->where('status', 'available')->count(),
+            'pending' => (clone $query)->whereIn('status', ['pending', 'draft'])->count(),
+        ];
     }
 
     /**

@@ -63,4 +63,25 @@ class InvoiceService
 
         return "INV-$year-" . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Get summary statistics for Invoices based on filters.
+     */
+    public function getInvoiceStats(array $filters = []): array
+    {
+        $query = Invoice::query()
+            ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function ($q) use ($filters) {
+                $q->where('branch_id', $filters['branch_id']);
+            })
+            ->when(isset($filters['from_date']) && isset($filters['to_date']), function ($q) use ($filters) {
+                $q->whereBetween('invoice_date', [$filters['from_date'], $filters['to_date']]);
+            });
+
+        return [
+            'total_revenue' => (clone $query)->sum('total_amount'),
+            'total_collected' => (clone $query)->withSum('payments', 'amount')->get()->sum('payments_sum_amount'),
+            'paid_count' => (clone $query)->where('status', 'paid')->count(),
+            'pending_count' => (clone $query)->whereIn('status', ['pending', 'unpaid'])->count(),
+        ];
+    }
 }
