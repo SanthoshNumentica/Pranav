@@ -22,6 +22,9 @@
         <div class="flex items-center gap-3">
           <label
             class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50/50 hover:bg-white hover:border-primary/30 transition-all cursor-pointer group relative overflow-hidden"
+            :class="{
+              'opacity-50 cursor-not-allowed pointer-events-none': !canEdit,
+            }"
           >
             <input
               type="file"
@@ -29,7 +32,7 @@
               accept="application/pdf,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               class="hidden"
               @change="handleGeneralFiles"
-              :disabled="processingGeneral"
+              :disabled="processingGeneral || !canEdit"
             />
             <template v-if="!processingGeneral">
               <PaperclipIcon
@@ -62,6 +65,7 @@
             </div>
             <span class="truncate max-w-[80px]">{{ doc.name }}</span>
             <button
+              v-if="canEdit"
               type="button"
               @click="removeGeneralDoc(dIdx)"
               class="hover:text-rose-500 transition-colors"
@@ -86,6 +90,7 @@
       :remove-folder="removeFolder"
       :remove-doc="removeDoc"
       :get-unique-folders="getUniqueFolders"
+      :can-edit="canEdit"
     />
     <!-- Actions -->
     <div class="flex justify-between gap-4 pt-2">
@@ -99,8 +104,8 @@
       <button
         type="button"
         @click="$emit('submit')"
-        :disabled="processing"
-        class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+        :disabled="processing || !canEdit"
+        class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
         <SaveIcon v-else class="h-4 w-4" />
@@ -177,6 +182,10 @@ const props = defineProps({
   processing: {
     type: Boolean,
     default: false,
+  },
+  canEdit: {
+    type: Boolean,
+    default: true,
   },
 });
 

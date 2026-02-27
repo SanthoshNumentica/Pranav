@@ -60,7 +60,8 @@
             <input
               v-model="form.rct_date"
               type="date"
-              class="w-full rounded-2xl py-3 pl-10 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
+              :disabled="!canEdit"
+              class="w-full rounded-2xl py-3 pl-10 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -80,7 +81,8 @@
               v-model="form.rct_hour"
               type="text"
               placeholder="e.g. 14:00"
-              class="w-full rounded-2xl py-3 pl-10 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
+              :disabled="!canEdit"
+              class="w-full rounded-2xl py-3 pl-10 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -97,13 +99,14 @@
           <!-- STAT Case Toggle -->
           <button
             type="button"
-            @click="form.is_stat = !form.is_stat"
+            @click="canEdit && (form.is_stat = !form.is_stat)"
             class="p-5 rounded-2xl border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
-            :class="
+            :class="[
               form.is_stat
                 ? 'bg-rose-50/50 border-rose-200 shadow-sm ring-1 ring-rose-200'
-                : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300'
-            "
+                : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300',
+              { 'cursor-not-allowed opacity-70': !canEdit },
+            ]"
           >
             <div
               class="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300"
@@ -145,13 +148,14 @@
           <!-- Out Patient Radio -->
           <button
             type="button"
-            @click="form.patient_type = 'out_patient'"
+            @click="canEdit && (form.patient_type = 'out_patient')"
             class="p-5 rounded-2xl border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
-            :class="
+            :class="[
               form.patient_type === 'out_patient'
                 ? 'bg-primary/5 border-primary shadow-sm ring-1 ring-primary'
-                : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300'
-            "
+                : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300',
+              { 'cursor-not-allowed opacity-70': !canEdit },
+            ]"
           >
             <div
               class="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300"
@@ -194,13 +198,14 @@
           <!-- In Patient Radio -->
           <button
             type="button"
-            @click="form.patient_type = 'in_patient'"
+            @click="canEdit && (form.patient_type = 'in_patient')"
             class="p-5 rounded-2xl border transition-all flex items-start gap-4 text-left group relative overflow-hidden"
-            :class="
+            :class="[
               form.patient_type === 'in_patient'
                 ? 'bg-primary/5 border-primary shadow-sm ring-1 ring-primary'
-                : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300'
-            "
+                : 'bg-slate-50/50 border-slate-200 hover:bg-white hover:border-slate-300',
+              { 'cursor-not-allowed opacity-70': !canEdit },
+            ]"
           >
             <div
               class="h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300"
@@ -252,7 +257,8 @@
         <textarea
           v-model="form.description"
           rows="4"
-          class="w-full rounded-[24px] py-4 px-5 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none resize-none font-medium placeholder:text-slate-300 shadow-inner-soft"
+          :disabled="!canEdit"
+          class="w-full rounded-[24px] py-4 px-5 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none resize-none font-medium placeholder:text-slate-300 shadow-inner-soft disabled:opacity-70 disabled:cursor-not-allowed"
           placeholder="Case history, clinical notes or specific instructions..."
         ></textarea>
       </div>
@@ -273,7 +279,7 @@
           <Select
             v-model="form.branch_id"
             required
-            :disabled="!loggedInUserIsSuperAdmin"
+            :disabled="!loggedInUserIsSuperAdmin || !canEdit"
           >
             <SelectTrigger class="pl-11 h-12 rounded-2xl border-slate-200">
               <SelectValue placeholder="Select Branch" />
@@ -305,6 +311,7 @@
       :remove-doc="removeDoc"
       :get-unique-folders="getUniqueFolders"
       :show-upload="false"
+      :can-edit="canEdit"
     />
 
     <!-- Actions -->
@@ -319,18 +326,32 @@
         Back
       </button>
 
-      <button
-        type="submit"
-        :disabled="processing"
-        class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
-      >
-        <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
-        {{ isEditMode ? "Update Case Report" : "Create Case Report" }}
-        <ArrowRightIcon
-          v-if="!processing"
-          class="h-4 w-4 group-hover:translate-x-1 transition-transform"
-        />
-      </button>
+      <div class="flex items-center gap-3">
+        <button
+          v-if="!isLastTab"
+          type="button"
+          @click="$emit('next')"
+          class="group flex items-center gap-2 px-8 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 active:scale-95 transition-all"
+        >
+          Next: Invoice Details
+          <ArrowRightIcon
+            class="h-4 w-4 group-hover:translate-x-1 transition-transform"
+          />
+        </button>
+
+        <button
+          type="submit"
+          :disabled="processing"
+          class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
+          {{ isEditMode ? "Update Case Report" : "Create Case Report" }}
+          <ArrowRightIcon
+            v-if="!processing && isLastTab"
+            class="h-4 w-4 group-hover:translate-x-1 transition-transform"
+          />
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -387,6 +408,14 @@ const props = defineProps({
   processing: {
     type: Boolean,
     default: false,
+  },
+  canEdit: {
+    type: Boolean,
+    default: true,
+  },
+  isLastTab: {
+    type: Boolean,
+    default: true,
   },
 });
 

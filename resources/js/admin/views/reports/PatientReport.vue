@@ -41,7 +41,9 @@
           <component :is="stat.icon" :class="cn('h-6 w-6', stat.color)" />
         </div>
         <div>
-          <p class="text-sm font-bold text-slate-400 font-bold uppercase tracking-widest mb-1">
+          <p
+            class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1"
+          >
             {{ stat.label }}
           </p>
           <p class="text-2xl font-bold text-slate-900 mt-0.5">
@@ -59,9 +61,9 @@
         class="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between"
       >
         <h3
-          class="text-sm font-bold text-slate-900 uppercase tracking-wider ml-2"
+          class="text-sm font-bold text-slate-400 uppercase tracking-widest ml-2"
         >
-          Complete Patient Directory
+          Detailed Patient List
         </h3>
         <div class="flex items-center gap-4">
           <!-- Filters could go here -->
@@ -72,25 +74,39 @@
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-50/50 border-b border-slate-100 text-slate-500">
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 S.No
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 Patient ID
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 Full Name
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 Contact
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 Gender
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 City
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-wider">
+              <th
+                class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >
                 Status
               </th>
             </tr>
@@ -113,10 +129,9 @@
                   {{ index + 1 }}
                 </td>
                 <td class="px-3 py-4">
-                  <span
-                    class="text-sm font-semibold text-slate-900"
-                    >{{ patient.patient_id }}</span
-                  >
+                  <span class="text-sm text-primary font-medium">{{
+                    patient.patient_id
+                  }}</span>
                 </td>
                 <td class="px-3 py-4">
                   <div class="flex flex-col">
@@ -141,7 +156,7 @@
                 </td>
                 <td class="px-3 py-4">
                   <span
-                    class="text-sm font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full"
+                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 text-slate-600 border border-slate-200"
                     >{{ patient.gender?.gender_name || "N/A" }}</span
                   >
                 </td>
@@ -152,10 +167,10 @@
                   <span
                     :class="
                       cn(
-                        'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
+                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
                         patient.status === 'active'
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-                          : 'bg-rose-50 text-rose-500 border border-rose-100',
+                          ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                          : 'bg-rose-500/10 text-rose-500 border border-rose-500/20',
                       )
                     "
                   >

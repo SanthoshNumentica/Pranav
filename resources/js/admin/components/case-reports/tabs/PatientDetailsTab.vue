@@ -31,13 +31,14 @@
                     class="relative w-full cursor-default overflow-hidden rounded-2xl bg-white text-left border border-slate-200 focus-within:ring-4 focus-within:ring-primary/5 focus-within:border-primary sm:text-sm transition-all shadow-sm"
                   >
                     <ComboboxInput
-                      class="w-full border-none py-3.5 pl-4 pr-10 text-sm leading-5 text-slate-900 focus:ring-0 outline-none font-medium placeholder:text-slate-400"
+                      class="w-full border-none py-3.5 pl-4 pr-10 text-sm leading-5 text-slate-900 focus:ring-0 outline-none font-medium placeholder:text-slate-400 disabled:bg-slate-50 disabled:cursor-not-allowed"
                       :displayValue="
                         (patient) =>
                           patient?.name
                             ? `${patient.name} (${patient.patient_id})`
                             : ''
                       "
+                      :disabled="!canEdit"
                       @change="query = $event.target.value"
                       placeholder="Search by Name, ID or Mobile Number..."
                     />
@@ -168,6 +169,7 @@
 
             <!-- New Patient Button -->
             <button
+              v-if="canEdit"
               type="button"
               @click="$emit('new-patient')"
               class="mt-1 h-[48px] px-6 rounded-xl bg-primary/5 text-primary border border-primary/10 font-bold text-sm hover:bg-primary hover:text-white hover:border-primary transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap group shadow-sm shadow-primary/5"
@@ -198,7 +200,8 @@
               v-model="form.patient_name"
               type="text"
               placeholder="Name"
-              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+              :disabled="!canEdit"
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -214,16 +217,21 @@
                 v-model="form.whatsapp_no_patient"
                 type="tel"
                 placeholder="WhatsApp No"
-                class="flex-1 rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+                :disabled="!canEdit"
+                class="flex-1 rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed"
               />
               <label
                 class="flex items-center gap-2 px-4 rounded-2xl border border-slate-200 bg-slate-50 cursor-pointer hover:bg-white hover:border-emerald-500/30 transition-all active:scale-95 group shrink-0"
+                :class="{
+                  'opacity-50 cursor-not-allowed pointer-events-none': !canEdit,
+                }"
               >
                 <div class="relative flex items-center justify-center">
                   <input
                     v-model="form.send_whatsapp_patient"
                     type="checkbox"
-                    class="peer h-5 w-5 rounded-lg border-2 border-slate-200 text-emerald-500 focus:ring-emerald-500/10 transition-all cursor-pointer appearance-none checked:bg-emerald-500 checked:border-emerald-500"
+                    :disabled="!canEdit"
+                    class="peer h-5 w-5 rounded-lg border-2 border-slate-200 text-emerald-500 focus:ring-emerald-500/10 transition-all cursor-pointer appearance-none checked:bg-emerald-500 checked:border-emerald-500 disabled:opacity-70"
                   />
                   <CheckIcon
                     class="absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
@@ -248,7 +256,8 @@
               v-model="form.patient_place"
               type="text"
               placeholder="City"
-              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
+              :disabled="!canEdit"
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed"
             />
           </div>
         </div>
@@ -308,6 +317,10 @@ const props = defineProps({
   patients: {
     type: Array,
     default: () => [],
+  },
+  canEdit: {
+    type: Boolean,
+    default: true,
   },
 });
 
@@ -406,7 +419,7 @@ const isSaving = ref(false);
 
 const handleNext = async () => {
   // If a patient is selected, sync any edited details before moving on
-  if (props.form.patient_fk_id) {
+  if (props.form.patient_fk_id && props.canEdit) {
     isSaving.value = true;
     try {
       const payload = {};

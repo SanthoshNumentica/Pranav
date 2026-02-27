@@ -31,7 +31,7 @@
           <Tab
             v-for="category in categories"
             as="template"
-            :key="category"
+            :key="category.name"
             v-slot="{ selected }"
           >
             <button
@@ -43,7 +43,7 @@
                   : 'text-slate-500 hover:bg-white/[0.12] hover:text-slate-700',
               ]"
             >
-              {{ category }}
+              {{ category.name }}
             </button>
           </Tab>
         </TabList>
@@ -51,11 +51,13 @@
         <TabPanels>
           <!-- Patient Details Tab -->
           <TabPanel
+            v-if="categories.some((c) => c.name === 'Patient Details')"
             class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl"
           >
             <PatientDetailsTab
               :form="form"
               :patients="patients"
+              :can-edit="hasPermission('case-report-patient-details', 'edit')"
               @new-patient="isPatientDialogOpen = true"
               @next="nextTab"
             />
@@ -63,11 +65,13 @@
 
           <!-- Referer Details Tab -->
           <TabPanel
+            v-if="categories.some((c) => c.name === 'Referer Details')"
             class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl"
           >
             <RefererDetailsTab
               :form="form"
               :referers="referers"
+              :can-edit="hasPermission('case-report-referer-details', 'edit')"
               @new-referer="isRefererDialogOpen = true"
               @next="nextTab"
             />
@@ -75,6 +79,7 @@
 
           <!-- Case Info Details Tab -->
           <TabPanel
+            v-if="categories.some((c) => c.name === 'Case Info Details')"
             class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl"
           >
             <CaseInfoTab
@@ -92,8 +97,54 @@
               :remove-doc="removeDoc"
               :get-unique-folders="getUniqueFolders"
               :processing="loading"
+              :can-edit="hasPermission('case-report-case-info', 'edit')"
               @next="nextTab"
               @back="prevTab"
+            />
+          </TabPanel>
+
+          <TabPanel
+            v-if="categories.some((c) => c.name === 'Invoice Details')"
+            class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl"
+          >
+            <InvoiceDetailsTab
+              :form="form"
+              :processing="loading"
+              :sub-total="subTotal"
+              :total-amount="totalAmount"
+              :discounts="discounts"
+              :add-invoice-item="addInvoiceItem"
+              :remove-invoice-item="removeInvoiceItem"
+              :can-edit="hasPermission('case-report-invoice', 'edit')"
+              @next="nextTab"
+              @back="prevTab"
+              @submit="handleSubmit"
+            />
+          </TabPanel>
+
+          <!-- Files Upload Option Tab -->
+          <TabPanel
+            v-if="categories.some((c) => c.name === 'Files Upload Option')"
+            class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl"
+          >
+            <FileUploadsTab
+              :form="form"
+              :scan-types="scanTypes"
+              :processing-general="processingGeneral"
+              :processing="loading"
+              :get-scans="getScans"
+              :get-unique-folders="getUniqueFolders"
+              :handle-general-files="handleGeneralFiles"
+              :remove-general-doc="removeGeneralDoc"
+              :add-item="addItem"
+              :remove-item="removeItem"
+              :handle-drop="handleDrop"
+              :handle-files="handleFiles"
+              :remove-folder="removeFolder"
+              :remove-doc="removeDoc"
+              :can-edit="hasPermission('case-report-files', 'edit')"
+              @back="prevTab"
+              @submit="handleSubmit"
             />
           </TabPanel>
         </TabPanels>
@@ -152,8 +203,9 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed, watch } from "vue";
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
+import { usePermissions } from "../../composables/usePermissions";
 import { useCaseReportForm } from "../../composables/useCaseReportForm";
 import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
 import DicomUploadModal from "../../components/dicom/DicomUploadModal.vue";
@@ -173,11 +225,32 @@ import {
 const isPatientDialogOpen = ref(false);
 const isRefererDialogOpen = ref(false);
 const selectedTab = ref(0);
-const categories = ref([
-  "Patient Details",
-  "Referer Details",
-  "Case Info Details",
-]);
+const { hasPermission } = usePermissions();
+
+const allCategories = [
+  { name: "Patient Details", module: "case-report-patient-details" },
+  { name: "Referer Details", module: "case-report-referer-details" },
+  { name: "Case Info Details", module: "case-report-case-info" },
+  { name: "Invoice Details", module: "case-report-invoice" },
+  { name: "Files Upload Option", module: "case-report-files" },
+];
+
+const categories = computed(() => {
+  return allCategories
+    .filter((cat) => hasPermission(cat.module, "view"))
+    .filter((cat) =>
+      ["Patient Details", "Referer Details", "Case Info Details"].includes(
+        cat.name,
+      ),
+    );
+});
+
+// Watch Categories to reset selected tab if needed
+watch(categories, (newCats) => {
+  if (newCats.length > 0 && selectedTab.value >= newCats.length) {
+    selectedTab.value = 0;
+  }
+});
 
 const changeTab = (index) => {
   selectedTab.value = index;

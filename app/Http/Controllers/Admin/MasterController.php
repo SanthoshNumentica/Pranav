@@ -13,6 +13,7 @@ class MasterController extends Controller
 {
     public function discounts(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('discounts-list'), 403);
         $query = \App\Models\Discount::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
 
         if ($request->has('status')) {
@@ -32,6 +33,7 @@ class MasterController extends Controller
 
     public function storeDiscount(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('discounts-create'), 403);
         $request->validate([
             'name' => [
                 'required',
@@ -58,6 +60,7 @@ class MasterController extends Controller
 
     public function updateDiscount(Request $request, $id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('discounts-edit'), 403);
         $discount = \App\Models\Discount::findOrFail($id);
         $request->validate([
             'name' => [
@@ -84,6 +87,7 @@ class MasterController extends Controller
 
     public function destroyDiscount($id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('discounts-delete'), 403);
         $discount = \App\Models\Discount::findOrFail($id);
         $discount->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
         $discount->delete(); // Soft delete
@@ -96,6 +100,7 @@ class MasterController extends Controller
 
     public function updateDiscountStatus(Request $request, $id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('discounts-edit'), 403);
         $discount = \App\Models\Discount::findOrFail($id);
         $request->validate(['status' => 'required|in:active,inactive']);
         $discount->update([
@@ -112,6 +117,7 @@ class MasterController extends Controller
 
     public function refererTypes(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('referer-types-list'), 403);
         $query = \App\Models\RefererType::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
 
         if ($request->has('status')) {
@@ -131,6 +137,7 @@ class MasterController extends Controller
 
     public function storeRefererType(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('referer-types-create'), 403);
         $request->validate([
             'name' => [
                 'required',
@@ -155,6 +162,7 @@ class MasterController extends Controller
 
     public function updateRefererType(Request $request, $id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('referer-types-edit'), 403);
         $refererType = \App\Models\RefererType::findOrFail($id);
         $request->validate([
             'name' => [
@@ -179,6 +187,7 @@ class MasterController extends Controller
 
     public function destroyRefererType($id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('referer-types-delete'), 403);
         $refererType = \App\Models\RefererType::findOrFail($id);
         $refererType->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
         $refererType->delete(); // Soft delete
@@ -191,6 +200,7 @@ class MasterController extends Controller
 
     public function updateRefererTypeStatus(Request $request, $id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('referer-types-edit'), 403);
         $refererType = \App\Models\RefererType::findOrFail($id);
         $request->validate(['status' => 'required|in:active,inactive']);
         $refererType->update([
@@ -576,6 +586,7 @@ class MasterController extends Controller
 
     public function paymentMethods(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('payment-methods-list'), 403);
         try {
             $query = \App\Models\PaymentMethod::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
 
@@ -603,6 +614,7 @@ class MasterController extends Controller
 
     public function storePaymentMethod(Request $request): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('payment-methods-create'), 403);
         $request->validate([
             'name' => [
                 'required',
@@ -627,6 +639,7 @@ class MasterController extends Controller
 
     public function updatePaymentMethod(Request $request, $id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('payment-methods-edit'), 403);
         $paymentMethod = \App\Models\PaymentMethod::findOrFail($id);
         $request->validate([
             'name' => [
@@ -651,6 +664,7 @@ class MasterController extends Controller
 
     public function destroyPaymentMethod($id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('payment-methods-delete'), 403);
         $paymentMethod = \App\Models\PaymentMethod::findOrFail($id);
         $paymentMethod->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
         $paymentMethod->delete(); // Soft delete
@@ -663,6 +677,7 @@ class MasterController extends Controller
 
     public function updatePaymentMethodStatus(Request $request, $id): JsonResponse
     {
+        abort_if(!auth()->user()->hasPermissionTo('payment-methods-edit'), 403);
         $paymentMethod = \App\Models\PaymentMethod::findOrFail($id);
         $request->validate(['status' => 'required|in:active,inactive']);
         $paymentMethod->update([

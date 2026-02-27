@@ -38,6 +38,7 @@
               </div>
 
               <button
+                v-if="canEdit"
                 type="button"
                 @click="addInvoiceItem(item)"
                 class="w-full py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-primary hover:text-white hover:border-primary transition-all flex items-center justify-center gap-2 group"
@@ -75,6 +76,7 @@
 
             <div class="flex items-center gap-3">
               <button
+                v-if="canEdit"
                 type="button"
                 @click="addInvoiceItem()"
                 class="px-3 py-1.5 rounded-lg bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center gap-2 shadow-sm border border-primary/10"
@@ -159,7 +161,8 @@
                     <input
                       v-model="item.description"
                       placeholder="Item description"
-                      class="w-full bg-transparent border-none p-0 focus:ring-0 font-medium text-slate-700 text-sm placeholder:text-slate-300"
+                      :disabled="!canEdit"
+                      class="w-full bg-transparent border-none p-0 focus:ring-0 font-medium text-slate-700 text-sm placeholder:text-slate-300 disabled:opacity-70 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-4 py-2 border-l border-slate-50">
@@ -169,12 +172,14 @@
                         v-model.number="item.amount"
                         type="number"
                         step="0.01"
-                        class="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-900 text-sm"
+                        :disabled="!canEdit"
+                        class="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
                       />
                     </div>
                   </td>
                   <td class="px-4 py-4 text-center">
                     <button
+                      v-if="canEdit"
                       type="button"
                       @click="removeInvoiceItem(idx)"
                       class="p-1.5 hover:bg-rose-50 text-slate-300 hover:text-rose-500 rounded-lg transition-all"
@@ -218,7 +223,8 @@
                 <input
                   v-model="form.invoice_date"
                   type="date"
-                  class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm"
+                  :disabled="!canEdit"
+                  class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -232,7 +238,8 @@
               <input
                 v-model="form.notes"
                 placeholder="Internal notes..."
-                class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 placeholder:text-slate-400 text-sm"
+                :disabled="!canEdit"
+                class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 placeholder:text-slate-400 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -249,9 +256,9 @@
                   >
                     <TagIcon class="h-4 w-4" />
                   </div>
-                  <Select v-model="form.discount_id">
+                  <Select v-model="form.discount_id" :disabled="!canEdit">
                     <SelectTrigger
-                      class="pl-11 h-12 rounded-xl bg-slate-50 border-none font-bold text-slate-900 text-sm"
+                      class="pl-11 h-12 rounded-xl bg-slate-50 border-none font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       <SelectValue placeholder="Custom Discount" />
                     </SelectTrigger>
@@ -285,7 +292,8 @@
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm"
+                    :disabled="!canEdit"
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -306,7 +314,8 @@
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm"
+                    :disabled="!canEdit"
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -378,8 +387,8 @@
               <button
                 type="button"
                 @click="$emit('submit')"
-                :disabled="processing"
-                class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50"
+                :disabled="processing || !canEdit"
+                class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
                 {{ form.invoice_id ? "Update Invoice" : "Generate Invoice" }}
@@ -446,6 +455,10 @@ const props = defineProps({
   discounts: {
     type: Array,
     default: () => [],
+  },
+  canEdit: {
+    type: Boolean,
+    default: true,
   },
 });
 

@@ -16,6 +16,7 @@
         </span>
       </div>
       <button
+        v-if="canEdit"
         type="button"
         @click="addItem"
         class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-900/10"
@@ -40,7 +41,7 @@
 
         <!-- Item Controls -->
         <button
-          v-if="form.items.length > 1"
+          v-if="form.items.length > 1 && canEdit"
           type="button"
           @click="removeItem(index)"
           class="absolute -right-2 -top-2 h-8 w-8 rounded-full bg-white border border-slate-100 text-slate-400 hover:text-rose-500 hover:border-rose-100 hover:bg-rose-50 transition-all shadow-sm flex items-center justify-center"
@@ -60,9 +61,9 @@
               <ActivityIcon
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-hover/select:text-primary transition-colors z-10"
               />
-              <Select v-model="item.scan_type_id" required>
+              <Select v-model="item.scan_type_id" required :disabled="!canEdit">
                 <SelectTrigger
-                  class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all"
+                  class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
@@ -94,10 +95,10 @@
                 :model-value="item.scan_id"
                 @update:model-value="(val) => onScanChange(val, item)"
                 required
-                :disabled="!item.scan_type_id"
+                :disabled="!item.scan_type_id || !canEdit"
               >
                 <SelectTrigger
-                  class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   <SelectValue
                     :placeholder="
@@ -139,7 +140,8 @@
                 min="0"
                 step="0.01"
                 placeholder="0.00"
-                class="w-full h-12 rounded-2xl py-3 pl-8 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium"
+                :disabled="!canEdit"
+                class="w-full h-12 rounded-2xl py-3 pl-8 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -158,6 +160,7 @@
               @drop.prevent="handleDrop($event, index)"
             >
               <input
+                v-if="canEdit"
                 type="file"
                 webkitdirectory
                 directory
@@ -165,7 +168,10 @@
                 class="absolute inset-0 opacity-0 cursor-pointer"
                 @change="handleFiles($event, index)"
               />
-              <div class="flex flex-col items-center gap-2 pointer-events-none">
+              <div
+                class="flex flex-col items-center gap-2 pointer-events-none"
+                :class="{ 'opacity-50': !canEdit }"
+              >
                 <div
                   class="p-2 rounded-xl bg-slate-50 group-hover/upload:bg-primary/10 transition-colors"
                 >
@@ -185,7 +191,9 @@
                   {{
                     item.processing
                       ? "Analyzing files..."
-                      : "Drop multiple folders or Click to select"
+                      : canEdit
+                        ? "Drop multiple folders or Click to select"
+                        : "Upload Disabled"
                   }}
                 </span>
               </div>
@@ -208,6 +216,7 @@
                   </span>
                 </div>
                 <button
+                  v-if="canEdit"
                   type="button"
                   @click="removeFolder(index, folder.name)"
                   class="p-1 rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors"
@@ -231,6 +240,7 @@
                 <CheckCircleIcon class="h-3 w-3" />
                 <span class="truncate max-w-[100px]">{{ doc.name }}</span>
                 <button
+                  v-if="canEdit"
                   type="button"
                   @click="removeDoc(index, dIdx)"
                   class="hover:text-rose-500"
@@ -251,7 +261,8 @@
             <textarea
               v-model="item.remarks"
               rows="2"
-              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300 resize-none font-medium text-slate-600"
+              :disabled="!canEdit"
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-slate-300 resize-none font-medium text-slate-600 disabled:opacity-70 disabled:cursor-not-allowed"
               placeholder="Special instructions or notes for this scan..."
             ></textarea>
           </div>
@@ -310,6 +321,7 @@ const props = defineProps({
   removeDoc: { type: Function, required: true },
   getUniqueFolders: { type: Function, required: true },
   showUpload: { type: Boolean, default: true },
+  canEdit: { type: Boolean, default: true },
 });
 
 const onScanChange = (scanId, item) => {
