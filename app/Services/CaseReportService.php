@@ -95,6 +95,39 @@ class CaseReportService
     {
         return $this->generateCaseId();
     }
+
+    /**
+     * Get the next available Custom ID for a scan item.
+     */
+    public function getNextItemCustomId(int $scanTypeId): string
+    {
+        $scanType = \App\Models\ScanType::find($scanTypeId);
+        if (!$scanType) return '';
+
+        $name = $scanType->name;
+        // Generate prefix: 1st 2 letters, alphanumeric only
+        $prefix = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $name), 0, 2));
+        
+        if (empty($prefix)) $prefix = 'ITM';
+
+        $latest = \App\Models\CaseReportItem::where('custom_id', 'like', "{$prefix}%")
+            ->orderBy('custom_id', 'desc')
+            ->first();
+
+        if (!$latest) {
+            return $prefix . '0001';
+        }
+
+        $lastId = $latest->custom_id;
+        // Search for the numeric part
+        if (preg_match('/' . preg_quote($prefix, '/') . '(\d+)/', $lastId, $matches)) {
+            $nextNum = intval($matches[1]) + 1;
+            return $prefix . str_pad($nextNum, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $prefix . '0001';
+    }
+
     /**
      * Create a new case report with items and documents.
      */
@@ -169,11 +202,14 @@ class CaseReportService
                 }
 
                 $caseReport->items()->create([
+                    'custom_id' => $itemData['custom_id'] ?? null,
+                    'group_token' => $itemData['group_token'] ?? null,
                     'scan_type_id' => $itemData['scan_type_id'],
                     'scan_id' => $itemData['scan_id'],
                     'documents' => $documentPaths,
                     'remarks' => $itemData['remarks'] ?? null,
                     'amount' => $itemData['amount'] ?? null,
+                    'total_amount' => $itemData['total_amount'] ?? null,
                 ]);
             }
 
@@ -320,11 +356,14 @@ class CaseReportService
                 $documentPaths = $itemData['documents'] ?? [];
 
                 $caseReport->items()->create([
+                    'custom_id' => $itemData['custom_id'] ?? null,
+                    'group_token' => $itemData['group_token'] ?? null,
                     'scan_type_id' => $itemData['scan_type_id'],
                     'scan_id' => $itemData['scan_id'],
                     'documents' => $documentPaths,
                     'remarks' => $itemData['remarks'] ?? null,
                     'amount' => $itemData['amount'] ?? null,
+                    'total_amount' => $itemData['total_amount'] ?? null,
                 ]);
             }
 

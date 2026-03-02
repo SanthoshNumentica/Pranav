@@ -51,7 +51,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
           <!-- Scan Type -->
-          <div class="space-y-2 md:col-span-4">
+          <div class="space-y-2 md:col-span-3">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
             >
@@ -61,7 +61,12 @@
               <ActivityIcon
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-hover/select:text-primary transition-colors z-10"
               />
-              <Select v-model="item.scan_type_id" required :disabled="!canEdit">
+              <Select
+                :model-value="item.scan_type_id"
+                @update:model-value="(val) => onTypeChange(val, item)"
+                required
+                :disabled="!canEdit"
+              >
                 <SelectTrigger
                   class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                 >
@@ -80,8 +85,29 @@
             </div>
           </div>
 
+          <!-- Item ID -->
+          <div class="space-y-2 md:col-span-2">
+            <label
+              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
+            >
+              Item ID
+            </label>
+            <div class="relative group/input">
+              <HashIcon
+                class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-primary transition-colors z-10"
+              />
+              <input
+                v-model="item.custom_id"
+                type="text"
+                placeholder="ID"
+                :disabled="!canEdit"
+                class="w-full h-12 rounded-2xl py-3 pl-11 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed uppercase"
+              />
+            </div>
+          </div>
+
           <!-- Specific Scan -->
-          <div class="space-y-2 md:col-span-5">
+          <div class="space-y-2 md:col-span-4">
             <label
               class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
             >
@@ -92,9 +118,8 @@
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-hover/select:text-primary transition-colors z-10"
               />
               <Select
-                :model-value="item.scan_id"
-                @update:model-value="(val) => onScanChange(val, item)"
-                required
+                v-model="item.scan_id"
+                @update:model-value="(val) => onScanSelect(val, item)"
                 :disabled="!item.scan_type_id || !canEdit"
               >
                 <SelectTrigger
@@ -140,10 +165,65 @@
                 min="0"
                 step="0.01"
                 placeholder="0.00"
-                :disabled="!canEdit"
-                class="w-full h-12 rounded-2xl py-3 pl-8 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+                :disabled="true"
+                class="w-full h-12 rounded-2xl py-3 pl-8 pr-4 text-sm border border-slate-200 bg-slate-50/50 transition-all outline-none font-medium opacity-70 cursor-not-allowed"
               />
             </div>
+          </div>
+        </div>
+
+        <!-- Selected Scans Table (Screenshot Layout) -->
+        <div v-if="item.selected_scans && item.selected_scans.length > 0" class="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div class="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-100">
+                  <th class="py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 w-12 text-center">#</th>
+                  <th class="py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400">Description</th>
+                  <th class="py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 text-right w-40">Amount</th>
+                  <th v-if="canEdit" class="py-3 px-4 text-[10px] font-bold uppercase tracking-wider text-slate-400 w-12 text-center"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr 
+                  v-for="(scan, sIdx) in item.selected_scans" 
+                  :key="sIdx"
+                  class="border-b border-slate-50 last:border-0 group/row hover:bg-slate-50/30 transition-colors"
+                >
+                  <td class="py-3 px-4 text-xs font-bold text-slate-400 text-center">{{ sIdx + 1 }}</td>
+                  <td class="py-3 px-4 text-sm font-medium text-slate-600">{{ scan.scan_name }}</td>
+                  <td class="py-3 px-4">
+                    <div class="relative group/input flex justify-end">
+                      <div class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">₹</div>
+                      <input
+                        v-model="scan.amount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        :disabled="!canEdit"
+                        class="w-32 h-9 rounded-xl py-1 pl-7 pr-3 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-bold text-right text-slate-700"
+                      />
+                    </div>
+                  </td>
+                  <td v-if="canEdit" class="py-3 px-4 text-center">
+                    <button
+                      type="button"
+                      @click="removeScan(item, sIdx)"
+                      class="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/row:opacity-100"
+                    >
+                      <Trash2Icon class="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="bg-slate-50/30 font-bold">
+                  <td colspan="2" class="py-3 px-4 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Scans Cost</td>
+                  <td class="py-3 px-4 text-right text-sm text-primary">₹{{ calculateItemTotal(item).toFixed(2) }}</td>
+                  <td v-if="canEdit"></td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
         </div>
 
@@ -289,6 +369,7 @@
 
 <script setup>
 import { computed } from "vue";
+import axios from "axios";
 import {
   Select,
   SelectContent,
@@ -307,6 +388,8 @@ import {
   CheckCircle as CheckCircleIcon,
   AlertCircle as AlertCircleIcon,
   Search as SearchIcon,
+  Hash as HashIcon,
+  Trash2 as Trash2Icon,
 } from "lucide-vue-next";
 
 const props = defineProps({
@@ -324,24 +407,109 @@ const props = defineProps({
   canEdit: { type: Boolean, default: true },
 });
 
-const onScanChange = (scanId, item) => {
-  item.scan_id = scanId;
-  // User request: "make when select specific scan then autofill that amount in that input field"
-  if (item.scan_type_id) {
-    const scans = props.getScans(item.scan_type_id);
-    const scan = scans.find((s) => s.id.toString() === scanId.toString());
+const onTypeChange = async (typeId, item) => {
+  item.scan_type_id = typeId;
+  item.scan_id = ""; // Reset scan selection
+  item.selected_scans = []; // Reset selected scans for new type
 
-    // Auto-fill amount if available, otherwise clear it to avoid stale data
-    if (scan) {
-      item.amount =
-        scan.amount !== null && scan.amount !== undefined ? scan.amount : "";
+  if (typeId) {
+    try {
+      // Fetch the next global ID for this scan type
+      const response = await axios.get(
+        `/api/v1/case-report-items/next-id/${typeId}`
+      );
+      if (response.data.success) {
+        let nextId = response.data.next_custom_id;
+
+        // Extract prefix and number
+        const prefix = nextId.replace(/\d+$/, "");
+        const baseNum = parseInt(nextId.match(/\d+$/)[0]);
+
+        // Check if other unsaved items in the current form already used this or later numbers
+        const sameTypeItems = props.form.items.filter(
+          (i) =>
+            i !== item &&
+            i.scan_type_id === typeId &&
+            i.custom_id &&
+            i.custom_id.startsWith(prefix)
+        );
+
+        let finalNum = baseNum;
+        if (sameTypeItems.length > 0) {
+          const usedNums = sameTypeItems.map((i) =>
+            parseInt(i.custom_id.match(/\d+$/)[0])
+          );
+          const maxUsed = Math.max(...usedNums);
+          if (maxUsed >= finalNum) {
+            finalNum = maxUsed + 1;
+          }
+        }
+
+        item.custom_id = `${prefix}${String(finalNum).padStart(4, "0")}`;
+      }
+    } catch (err) {
+      console.error("Failed to fetch next item ID", err);
+      // Fallback to local logic if API fails
+      const type = props.scanTypes.find(
+        (t) => t.id.toString() === typeId.toString()
+      );
+      if (type) {
+        const prefix = type.name
+          .substring(0, 2)
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "IT");
+        const count = props.form.items.filter(
+          (i) => i.scan_type_id === typeId
+        ).length;
+        item.custom_id = `${prefix}${String(count).padStart(4, "0")}`;
+      }
     }
   }
 };
 
+const onScanSelect = (scanId, item) => {
+  if (!scanId) return;
+
+  const scans = props.getScans(item.scan_type_id);
+  const scan = scans.find((s) => s.id.toString() === scanId.toString());
+
+  if (scan) {
+    // Update top row price display
+    item.amount = scan.amount || "";
+
+    // Check if duplicate in table
+    const exists = (item.selected_scans || []).some(
+      (s) => s.scan_id.toString() === scanId.toString()
+    );
+
+    if (!exists) {
+      if (!item.selected_scans) item.selected_scans = [];
+      item.selected_scans.push({
+        scan_id: scanId,
+        scan_name: scan.name,
+        amount:
+          scan.amount !== null && scan.amount !== undefined ? scan.amount : "",
+      });
+    }
+  }
+};
+
+const removeScan = (item, scanIndex) => {
+  if (item.selected_scans) {
+    item.selected_scans.splice(scanIndex, 1);
+  }
+};
+
+const calculateItemTotal = (item) => {
+  if (!item.selected_scans) return 0;
+  return item.selected_scans.reduce((sum, s) => {
+    return sum + (Number(s.amount) || 0);
+  }, 0);
+};
+
 const totalCost = computed(() => {
   return props.form.items.reduce((sum, item) => {
-    return sum + (Number(item.amount) || 0);
+    return sum + calculateItemTotal(item);
   }, 0);
 });
 </script>

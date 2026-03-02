@@ -15,11 +15,14 @@ class CaseReportItem extends Model
 
     protected $fillable = [
         'case_report_id',
+        'custom_id',
+        'group_token',
         'scan_type_id',
         'scan_id',
         'documents',
         'remarks',
         'amount',
+        'total_amount',
     ];
 
     protected $casts = [
