@@ -71,10 +71,13 @@ class CaseReportController extends Controller
             'items' => ['required', 'array', 'min:1'],
             'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
             'items.*.scan_id' => ['required', 'exists:scans,id'],
+            'items.*.custom_id' => ['nullable', 'string', 'max:255'],
+            'items.*.group_token' => ['nullable', 'string', 'max:255'],
             'items.*.documents' => ['nullable', 'array'],
             'items.*.documents.*' => ['required', 'string'],
             'items.*.remarks' => ['nullable', 'string'],
             'items.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
             'branch_id' => ['nullable', 'exists:branches,id'],
             'rct_date' => ['nullable', 'date'],
             'rct_hour' => ['nullable', 'string'],
@@ -132,6 +135,7 @@ class CaseReportController extends Controller
             'items.*.documents.*' => ['required', 'string'],
             'items.*.remarks' => ['nullable', 'string'],
             'items.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
             'rct_date' => ['nullable', 'date'],
             'rct_hour' => ['nullable', 'string'],
             'is_stat' => ['nullable', 'boolean'],
@@ -189,6 +193,16 @@ class CaseReportController extends Controller
         } catch (\Exception $e) {
             \Log::error("Error in getNextCaseId: " . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Failed to generate ID'], 500);
+        }
+    }
+
+    public function getNextItemCustomId(int $scanTypeId): JsonResponse
+    {
+        try {
+            $nextId = $this->caseReportService->getNextItemCustomId($scanTypeId);
+            return response()->json(['success' => true, 'next_custom_id' => $nextId]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
 

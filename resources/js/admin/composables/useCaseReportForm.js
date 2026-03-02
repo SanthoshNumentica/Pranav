@@ -94,7 +94,10 @@ export function useCaseReportForm(isEdit = false) {
     });
 
     const totalAmount = computed(() => {
-        return (subTotal.value - (parseFloat(form.discount_amount) || 0)) + (parseFloat(form.tax_amount) || 0);
+        const sub = parseFloat(subTotal.value) || 0;
+        const disc = parseFloat(form.discount_amount) || 0;
+        const tax = parseFloat(form.tax_amount) || 0;
+        return (sub - disc) + tax;
     });
 
     const calculateDiscount = () => {
@@ -121,8 +124,11 @@ export function useCaseReportForm(isEdit = false) {
 
     // Default item structure
     const createNewItem = () => ({
+        custom_id: "",
+        group_token: Math.random().toString(36).substring(2, 11),
         scan_type_id: "",
-        scan_id: "",
+        scan_id: "", // This will be the "temp" selector value in the UI
+        selected_scans: [], // { scan_id, scan_name, amount }
         documents: [],
         folderName: "",
         remarks: "",
@@ -215,19 +221,103 @@ export function useCaseReportForm(isEdit = false) {
                 path: typeof path === 'string' ? path : path.path
             }));
 
-            form.items = data.items.map((item) => ({
-                id: item.id,
-                scan_type_id: item.scan_type_id?.toString() || "",
-                scan_id: item.scan_id?.toString() || "",
-                scan_name: item.scan?.name || "Scan",
-                documents: (item.documents || []).map((path) => ({
-                    name: typeof path === 'string' ? path.split("/").pop() : path.name,
-                    path: typeof path === 'string' ? path : path.path
-                })),
-                remarks: item.remarks || "",
-                processing: false,
-                amount: item.amount || "",
-            }));
+            // Group items by group_token or custom_id (fallback for legacy)
+            const groupedItems = [];
+
+            // To handle records with NULL group_token AND NULL custom_id, we'll try to group by scan_type_id 
+            // if they belong to the same sequence of nulls
+            let lastNullGroupToken = null;
+            let lastNullScanTypeId = null;
+
+            (data.items || []).forEach(item => {
+                const scanData = item.scan_id ? {
+                    id: item.id,
+                    scan_id: item.scan_id.toString(),
+                    scan_name: item.scan?.name || "Scan",
+                    amount: item.amount || 0,
+                } : null;
+
+                // Stronger grouping logic
+                let existingGroup = groupedItems.find(g => {
+                    if (item.group_token && g.group_token === item.group_token) return true;
+                    if (item.custom_id && g.custom_id === item.custom_id && g.scan_type_id === item.scan_type_id?.toString()) return true;
+                    return false;
+                });
+
+                // Emergency fallback: If both are null, check if it's the same scan type as the previous item 
+                // and assign them to the same emergency group token
+                if (!existingGroup && !item.group_token && !item.custom_id) {
+                    if (item.scan_type_id?.toString() === lastNullScanTypeId) {
+                        existingGroup = groupedItems.find(g => g.group_token === lastNullGroupToken);
+                    }
+                }
+
+                if (existingGroup) {
+                    if (scanData) {
+                        const isDuplicate = existingGroup.selected_scans.some(s => s.scan_id.toString() === item.scan_id?.toString());
+                        if (!isDuplicate) {
+                            existingGroup.selected_scans.push(scanData);
+                        }
+                    }
+                } else {
+                    const newToken = item.group_token || Math.random().toString(36).substring(2, 11);
+                    if (!item.group_token && !item.custom_id) {
+                        lastNullGroupToken = newToken;
+                        lastNullScanTypeId = item.scan_type_id?.toString();
+                    }
+
+                    groupedItems.push({
+                        id: item.id,
+                        group_token: newToken,
+                        custom_id: item.custom_id || "",
+                        scan_type_id: item.scan_type_id?.toString() || "",
+                        scan_id: item.scan_id?.toString() || "",
+                        selected_scans: scanData ? [scanData] : [],
+                        documents: (item.documents || []).map((path) => ({
+                            name: typeof path === 'string' ? path.split("/").pop() : path.name,
+                            path: typeof path === 'string' ? path : path.path
+                        })),
+                        remarks: item.remarks || "",
+                        processing: false,
+                        amount: item.amount || 0,
+                    });
+                }
+            });
+            form.items = groupedItems;
+
+            // Sync invoice items initially
+            if (!data.invoice || !data.invoice.items || data.invoice.items.length === 0) {
+                form.invoice_items = [];
+                groupedItems.forEach(block => {
+                    (block.selected_scans || []).forEach(scan => {
+                        // Check for duplicates before pushing
+                        const exists = form.invoice_items.some(inv =>
+                            (inv.case_report_item_id && String(inv.case_report_item_id) === String(scan.id)) ||
+                            (inv.description === scan.scan_name && inv.amount === scan.amount)
+                        );
+
+                        if (!exists) {
+                            form.invoice_items.push({
+                                case_report_item_id: scan.id || null,
+                                description: scan.scan_name || "Scan",
+                                quantity: 1,
+                                unit_price: scan.amount || 0,
+                                amount: scan.amount || 0
+                            });
+                        }
+                    });
+                });
+            } else {
+                // If invoice exists with items, use those
+                form.invoice_items = (data.invoice.items || []).map(item => ({
+                    id: item.id,
+                    case_report_item_id: item.case_report_item_id,
+                    description: item.description,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price,
+                    amount: item.amount
+                }));
+            }
 
         } catch (err) {
             console.error("Failed to fetch case report", err);
@@ -273,13 +363,44 @@ export function useCaseReportForm(isEdit = false) {
 
     const addInvoiceItem = (item) => {
         const safeItem = item || {};
-        form.invoice_items.push({
-            case_report_item_id: safeItem.id || null,
-            description: safeItem.scan_name || "",
-            quantity: 1,
-            unit_price: safeItem.amount || 0,
-            amount: safeItem.amount || 0,
-        });
+
+        // If it's a grouped scan block with multiple selections
+        if (safeItem.selected_scans && safeItem.selected_scans.length > 0) {
+            safeItem.selected_scans.forEach((scan) => {
+                // Duplicate check
+                const exists = form.invoice_items.some(inv =>
+                    (inv.case_report_item_id && String(inv.case_report_item_id) === String(scan.id)) ||
+                    (inv.description === scan.scan_name && inv.amount === scan.amount)
+                );
+
+                if (!exists) {
+                    form.invoice_items.push({
+                        case_report_item_id: scan.id || null,
+                        description: scan.scan_name || "Scan",
+                        quantity: 1,
+                        unit_price: scan.amount || 0,
+                        amount: scan.amount || 0,
+                    });
+                }
+            });
+            return;
+        }
+
+        // Fallback for manual addition or single scan records
+        const exists = form.invoice_items.some(inv =>
+            (inv.case_report_item_id && String(inv.case_report_item_id) === String(safeItem.id)) ||
+            (inv.description === safeItem.scan_name && inv.amount === safeItem.amount)
+        );
+
+        if (!exists) {
+            form.invoice_items.push({
+                case_report_item_id: safeItem.id || null,
+                description: safeItem.scan_name || (safeItem.scan_id ? "Scan" : ""),
+                quantity: 1,
+                unit_price: safeItem.amount || 0,
+                amount: safeItem.amount || 0,
+            });
+        }
     };
 
     const removeInvoiceItem = (index) => form.invoice_items.splice(index, 1);
@@ -294,7 +415,9 @@ export function useCaseReportForm(isEdit = false) {
 
         form.items.forEach((item, idx) => {
             if (!item.scan_type_id) validationErrors.push(`Scan Item #${idx + 1}: Scan Type is required.`);
-            if (!item.scan_id) validationErrors.push(`Scan Item #${idx + 1}: Specific Scan is required.`);
+            if (!item.selected_scans || item.selected_scans.length === 0) {
+                validationErrors.push(`Scan Item #${idx + 1}: At least one specific scan must be added.`);
+            }
         });
 
         if (!isEdit && !form.case_id) {
@@ -329,13 +452,24 @@ export function useCaseReportForm(isEdit = false) {
                 send_whatsapp_patient: form.send_whatsapp_patient ?? true,
                 send_whatsapp_referer: form.send_whatsapp_referer ?? true,
                 documents: (form.documents || []).map((d) => d.path || d),
-                items: (form.items || []).map((item) => ({
-                    scan_type_id: item.scan_type_id,
-                    scan_id: item.scan_id,
-                    documents: (item.documents || []).map((d) => d.path || d),
-                    remarks: item.remarks || "",
-                    amount: item.amount || 0,
-                })),
+                items: (form.items || []).flatMap((itemBlock) => {
+                    // Calculate total for this block
+                    const blockTotal = (itemBlock.selected_scans || []).reduce((sum, s) => {
+                        return sum + (parseFloat(s.amount) || 0);
+                    }, 0);
+
+                    // Flatten multi-scans into individual case report items
+                    return (itemBlock.selected_scans || []).map(scan => ({
+                        custom_id: itemBlock.custom_id,
+                        group_token: itemBlock.group_token,
+                        scan_type_id: itemBlock.scan_type_id,
+                        scan_id: scan.scan_id,
+                        documents: (itemBlock.documents || []).map((d) => d.path || d),
+                        remarks: itemBlock.remarks || "",
+                        amount: scan.amount || 0,
+                        total_amount: blockTotal,
+                    }));
+                }),
                 // Invoice fields
                 invoice_date: form.invoice_date || null,
                 discount_amount: form.discount_amount || 0,

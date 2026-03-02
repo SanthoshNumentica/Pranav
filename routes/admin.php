@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
 
         // Case Reports
         Route::get('case-reports/next-id', [CaseReportController::class, 'getNextCaseId']);
+        Route::get('case-report-items/next-id/{scan_type_id}', [CaseReportController::class, 'getNextItemCustomId']);
         Route::get('case-reports', [CaseReportController::class, 'index']);
         Route::post('/case-reports', [CaseReportController::class, 'store']);
         Route::get('/case-reports/{id}', [CaseReportController::class, 'show']);

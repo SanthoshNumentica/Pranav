@@ -17,8 +17,8 @@
 
           <div class="space-y-4">
             <div
-              v-for="(item, index) in form.items"
-              :key="index"
+              v-for="(scan, sIdx) in flattenedScans"
+              :key="sIdx"
               class="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3"
             >
               <div class="flex justify-between items-start">
@@ -26,21 +26,21 @@
                   <p
                     class="text-[10px] font-black uppercase tracking-wider text-slate-400"
                   >
-                    Scan Item #{{ index + 1 }}
+                    Scan Item #{{ sIdx + 1 }}
                   </p>
                   <p class="font-bold text-slate-700">
-                    {{ item.scan_name || "Generic Scan" }}
+                    {{ scan.scan_name }}
                   </p>
                 </div>
                 <p class="font-black text-primary">
-                  ₹{{ parseFloat(item.amount || 0).toFixed(2) }}
+                  ₹{{ parseFloat(scan.amount || 0).toFixed(2) }}
                 </p>
               </div>
 
               <button
                 v-if="canEdit"
                 type="button"
-                @click="addInvoiceItem(item)"
+                @click="addInvoiceItem(scan)"
                 class="w-full py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-primary hover:text-white hover:border-primary transition-all flex items-center justify-center gap-2 group"
               >
                 <PlusIcon
@@ -406,6 +406,7 @@
 </template>
 
 <script setup>
+import { computed } from "vue";
 import {
   Receipt as ReceiptIcon,
   Calendar as CalendarIcon,
@@ -460,6 +461,30 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+});
+
+const flattenedScans = computed(() => {
+  const scans = [];
+  (props.form.items || []).forEach((item) => {
+    if (item.selected_scans && item.selected_scans.length > 0) {
+      item.selected_scans.forEach((s) => {
+        scans.push({
+          ...s,
+          // include block level info if needed in future
+          scan_type_id: item.scan_type_id,
+        });
+      });
+    } else if (item.scan_id) {
+      scans.push({
+        id: item.id,
+        scan_id: item.scan_id,
+        scan_name: item.scan_name || "Scan",
+        amount: item.amount,
+        scan_type_id: item.scan_type_id,
+      });
+    }
+  });
+  return scans;
 });
 
 defineEmits(["next", "back", "submit"]);
