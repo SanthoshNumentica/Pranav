@@ -2,8 +2,7 @@
   <div class="space-y-6">
     <!-- Page Header -->
     <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500"
-    >
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
           Referers
@@ -13,11 +12,8 @@
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <button
-          v-if="modulePermissions.canAdd"
-          @click="openAddModal"
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
-        >
+        <button v-if="modulePermissions.canAdd" @click="openAddModal"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95">
           <PlusIcon class="h-4 w-4" />
           Add Referer
         </button>
@@ -25,25 +21,16 @@
     </div>
 
     <!-- Filters & Search -->
-    <div
-      class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100"
-    >
-      <div
-        class="flex flex-col md:flex-row md:items-center justify-between gap-4"
-      >
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1">
           <!-- Search Inner -->
           <div class="relative w-full md:w-72 group">
             <SearchIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"
-            />
-            <input
-              v-model="filters.search"
-              type="text"
-              placeholder="Search Name, Mobile..."
+              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input v-model="filters.search" type="text" placeholder="Search Name, Mobile..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              @input="debouncedFetch"
-            />
+              @input="debouncedFetch" />
           </div>
 
           <div class="relative w-full md:w-48">
@@ -58,8 +45,7 @@
               </SelectContent>
             </Select>
             <FilterIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors"
-            />
+              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors" />
           </div>
         </div>
       </div>
@@ -67,63 +53,30 @@
 
     <!-- Main Table Container -->
     <div
-      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
-    >
-      <ReferersTable
-        :referers="referers"
-        :loading="loading"
-        :permissions="modulePermissions"
-        @edit="handleEdit"
-        @delete="handleDelete"
-        @toggle-status="handleToggleStatus"
-        @view-info="handleView"
-      />
+      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+      <ReferersTable :referers="referers" :loading="loading" :permissions="modulePermissions"
+        :start-index="pagination?.from || 1" @edit="handleEdit" @delete="handleDelete"
+        @toggle-status="handleToggleStatus" @view-info="handleView" />
       <!-- Pagination -->
-      <Pagination
-        v-if="pagination"
-        :pagination="pagination"
-        @page-change="handlePageChange"
-      />
+      <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
     </div>
 
     <!-- Modals -->
-    <RefererInfoDialog
-      :is-open="isInfoModalOpen"
-      :referer="selectedReferer"
-      @close="isInfoModalOpen = false"
-      @edit="handleEditFromInfo"
-    />
+    <RefererInfoDialog :is-open="isInfoModalOpen" :referer="selectedReferer" @close="isInfoModalOpen = false"
+      @edit="handleEditFromInfo" />
 
-    <RefererFormDialog
-      :is-open="isFormModalOpen"
-      :referer="selectedReferer"
-      @close="isFormModalOpen = false"
-      @saved="fetchReferers"
-    />
+    <RefererFormDialog :is-open="isFormModalOpen" :referer="selectedReferer" @close="isFormModalOpen = false"
+      @saved="fetchReferers" />
 
-    <ConfirmationModal
-      :is-open="isDeleteModalOpen"
-      title="Delete Referer"
+    <ConfirmationModal :is-open="isDeleteModalOpen" title="Delete Referer"
       :description="`Are you sure you want to delete referer ${refererToDelete?.name}? This action will move the record to trash.`"
-      confirm-label="Delete Referer"
-      variant="danger"
-      :icon="Trash2Icon"
-      :loading="isDeleting"
-      @close="isDeleteModalOpen = false"
-      @confirm="confirmDelete"
-    />
+      confirm-label="Delete Referer" variant="danger" :icon="Trash2Icon" :loading="isDeleting"
+      @close="isDeleteModalOpen = false" @confirm="confirmDelete" />
 
-    <ConfirmationModal
-      :is-open="isStatusModalOpen"
-      title="Update Status"
+    <ConfirmationModal :is-open="isStatusModalOpen" title="Update Status"
       :description="`Are you sure you want to change the status of ${refererToToggle?.name} to ${nextStatus}?`"
-      confirm-label="Update Status"
-      variant="warning"
-      :icon="AlertCircleIcon"
-      :loading="isStatusUpdating"
-      @close="isStatusModalOpen = false"
-      @confirm="confirmToggleStatus"
-    />
+      confirm-label="Update Status" variant="warning" :icon="AlertCircleIcon" :loading="isStatusUpdating"
+      @close="isStatusModalOpen = false" @confirm="confirmToggleStatus" />
   </div>
 </template>
 

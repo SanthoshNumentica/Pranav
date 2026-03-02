@@ -1,8 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-    >
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
           Scan Types
@@ -11,55 +9,36 @@
           Manage available scan types and their specific procedures.
         </p>
       </div>
-      <button
-        v-if="canAdd"
-        @click="openAddDialog"
-        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95"
-      >
+      <button v-if="canAdd" @click="openAddDialog"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95">
         <PlusIcon class="h-4 w-4" />
         Add Scan Type
       </button>
     </div>
 
-    <div
-      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar"
-    >
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar">
       <table class="w-full">
         <thead>
           <tr class="border-b border-slate-200 bg-slate-50/50">
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               S.No
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Scan Type
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase font-mono"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase font-mono">
               Included Scans
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Status
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Created
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Modified
             </th>
-            <th
-              class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase">
               Actions
             </th>
           </tr>
@@ -93,15 +72,10 @@
           </template>
 
           <template v-else>
-            <tr
-              v-for="(type, index) in filteredScanTypes"
-              :key="type.id"
-              class="group hover:bg-slate-50/50 transition-colors"
-            >
-              <td
-                class="px-6 py-4 text-sm font-medium text-slate-500 font-mono"
-              >
-                {{ index + 1 }}
+            <tr v-for="(type, index) in filteredScanTypes" :key="type.id"
+              class="group hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 text-sm font-medium text-slate-500 font-mono">
+                {{ (pagination?.from || 1) + index }}
               </td>
               <td class="px-6 py-4">
                 <div class="flex flex-col">
@@ -112,36 +86,22 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex flex-wrap gap-1">
-                  <span
-                    v-for="scan in type.scans"
-                    :key="scan.id"
-                    class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium border border-slate-200/50"
-                  >
+                  <span v-for="scan in type.scans" :key="scan.id"
+                    class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium border border-slate-200/50">
                     {{ scan.name }}
                   </span>
-                  <span
-                    v-if="!type.scans?.length"
-                    class="text-xs text-slate-400 italic font-mono"
-                    >No sub-scans</span
-                  >
+                  <span v-if="!type.scans?.length" class="text-xs text-slate-400 italic font-mono">No sub-scans</span>
                 </div>
               </td>
               <td class="px-6 py-4">
-                <button
-                  @click="toggleStatus(type)"
-                  :class="
-                    cn(
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
-                      type.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                        : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
-                    )
-                  "
-                >
-                  <CircleIcon
-                    class="h-2 w-2 mr-1.5 fill-current"
-                    v-if="type.status === 'active'"
-                  />
+                <button @click="toggleStatus(type)" :class="cn(
+                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
+                  type.status === 'active'
+                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                    : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
+                )
+                  ">
+                  <CircleIcon class="h-2 w-2 mr-1.5 fill-current" v-if="type.status === 'active'" />
                   {{ type.status }}
                 </button>
               </td>
@@ -150,10 +110,7 @@
                   <span class="text-xs text-slate-600">{{
                     formatDate(type.created_at)
                   }}</span>
-                  <span
-                    v-if="type.added_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-if="type.added_by_user" class="text-[10px] text-slate-400">
                     by {{ type.added_by_user?.name || "Unknown" }}
                   </span>
                 </div>
@@ -163,31 +120,18 @@
                   <span class="text-xs text-slate-600">{{
                     formatDate(type.updated_at)
                   }}</span>
-                  <span
-                    v-if="type.modified_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-if="type.modified_by_user" class="text-[10px] text-slate-400">
                     by {{ type.modified_by_user?.name || "Unknown" }}
                   </span>
-                  <span
-                    v-else-if="type.added_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-else-if="type.added_by_user" class="text-[10px] text-slate-400">
                     by {{ type.added_by_user?.name || "Unknown" }}
                   </span>
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
-                <TableActions
-                  :item="type"
-                  :permissions="{ canView, canEdit, canDelete }"
-                  view-title="View"
-                  edit-title="Edit"
-                  delete-title="Delete"
-                  @view="openViewDialog($event)"
-                  @edit="openEditDialog($event)"
-                  @delete="deleteScanType($event)"
-                />
+                <TableActions :item="type" :permissions="{ canView, canEdit, canDelete }" view-title="View"
+                  edit-title="Edit" delete-title="Delete" @view="openViewDialog($event)" @edit="openEditDialog($event)"
+                  @delete="deleteScanType($event)" />
               </td>
             </tr>
             <tr v-if="filteredScanTypes.length === 0">
@@ -203,34 +147,17 @@
     </div>
 
     <!-- Pagination -->
-    <Pagination
-      v-if="pagination"
-      :pagination="pagination"
-      @page-change="handlePageChange"
-    />
+    <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
 
     <!-- Dialog -->
-    <ScanTypeDialog
-      :is-open="dialogOpen"
-      :mode="dialogMode"
-      :initial-data="selectedType"
-      :loading="dialogLoading"
-      :error="dialogError"
-      @close="dialogOpen = false"
-      @submit="handleDialogSubmit"
-    />
+    <ScanTypeDialog :is-open="dialogOpen" :mode="dialogMode" :initial-data="selectedType" :loading="dialogLoading"
+      :error="dialogError" @close="dialogOpen = false" @submit="handleDialogSubmit" />
 
     <!-- Confirmation Modal -->
-    <ConfirmationModal
-      :is-open="confirmOpen"
-      title="Delete Scan Type"
+    <ConfirmationModal :is-open="confirmOpen" title="Delete Scan Type"
       :description="`Are you sure you want to delete '${selectedType?.name}'? This action cannot be undone.`"
-      confirm-label="Delete"
-      variant="danger"
-      :loading="dialogLoading"
-      @close="confirmOpen = false"
-      @confirm="handleDeleteConfirm"
-    />
+      confirm-label="Delete" variant="danger" :loading="dialogLoading" @close="confirmOpen = false"
+      @confirm="handleDeleteConfirm" />
   </div>
 </template>
 

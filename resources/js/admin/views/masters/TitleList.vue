@@ -1,58 +1,39 @@
 <template>
   <div class="space-y-6">
-    <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-    >
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Titles</h1>
         <p class="text-sm text-slate-500 mt-1">
           Manage titles for patients and doctors.
         </p>
       </div>
-      <button
-        v-if="canAdd"
-        @click="openAddDialog"
-        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95"
-      >
+      <button v-if="canAdd" @click="openAddDialog"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95">
         <PlusIcon class="h-4 w-4" />
         Add Title
       </button>
     </div>
 
-    <div
-      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar"
-    >
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar">
       <table class="w-full">
         <thead>
           <tr class="border-b border-slate-200 bg-slate-50/50">
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               S.No
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Title Name
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Status
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Created
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Modified
             </th>
-            <th
-              class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase">
               Actions
             </th>
           </tr>
@@ -83,35 +64,23 @@
           </template>
 
           <template v-else>
-            <tr
-              v-for="(title, index) in filteredTitles"
-              :key="title.id"
-              class="group hover:bg-slate-50/50 transition-colors"
-            >
-              <td
-                class="px-6 py-4 text-sm font-medium text-slate-500 font-mono"
-              >
-                {{ index + 1 }}
+            <tr v-for="(title, index) in filteredTitles" :key="title.id"
+              class="group hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 text-sm font-medium text-slate-500 font-mono">
+                {{ (pagination?.from || 1) + index }}
               </td>
               <td class="px-6 py-4 text-sm font-bold text-slate-700">
                 {{ title.title_name }}
               </td>
               <td class="px-6 py-4">
-                <button
-                  @click="toggleStatus(title)"
-                  :class="
-                    cn(
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
-                      title.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                        : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
-                    )
-                  "
-                >
-                  <CircleIcon
-                    class="h-2 w-2 mr-1.5 fill-current"
-                    v-if="title.status === 'active'"
-                  />
+                <button @click="toggleStatus(title)" :class="cn(
+                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
+                  title.status === 'active'
+                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                    : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
+                )
+                  ">
+                  <CircleIcon class="h-2 w-2 mr-1.5 fill-current" v-if="title.status === 'active'" />
                   {{ title.status }}
                 </button>
               </td>
@@ -120,10 +89,7 @@
                   <span class="text-xs text-slate-600">{{
                     formatDate(title.created_at)
                   }}</span>
-                  <span
-                    v-if="title.added_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-if="title.added_by_user" class="text-[10px] text-slate-400">
                     by {{ title.added_by_user?.name || "Unknown" }}
                   </span>
                 </div>
@@ -133,31 +99,18 @@
                   <span class="text-xs text-slate-600">{{
                     formatDate(title.updated_at)
                   }}</span>
-                  <span
-                    v-if="title.modified_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-if="title.modified_by_user" class="text-[10px] text-slate-400">
                     by {{ title.modified_by_user?.name || "Unknown" }}
                   </span>
-                  <span
-                    v-else-if="title.added_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-else-if="title.added_by_user" class="text-[10px] text-slate-400">
                     by {{ title.added_by_user?.name || "Unknown" }}
                   </span>
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
-                <TableActions
-                  :item="title"
-                  :permissions="{ canView, canEdit, canDelete }"
-                  view-title="View"
-                  edit-title="Edit"
-                  delete-title="Delete"
-                  @view="openViewDialog($event)"
-                  @edit="openEditDialog($event)"
-                  @delete="deleteTitle($event)"
-                />
+                <TableActions :item="title" :permissions="{ canView, canEdit, canDelete }" view-title="View"
+                  edit-title="Edit" delete-title="Delete" @view="openViewDialog($event)" @edit="openEditDialog($event)"
+                  @delete="deleteTitle($event)" />
               </td>
             </tr>
             <tr v-if="filteredTitles.length === 0">
@@ -173,37 +126,17 @@
     </div>
 
     <!-- Pagination -->
-    <Pagination
-      v-if="pagination"
-      :pagination="pagination"
-      @page-change="handlePageChange"
-    />
+    <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
 
     <!-- Dialog -->
-    <MasterDataDialog
-      :is-open="dialogOpen"
-      :mode="dialogMode"
-      title="Title"
-      label="Title"
-      :icon="CaseSensitiveIcon"
-      :initial-data="selectedTitle"
-      :loading="dialogLoading"
-      :error="dialogError"
-      @close="dialogOpen = false"
-      @submit="handleDialogSubmit"
-    />
+    <MasterDataDialog :is-open="dialogOpen" :mode="dialogMode" title="Title" label="Title" :icon="CaseSensitiveIcon"
+      :initial-data="selectedTitle" :loading="dialogLoading" :error="dialogError" @close="dialogOpen = false"
+      @submit="handleDialogSubmit" />
 
     <!-- Confirmation Modal -->
-    <ConfirmationModal
-      :is-open="confirmOpen"
-      title="Delete Title"
-      :description="`Are you sure you want to delete '${selectedTitle?.title_name}'?`"
-      confirm-label="Delete"
-      variant="danger"
-      :loading="dialogLoading"
-      @close="confirmOpen = false"
-      @confirm="handleDeleteConfirm"
-    />
+    <ConfirmationModal :is-open="confirmOpen" title="Delete Title"
+      :description="`Are you sure you want to delete '${selectedTitle?.title_name}'?`" confirm-label="Delete"
+      variant="danger" :loading="dialogLoading" @close="confirmOpen = false" @confirm="handleDeleteConfirm" />
   </div>
 </template>
 

@@ -1,8 +1,8 @@
 <template>
-  <div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+  <div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
     <!-- Header -->
     <div>
-      <h1 class="text-3xl font-bold text-slate-900 tracking-tight">
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
         Reports Overview
       </h1>
       <p class="text-sm text-slate-500 mt-1">
@@ -11,24 +11,19 @@
     </div>
 
     <!-- Reports Grid (3 in a row) -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div
-        v-for="report in reports"
-        :key="report.title"
-        class="group bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 flex flex-col items-center text-center relative overflow-hidden"
-      >
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div v-for="report in reports" :key="report.title"
+        class="group bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 flex flex-col items-center text-center relative overflow-hidden">
         <!-- Background Decoration -->
-        <div 
-          class="absolute -right-4 -top-4 w-32 h-32 bg-slate-50 rounded-full group-hover:bg-primary/5 transition-colors duration-500"
-        ></div>
+        <div
+          class="absolute -right-4 -top-4 w-32 h-32 bg-slate-50 rounded-full group-hover:bg-primary/5 transition-colors duration-500">
+        </div>
 
         <!-- Icon -->
-        <div
-          :class="[
-            'w-20 h-20 rounded-[2rem] flex items-center justify-center mb-6 shadow-lg transition-transform duration-500 group-hover:scale-110',
-            report.bgClass
-          ]"
-        >
+        <div :class="[
+          'w-20 h-20 rounded-[2rem] flex items-center justify-center mb-6 shadow-lg transition-transform duration-500 group-hover:scale-110',
+          report.bgClass
+        ]">
           <component :is="report.icon" class="h-10 w-10 text-white" />
         </div>
 
@@ -41,10 +36,8 @@
         </p>
 
         <!-- Action -->
-        <router-link
-          :to="report.url"
-          class="w-full py-4 px-6 rounded-2xl bg-slate-50 text-slate-600 font-bold text-sm transition-all duration-300 hover:bg-primary hover:text-white flex items-center justify-center gap-2 group/btn"
-        >
+        <router-link :to="report.url"
+          class="w-full py-3 px-4 rounded-xl bg-slate-50 text-slate-600 font-semibold text-sm transition-all duration-300 hover:bg-primary hover:text-white flex items-center justify-center gap-2 group/btn">
           <span>View Report</span>
           <ArrowRightIcon class="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
         </router-link>
@@ -54,13 +47,15 @@
 </template>
 
 <script setup>
-import { 
-  Users as PatientsIcon, 
-  FileText as InvoiceIcon, 
-  CreditCard as PaymentIcon, 
+import {
+  Users as PatientsIcon,
+  FileText as InvoiceIcon,
+  CreditCard as PaymentIcon,
   BarChart3 as OrderIcon,
   ArrowRight as ArrowRightIcon
 } from "lucide-vue-next";
+
+
 
 const reports = [
   {

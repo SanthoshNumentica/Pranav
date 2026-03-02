@@ -2,8 +2,7 @@
   <div class="space-y-6">
     <!-- Page Header -->
     <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500"
-    >
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
           Case Reports
@@ -13,11 +12,8 @@
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <button
-          v-if="modulePermissions.canAdd"
-          @click="$router.push('/case-reports/new')"
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
-        >
+        <button v-if="modulePermissions.canAdd" @click="$router.push('/case-reports/new')"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95">
           <PlusIcon class="h-4 w-4" />
           New Case Report
         </button>
@@ -25,32 +21,20 @@
     </div>
 
     <!-- Filters & Search -->
-    <div
-      class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100"
-    >
-      <div
-        class="flex flex-col md:flex-row md:items-center justify-between gap-4"
-      >
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1">
           <!-- Search Inner -->
           <div class="relative w-full md:w-72 group">
             <SearchIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"
-            />
-            <input
-              v-model="filters.search"
-              type="text"
-              placeholder="Search Case ID, Patient..."
+              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input v-model="filters.search" type="text" placeholder="Search Case ID, Patient..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              @input="debouncedFetch"
-            />
+              @input="debouncedFetch" />
           </div>
 
           <!-- Status Select -->
-          <Select
-            v-model="filters.status"
-            @update:modelValue="() => fetchReports(1)"
-          >
+          <Select v-model="filters.status" @update:modelValue="() => fetchReports(1)">
             <SelectTrigger class="w-full md:w-44 bg-slate-50">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
@@ -68,52 +52,26 @@
 
     <!-- Main Table Container -->
     <div
-      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
-    >
-      <CaseReportsTable
-        :reports="reports"
-        :loading="loading"
-        :permissions="modulePermissions"
-        @view-info="handleView"
-        @send-whatsapp="confirmWhatsApp"
-        @delete="confirmDelete"
-      />
+      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+      <CaseReportsTable :reports="reports" :loading="loading" :permissions="modulePermissions"
+        :start-index="pagination?.from || 1" @view-info="handleView" @send-whatsapp="confirmWhatsApp"
+        @delete="confirmDelete" />
 
       <!-- WhatsApp Recipient Selection Modal -->
-      <WhatsAppRecipientModal
-        :is-open="isWhatsappModalOpen"
-        :report="reportForWhatsapp"
-        :loading="sendingWhatsapp"
-        @close="isWhatsappModalOpen = false"
-        @confirm="handleSendWhatsApp"
-      />
+      <WhatsAppRecipientModal :is-open="isWhatsappModalOpen" :report="reportForWhatsapp" :loading="sendingWhatsapp"
+        @close="isWhatsappModalOpen = false" @confirm="handleSendWhatsApp" />
 
       <!-- Confirmation Modal -->
-      <ConfirmationModal
-        :is-open="isDeleteModalOpen"
-        title="Delete Case Report"
+      <ConfirmationModal :is-open="isDeleteModalOpen" title="Delete Case Report"
         description="Are you sure you want to delete this case report? This action will mark it as deleted and it will be hidden from the active list."
-        confirm-label="Delete Case"
-        variant="danger"
-        :icon="TrashIcon"
-        :loading="deleting"
-        @close="isDeleteModalOpen = false"
-        @confirm="handleDelete"
-      />
+        confirm-label="Delete Case" variant="danger" :icon="TrashIcon" :loading="deleting"
+        @close="isDeleteModalOpen = false" @confirm="handleDelete" />
 
       <!-- Info Dialog -->
-      <CaseReportInfoDialog
-        :is-open="isInfoOpen"
-        :report="selectedReport"
-        @close="isInfoOpen = false"
-      />
+      <CaseReportInfoDialog :is-open="isInfoOpen" :report="selectedReport" @close="isInfoOpen = false" />
 
       <!-- Pagination -->
-      <Pagination
-        v-if="pagination"
-        :pagination="pagination"
-        @page-change="handlePageChange"
-      />
+      <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
     </div>
   </div>
 </template>

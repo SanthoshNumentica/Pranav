@@ -1,8 +1,6 @@
 <template>
   <div class="space-y-6">
-    <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-    >
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
           Payment Methods
@@ -11,50 +9,33 @@
           Manage available methods for recording invoice payments.
         </p>
       </div>
-      <button
-        v-if="canAdd"
-        @click="openAddDialog"
-        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95"
-      >
+      <button v-if="canAdd" @click="openAddDialog"
+        class="flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-primary/20 active:scale-95">
         <PlusIcon class="h-4 w-4" />
         Add Method
       </button>
     </div>
 
-    <div
-      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar"
-    >
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar">
       <table class="w-full">
         <thead>
           <tr class="border-b border-slate-200 bg-slate-50/50">
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               S.No
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Name
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Status
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Created
             </th>
-            <th
-              class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">
               Modified
             </th>
-            <th
-              class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase"
-            >
+            <th class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase">
               Actions
             </th>
           </tr>
@@ -85,35 +66,23 @@
           </template>
 
           <template v-else>
-            <tr
-              v-for="(method, index) in methods"
-              :key="method.id"
-              class="group hover:bg-slate-50/50 transition-colors"
-            >
-              <td
-                class="px-6 py-4 text-sm font-medium text-slate-500 font-mono"
-              >
-                {{ index + 1 }}
+            <tr v-for="(method, index) in methods" :key="method.id"
+              class="group hover:bg-slate-50/50 transition-colors">
+              <td class="px-6 py-4 text-sm font-medium text-slate-500 font-mono">
+                {{ (pagination?.from || 1) + index }}
               </td>
               <td class="px-6 py-4 text-sm font-bold text-slate-700">
                 {{ method.name }}
               </td>
               <td class="px-6 py-4">
-                <button
-                  @click="toggleStatus(method)"
-                  :class="
-                    cn(
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
-                      method.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                        : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
-                    )
-                  "
-                >
-                  <CircleIcon
-                    class="h-2 w-2 mr-1.5 fill-current"
-                    v-if="method.status === 'active'"
-                  />
+                <button @click="toggleStatus(method)" :class="cn(
+                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
+                  method.status === 'active'
+                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                    : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
+                )
+                  ">
+                  <CircleIcon class="h-2 w-2 mr-1.5 fill-current" v-if="method.status === 'active'" />
                   {{ method.status }}
                 </button>
               </td>
@@ -122,10 +91,7 @@
                   <span class="text-xs text-slate-600">{{
                     formatDate(method.created_at)
                   }}</span>
-                  <span
-                    v-if="method.added_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-if="method.added_by_user" class="text-[10px] text-slate-400">
                     by {{ method.added_by_user?.name || "Unknown" }}
                   </span>
                 </div>
@@ -135,31 +101,18 @@
                   <span class="text-xs text-slate-600">{{
                     formatDate(method.updated_at)
                   }}</span>
-                  <span
-                    v-if="method.modified_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-if="method.modified_by_user" class="text-[10px] text-slate-400">
                     by {{ method.modified_by_user?.name || "Unknown" }}
                   </span>
-                  <span
-                    v-else-if="method.added_by_user"
-                    class="text-[10px] text-slate-400"
-                  >
+                  <span v-else-if="method.added_by_user" class="text-[10px] text-slate-400">
                     by {{ method.added_by_user?.name || "Unknown" }}
                   </span>
                 </div>
               </td>
               <td class="px-6 py-4 text-right">
-                <TableActions
-                  :item="method"
-                  :permissions="{ canView, canEdit, canDelete }"
-                  view-title="View"
-                  edit-title="Edit"
-                  delete-title="Delete"
-                  @view="openViewDialog($event)"
-                  @edit="openEditDialog($event)"
-                  @delete="deleteMethod($event)"
-                />
+                <TableActions :item="method" :permissions="{ canView, canEdit, canDelete }" view-title="View"
+                  edit-title="Edit" delete-title="Delete" @view="openViewDialog($event)" @edit="openEditDialog($event)"
+                  @delete="deleteMethod($event)" />
               </td>
             </tr>
             <tr v-if="methods.length === 0">
@@ -173,37 +126,17 @@
     </div>
 
     <!-- Pagination -->
-    <Pagination
-      v-if="pagination"
-      :pagination="pagination"
-      @page-change="handlePageChange"
-    />
+    <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
 
     <!-- Dialog -->
-    <MasterDataDialog
-      :is-open="isModalOpen"
-      :mode="dialogMode"
-      title="Payment Method"
-      label="Payment Method"
-      :icon="WalletIcon"
-      :initial-data="editingMethod"
-      :loading="isSubmitting"
-      :error="dialogError"
-      @close="isModalOpen = false"
-      @submit="handleDialogSubmit"
-    />
+    <MasterDataDialog :is-open="isModalOpen" :mode="dialogMode" title="Payment Method" label="Payment Method"
+      :icon="WalletIcon" :initial-data="editingMethod" :loading="isSubmitting" :error="dialogError"
+      @close="isModalOpen = false" @submit="handleDialogSubmit" />
 
     <!-- Confirmation Modal -->
-    <ConfirmationModal
-      :is-open="confirmOpen"
-      title="Delete Payment Method"
-      :description="`Are you sure you want to delete '${editingMethod?.name}'?`"
-      confirm-label="Delete"
-      variant="danger"
-      :loading="isSubmitting"
-      @close="confirmOpen = false"
-      @confirm="handleDeleteConfirm"
-    />
+    <ConfirmationModal :is-open="confirmOpen" title="Delete Payment Method"
+      :description="`Are you sure you want to delete '${editingMethod?.name}'?`" confirm-label="Delete" variant="danger"
+      :loading="isSubmitting" @close="confirmOpen = false" @confirm="handleDeleteConfirm" />
   </div>
 </template>
 

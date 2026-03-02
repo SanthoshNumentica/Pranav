@@ -13,33 +13,69 @@ class ScanSeeder extends Seeder
      */
     public function run(): void
     {
-        $now = now(); 
+        $now = now();
 
-        // Insert scan types with timestamps
-        $scanTypes = [
-            ['name' => 'MRI', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'X-Ray', 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'CT Scan', 'created_at' => $now, 'updated_at' => $now],
+        // Define the mapping of scan types to body parts with amounts
+        $mapping = [
+            'CT' => [
+                'Brain' => 2500,
+                'Chest' => 3000,
+                'Abdomen' => 3500,
+                'Pelvis' => 3000,
+                'Spine' => 2800
+            ],
+            'MRI' => [
+                'Brain' => 5000,
+                'Spine' => 5500,
+                'Knee' => 4500,
+                'Shoulder' => 4500,
+                'Abdomen' => 6000
+            ],
+            'USG' => [
+                'Whole Abdomen' => 1000,
+                'Pelvis' => 800,
+                'Obstetric' => 1200,
+                'Small Parts' => 1500,
+                'Doppler' => 2000
+            ],
+            'DOR' => [
+                'Full Mouth' => 1500,
+                'TMJ' => 1200,
+                'Maxilla' => 1000,
+                'Mandible' => 1000
+            ],
+            'XRAY' => [
+                'Chest' => 500,
+                'Spine' => 600,
+                'Extremities' => 400,
+                'Skull' => 500,
+                'Abdomen' => 600
+            ],
         ];
 
-        DB::table('scan_types')->insert($scanTypes);
+        // Clean up old scan types that aren't in the new mapping
+        DB::table('scan_types')->whereNotIn('name', array_keys($mapping))->delete();
 
-        // Get inserted scan_type IDs
-        $mriId = DB::table('scan_types')->where('name', 'MRI')->value('id');
-        $xrayId = DB::table('scan_types')->where('name', 'X-Ray')->value('id');
-        $ctId = DB::table('scan_types')->where('name', 'CT Scan')->value('id');
+        // Insert scan types and their associated scans with amounts
+        foreach ($mapping as $typeName => $scans) {
+            DB::table('scan_types')->updateOrInsert(
+                ['name' => $typeName],
+                ['created_at' => $now, 'updated_at' => $now, 'status' => 'active']
+            );
 
-        // Insert scans with timestamps
-        $scans = [
-            ['name' => 'Brain MRI', 'scan_type_fk_id' => $mriId, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Spine MRI', 'scan_type_fk_id' => $mriId, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Knee MRI', 'scan_type_fk_id' => $mriId, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Chest X-Ray', 'scan_type_fk_id' => $xrayId, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Abdominal X-Ray', 'scan_type_fk_id' => $xrayId, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Head CT', 'scan_type_fk_id' => $ctId, 'created_at' => $now, 'updated_at' => $now],
-            ['name' => 'Pelvis CT', 'scan_type_fk_id' => $ctId, 'created_at' => $now, 'updated_at' => $now],
-        ];
+            $typeId = DB::table('scan_types')->where('name', $typeName)->value('id');
 
-        DB::table('scans')->insert($scans);
+            foreach ($scans as $scanName => $amount) {
+                DB::table('scans')->updateOrInsert(
+                    ['name' => $scanName, 'scan_type_id' => $typeId],
+                    [
+                        'amount' => $amount,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                        'status' => 'active'
+                    ]
+                );
+            }
+        }
     }
 }

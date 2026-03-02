@@ -138,20 +138,20 @@ const routes = [
             },
             {
                 path: 'reports/invoices',
-                name: 'InvoiceReports',
-                component: () => import('../views/reports/InvoiceReport.vue'),
+                name: 'InvoiceAnalysisReport',
+                component: () => import('../views/reports/InvoiceAnalysisReport.vue'),
                 meta: { module: 'reports' }
             },
             {
                 path: 'reports/orders',
-                name: 'OrderReports',
-                component: () => import('../views/reports/OrderReport.vue'),
+                name: 'CaseAnalysisReport',
+                component: () => import('../views/reports/CaseAnalysisReport.vue'),
                 meta: { module: 'reports' }
             },
             {
                 path: 'reports/profit-loss',
-                name: 'ProfitLossReport',
-                component: () => import('../views/reports/ProfitLossReport.vue'),
+                name: 'ProfitLossAnalysis',
+                component: () => import('../views/reports/ProfitLossAnalysis.vue'),
                 meta: { module: 'reports' }
             }
         ]

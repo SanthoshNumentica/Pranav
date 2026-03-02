@@ -2,8 +2,7 @@
   <div class="space-y-6">
     <!-- Page Header -->
     <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500"
-    >
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
       <div>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Users</h1>
         <p class="text-sm text-slate-500 mt-1">
@@ -11,11 +10,8 @@
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <button
-          v-if="modulePermissions.canAdd"
-          @click="openAddModal"
-          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95"
-        >
+        <button v-if="modulePermissions.canAdd" @click="openAddModal"
+          class="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-primary/10 active:scale-95">
           <PlusIcon class="h-4 w-4" />
           Add User
         </button>
@@ -23,25 +19,16 @@
     </div>
 
     <!-- Filters & Search -->
-    <div
-      class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100"
-    >
-      <div
-        class="flex flex-col md:flex-row md:items-center justify-between gap-4"
-      >
+    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1">
           <!-- Search Inner -->
           <div class="relative w-full md:w-72 group">
             <SearchIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors"
-            />
-            <input
-              v-model="filters.search"
-              type="text"
-              placeholder="Search Name, Email..."
+              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input v-model="filters.search" type="text" placeholder="Search Name, Email..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              @input="debouncedFetch"
-            />
+              @input="debouncedFetch" />
           </div>
 
           <div class="relative w-full md:w-48">
@@ -56,8 +43,7 @@
               </SelectContent>
             </Select>
             <FilterIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors"
-            />
+              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors" />
           </div>
         </div>
       </div>
@@ -65,66 +51,31 @@
 
     <!-- Main Table Container -->
     <div
-      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200"
-    >
-      <UsersTable
-        :users="users"
-        :loading="loading"
-        :permissions="modulePermissions"
-        @view="handleView"
-        @edit="handleEdit"
-        @delete="handleDelete"
-        @toggle-status="handleToggleStatus"
-      />
+      class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+      <UsersTable :users="users" :loading="loading" :permissions="modulePermissions"
+        :start-index="pagination?.from || 1" @view="handleView" @edit="handleEdit" @delete="handleDelete"
+        @toggle-status="handleToggleStatus" />
       <!-- Pagination -->
-      <Pagination
-        v-if="pagination"
-        :pagination="pagination"
-        @page-change="handlePageChange"
-      />
+      <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
     </div>
 
     <!-- Modals -->
     <!-- Note: UserFormDialog should be implemented if needed. For now, we'll focus on the table display. -->
-    <UserFormDialog
-      v-if="isFormModalOpen"
-      :is-open="isFormModalOpen"
-      :user="selectedUser"
-      @close="isFormModalOpen = false"
-      @saved="fetchUsers"
-    />
+    <UserFormDialog v-if="isFormModalOpen" :is-open="isFormModalOpen" :user="selectedUser"
+      @close="isFormModalOpen = false" @saved="fetchUsers" />
 
-    <UserInfoDialog
-      :is-open="isInfoModalOpen"
-      :user="selectedUser"
-      :can-edit="modulePermissions.canEdit"
-      @close="isInfoModalOpen = false"
-      @edit="handleEditFromInfo"
-    />
+    <UserInfoDialog :is-open="isInfoModalOpen" :user="selectedUser" :can-edit="modulePermissions.canEdit"
+      @close="isInfoModalOpen = false" @edit="handleEditFromInfo" />
 
-    <ConfirmationModal
-      :is-open="isDeleteModalOpen"
-      title="Delete User"
-      :description="`Are you sure you want to delete user ${userToDelete?.name}?`"
-      confirm-label="Delete User"
-      variant="danger"
-      :icon="Trash2Icon"
-      :loading="isDeleting"
-      @close="isDeleteModalOpen = false"
-      @confirm="confirmDelete"
-    />
+    <ConfirmationModal :is-open="isDeleteModalOpen" title="Delete User"
+      :description="`Are you sure you want to delete user ${userToDelete?.name}?`" confirm-label="Delete User"
+      variant="danger" :icon="Trash2Icon" :loading="isDeleting" @close="isDeleteModalOpen = false"
+      @confirm="confirmDelete" />
 
-    <ConfirmationModal
-      :is-open="isStatusModalOpen"
-      title="Update Status"
+    <ConfirmationModal :is-open="isStatusModalOpen" title="Update Status"
       :description="`Are you sure you want to change the status of ${userToToggle?.name} to ${nextStatus}?`"
-      confirm-label="Update Status"
-      variant="warning"
-      :icon="AlertCircleIcon"
-      :loading="isStatusUpdating"
-      @close="isStatusModalOpen = false"
-      @confirm="confirmToggleStatus"
-    />
+      confirm-label="Update Status" variant="warning" :icon="AlertCircleIcon" :loading="isStatusUpdating"
+      @close="isStatusModalOpen = false" @confirm="confirmToggleStatus" />
   </div>
 </template>
 

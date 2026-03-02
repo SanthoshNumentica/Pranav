@@ -3,59 +3,37 @@
     <table class="w-full border-separate border-spacing-0">
       <thead>
         <tr class="border-b border-slate-200 bg-slate-50/50">
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             S.No
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             SRF No
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Patient
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Branch
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Mobile No
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Referer
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Link Status
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Payment
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             RCT Date
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Expires On
           </th>
-          <th
-            class="px-4 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-4 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Action
           </th>
         </tr>
@@ -101,12 +79,9 @@
         </template>
 
         <template v-else>
-          <tr
-            v-for="(report, index) in reports"
-            :key="report.id"
-            class="group hover:bg-primary/5 transition-colors duration-300"
-          >
-            <td class="px-3 py-3 text-sm text-slate-500">{{ index + 1 }}</td>
+          <tr v-for="(report, index) in reports" :key="report.id"
+            class="group hover:bg-primary/5 transition-colors duration-300">
+            <td class="px-3 py-3 text-sm text-slate-500">{{ startIndex + index }}</td>
             <td class="px-3 py-3">
               <div class="flex flex-col">
                 <span class="text-sm font-semibold text-slate-900 leading-none mb-1">{{ report.case_id }}</span>
@@ -128,30 +103,23 @@
               {{ report.referer?.name || "N/A" }}
             </td>
             <td class="px-3 py-3 text-sm">
-              <span
-                :class="
-                  cn(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-colors duration-200',
-                    statusStyles[(report.status || 'pending').toLowerCase()] ||
-                      'bg-slate-100 text-slate-800',
-                  )
-                "
-              >
+              <span :class="cn(
+                'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-colors duration-200',
+                statusStyles[(report.status || 'pending').toLowerCase()] ||
+                'bg-slate-100 text-slate-800',
+              )
+                ">
                 {{ report.status }}
               </span>
             </td>
             <td class="px-3 py-3 text-sm">
-              <span
-                v-if="report.invoice"
-                :class="
-                  cn(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                    paymentStatusStyles[
-                      (report.invoice.status || 'pending').toLowerCase()
-                    ] || 'bg-slate-100 text-slate-500',
-                  )
-                "
-              >
+              <span v-if="report.invoice" :class="cn(
+                'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                paymentStatusStyles[
+                (report.invoice.status || 'pending').toLowerCase()
+                ] || 'bg-slate-100 text-slate-500',
+              )
+                ">
                 {{ report.invoice.status }}
               </span>
               <span v-else class="text-slate-400 text-xs">—</span>
@@ -161,44 +129,25 @@
                 <span class="text-xs text-slate-600">{{
                   report.rct_date ? formatDate(report.rct_date) : "—"
                 }}</span>
-                <span
-                  v-if="report.rct_hour"
-                  class="text-[10px] text-slate-400 font-medium"
-                  >{{ report.rct_hour }}</span
-                >
+                <span v-if="report.rct_hour" class="text-[10px] text-slate-400 font-medium">{{ report.rct_hour }}</span>
               </div>
             </td>
             <td class="px-3 py-3 text-xs text-slate-600">
               {{ report.expires_at ? formatDate(report.expires_at) : "—" }}
             </td>
             <td class="px-3 py-4 text-right">
-              <TableActions
-                :item="report"
-                :permissions="permissions"
-                :show-whatsapp="
-                  (report.status || '').toLowerCase() === 'available'
-                "
-                view-title="View Info"
-                edit-title="Edit Case Report"
-                delete-title="Delete Case Report"
-                @view="$emit('view-info', $event)"
-                @edit="router.push(`/case-reports/${$event.id}/edit`)"
-                @delete="$emit('delete', $event)"
-                @whatsapp="$emit('send-whatsapp', $event)"
-              />
+              <TableActions :item="report" :permissions="permissions" :show-whatsapp="(report.status || '').toLowerCase() === 'available'
+                " view-title="View Info" edit-title="Edit Case Report" delete-title="Delete Case Report"
+                @view="$emit('view-info', $event)" @edit="router.push(`/case-reports/${$event.id}/edit`)"
+                @delete="$emit('delete', $event)" @whatsapp="$emit('send-whatsapp', $event)" />
             </td>
           </tr>
         </template>
       </tbody>
     </table>
 
-    <div
-      v-if="!loading && reports.length === 0"
-      class="text-center py-20 animate-in fade-in duration-500"
-    >
-      <div
-        class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4"
-      >
+    <div v-if="!loading && reports.length === 0" class="text-center py-20 animate-in fade-in duration-500">
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
         <FileTextIcon class="h-6 w-6 text-slate-400" />
       </div>
       <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -231,6 +180,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  startIndex: {
+    type: Number,
+    default: 1,
+  },
 });
 
 const router = useRouter();
@@ -260,9 +213,11 @@ function cn(...classes) {
 .custom-scrollbar::-webkit-scrollbar {
   height: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 20px;

@@ -3,49 +3,31 @@
     <table class="w-full border-separate border-spacing-0">
       <thead>
         <tr class="border-b border-slate-200 bg-slate-50/50">
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             S.No
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Name
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Email
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Role
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Branch
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Status
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Created
           </th>
-          <th
-            class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Modified
           </th>
-          <th
-            class="px-3 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider"
-          >
+          <th class="px-3 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Action
           </th>
         </tr>
@@ -85,13 +67,10 @@
         </template>
 
         <template v-else>
-          <tr
-            v-for="(user, index) in users"
-            :key="user.id"
-            class="group hover:bg-primary/5 transition-colors duration-300"
-          >
+          <tr v-for="(user, index) in users" :key="user.id"
+            class="group hover:bg-primary/5 transition-colors duration-300">
             <td class="px-3 py-4 text-sm text-slate-500">
-              {{ index + 1 }}
+              {{ startIndex + index }}
             </td>
             <td class="px-3 py-4">
               <span class="text-sm font-semibold text-slate-900">{{
@@ -105,10 +84,7 @@
               {{ user.role?.name || "N/A" }}
             </td>
             <td class="px-3 py-4 text-sm text-slate-600">
-              <div
-                class="flex items-center gap-1.5"
-                v-if="user.role?.name.toLowerCase() === 'super-admin'"
-              >
+              <div class="flex items-center gap-1.5" v-if="user.role?.name.toLowerCase() === 'super-admin'">
                 <div class="h-1.5 w-1.5 rounded-full bg-indigo-500"></div>
                 <span class="font-medium text-slate-900">All Branches</span>
               </div>
@@ -116,27 +92,17 @@
                 <div class="h-1.5 w-1.5 rounded-full bg-primary/40"></div>
                 {{ user.branch.name }}
               </div>
-              <span v-else class="text-slate-300 italic text-xs"
-                >Unassigned</span
-              >
+              <span v-else class="text-slate-300 italic text-xs">Unassigned</span>
             </td>
             <td class="px-3 py-4">
-              <button
-                type="button"
-                @click="$emit('toggle-status', user)"
-                :class="
-                  cn(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
-                    user.status === 'active'
-                      ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                      : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
-                  )
-                "
-              >
-                <CircleIcon
-                  class="h-2 w-2 mr-1.5 fill-current"
-                  v-if="user.status === 'active'"
-                />
+              <button type="button" @click="$emit('toggle-status', user)" :class="cn(
+                'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-all duration-200 active:scale-95',
+                user.status === 'active'
+                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                  : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
+              )
+                ">
+                <CircleIcon class="h-2 w-2 mr-1.5 fill-current" v-if="user.status === 'active'" />
                 {{ user.status }}
               </button>
             </td>
@@ -145,10 +111,7 @@
                 <span class="text-xs text-slate-600">{{
                   formatDate(user.created_at)
                 }}</span>
-                <span
-                  v-if="user.added_by_user"
-                  class="text-[10px] text-slate-400"
-                >
+                <span v-if="user.added_by_user" class="text-[10px] text-slate-400">
                   by {{ user.added_by_user?.name || "Unknown" }}
                 </span>
               </div>
@@ -158,44 +121,26 @@
                 <span class="text-xs text-slate-600">{{
                   formatDate(user.updated_at)
                 }}</span>
-                <span
-                  v-if="user.modified_by_user"
-                  class="text-[10px] text-slate-400"
-                >
+                <span v-if="user.modified_by_user" class="text-[10px] text-slate-400">
                   by {{ user.modified_by_user?.name || "Unknown" }}
                 </span>
-                <span
-                  v-else-if="user.added_by_user"
-                  class="text-[10px] text-slate-400"
-                >
+                <span v-else-if="user.added_by_user" class="text-[10px] text-slate-400">
                   by {{ user.added_by_user?.name || "Unknown" }}
                 </span>
               </div>
             </td>
             <td class="px-3 py-4 text-right">
-              <TableActions
-                :item="user"
-                :permissions="permissions"
-                view-title="View User"
-                edit-title="Edit User"
-                delete-title="Delete User"
-                @view="$emit('view', $event)"
-                @edit="$emit('edit', $event)"
-                @delete="$emit('delete', $event)"
-              />
+              <TableActions :item="user" :permissions="permissions" view-title="View User" edit-title="Edit User"
+                delete-title="Delete User" @view="$emit('view', $event)" @edit="$emit('edit', $event)"
+                @delete="$emit('delete', $event)" />
             </td>
           </tr>
         </template>
       </tbody>
     </table>
 
-    <div
-      v-if="!loading && users.length === 0"
-      class="text-center py-20 animate-in fade-in duration-500"
-    >
-      <div
-        class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4"
-      >
+    <div v-if="!loading && users.length === 0" class="text-center py-20 animate-in fade-in duration-500">
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
         <UserIcon class="h-6 w-6 text-slate-400" />
       </div>
       <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -223,6 +168,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  startIndex: {
+    type: Number,
+    default: 1,
+  },
 });
 
 defineEmits(["edit", "delete", "toggle-status", "view"]);
@@ -236,9 +185,11 @@ function cn(...classes) {
 .custom-scrollbar::-webkit-scrollbar {
   height: 6px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 20px;
