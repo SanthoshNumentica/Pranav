@@ -68,16 +68,22 @@ class CaseReportController extends Controller
             'description' => ['nullable', 'string'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required', 'string'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
-            'items.*.scan_id' => ['required', 'exists:scans,id'],
-            'items.*.custom_id' => ['nullable', 'string', 'max:255'],
-            'items.*.group_token' => ['nullable', 'string', 'max:255'],
-            'items.*.documents' => ['nullable', 'array'],
-            'items.*.documents.*' => ['required', 'string'],
-            'items.*.remarks' => ['nullable', 'string'],
-            'items.*.amount' => ['nullable', 'numeric', 'min:0'],
-            'items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
+            'case_report_items' => ['required', 'array', 'min:1'],
+            'case_report_items.*.id' => ['nullable', 'exists:case_report_items,id'],
+            'case_report_items.*.case_report_item_id' => ['nullable', 'exists:case_report_items,id'],
+            'case_report_items.*.action' => ['nullable', 'integer', 'in:1,2,3'],
+            'case_report_items.*.scan_type_id' => ['required_unless:case_report_items.*.action,3', 'nullable', 'exists:scan_types,id'],
+            'case_report_items.*.scans' => ['required_unless:case_report_items.*.action,3', 'nullable', 'array', 'min:1'],
+            'case_report_items.*.scans.*.scan_id' => ['required', 'exists:scans,id'],
+            'case_report_items.*.scans.*.scan_name' => ['nullable', 'string', 'max:255'],
+            'case_report_items.*.scans.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'case_report_items.*.item_reference' => ['nullable', 'string', 'max:255'],
+            'case_report_items.*.group_token' => ['nullable', 'string', 'max:255'],
+            'case_report_items.*.documents' => ['nullable', 'array'],
+            'case_report_items.*.documents.*' => ['required', 'string'],
+            'case_report_items.*.remarks' => ['nullable', 'string'],
+            'case_report_items.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'case_report_items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
             'branch_id' => ['nullable', 'exists:branches,id'],
             'rct_date' => ['nullable', 'date'],
             'rct_hour' => ['nullable', 'string'],
@@ -85,20 +91,25 @@ class CaseReportController extends Controller
             'patient_type' => ['nullable', 'in:in_patient,out_patient'],
             // Invoice Fields
             'invoice_date' => ['nullable', 'date'],
+            'discount_id' => ['nullable'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'invoice_items' => ['nullable', 'array'],
+            'invoice_items.*.id' => ['nullable', 'exists:invoice_items,id'],
+            'invoice_items.*.invoice_item_id' => ['nullable', 'exists:invoice_items,id'],
             'invoice_items.*.case_report_item_id' => ['nullable', 'exists:case_report_items,id'],
-            'invoice_items.*.description' => ['sometimes', 'required', 'string'],
-            'invoice_items.*.quantity' => ['sometimes', 'required', 'numeric', 'min:1'],
-            'invoice_items.*.unit_price' => ['sometimes', 'required', 'numeric', 'min:0'],
-            'invoice_items.*.amount' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'invoice_items.*.scan_id' => ['nullable', 'exists:scans,id'],
+            'invoice_items.*.action' => ['nullable', 'integer', 'in:1,2,3'],
+            'invoice_items.*.description' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'string'],
+                        'invoice_items.*.amount' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'numeric', 'min:0'],
         ]);
 
         if (auth()->user()->branch_id) {
             $data['branch_id'] = auth()->user()->branch_id;
         }
+
+        $data['discount_id'] = $this->resolveDiscountId($data['discount_id'] ?? null);
 
         $caseReport = $this->caseReportService->createCaseReport($data);
 
@@ -128,14 +139,21 @@ class CaseReportController extends Controller
             'description' => ['nullable', 'string'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['required', 'string'],
-            'items' => ['required', 'array', 'min:1'],
-            'items.*.scan_type_id' => ['required', 'exists:scan_types,id'],
-            'items.*.scan_id' => ['required', 'exists:scans,id'],
-            'items.*.documents' => ['nullable', 'array'],
-            'items.*.documents.*' => ['required', 'string'],
-            'items.*.remarks' => ['nullable', 'string'],
-            'items.*.amount' => ['nullable', 'numeric', 'min:0'],
-            'items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
+            'case_report_items' => ['required', 'array', 'min:1'],
+            'case_report_items.*.id' => ['nullable', 'exists:case_report_items,id'],
+            'case_report_items.*.case_report_item_id' => ['nullable', 'exists:case_report_items,id'],
+            'case_report_items.*.action' => ['nullable', 'integer', 'in:1,2,3'],
+            'case_report_items.*.scan_type_id' => ['required_unless:case_report_items.*.action,3', 'nullable', 'exists:scan_types,id'],
+            'case_report_items.*.scans' => ['required_unless:case_report_items.*.action,3', 'nullable', 'array', 'min:1'],
+            'case_report_items.*.scans.*.scan_id' => ['required', 'exists:scans,id'],
+            'case_report_items.*.scans.*.scan_name' => ['nullable', 'string', 'max:255'],
+            'case_report_items.*.scans.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'case_report_items.*.item_reference' => ['nullable', 'string', 'max:255'],
+            'case_report_items.*.documents' => ['nullable', 'array'],
+            'case_report_items.*.documents.*' => ['required', 'string'],
+            'case_report_items.*.remarks' => ['nullable', 'string'],
+            'case_report_items.*.amount' => ['nullable', 'numeric', 'min:0'],
+            'case_report_items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
             'rct_date' => ['nullable', 'date'],
             'rct_hour' => ['nullable', 'string'],
             'is_stat' => ['nullable', 'boolean'],
@@ -143,16 +161,21 @@ class CaseReportController extends Controller
             'branch_id' => ['nullable', 'exists:branches,id'],
             // Invoice Fields
             'invoice_date' => ['nullable', 'date'],
+            'discount_id' => ['nullable'],
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'invoice_items' => ['nullable', 'array'],
+            'invoice_items.*.id' => ['nullable', 'exists:invoice_items,id'],
+            'invoice_items.*.invoice_item_id' => ['nullable', 'exists:invoice_items,id'],
             'invoice_items.*.case_report_item_id' => ['nullable', 'exists:case_report_items,id'],
-            'invoice_items.*.description' => ['sometimes', 'required', 'string'],
-            'invoice_items.*.quantity' => ['sometimes', 'required', 'numeric', 'min:1'],
-            'invoice_items.*.unit_price' => ['sometimes', 'required', 'numeric', 'min:0'],
-            'invoice_items.*.amount' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'invoice_items.*.scan_id' => ['nullable', 'exists:scans,id'],
+            'invoice_items.*.action' => ['nullable', 'integer', 'in:1,2,3'],
+            'invoice_items.*.description' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'string'],
+                        'invoice_items.*.amount' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'numeric', 'min:0'],
         ]);
+
+        $data['discount_id'] = $this->resolveDiscountId($data['discount_id'] ?? null);
 
         $caseReport = $this->caseReportService->updateCaseReport($id, $data);
 
@@ -199,7 +222,7 @@ class CaseReportController extends Controller
     public function getNextItemCustomId(int $scanTypeId): JsonResponse
     {
         try {
-            $nextId = $this->caseReportService->getNextItemCustomId($scanTypeId);
+            $nextId = $this->caseReportService->getNextItemReference($scanTypeId);
             return response()->json(['success' => true, 'next_custom_id' => $nextId]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -256,5 +279,23 @@ class CaseReportController extends Controller
             'success' => true,
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Resolve discount_id if it's a name or "custom".
+     */
+    private function resolveDiscountId($discountId): ?int
+    {
+        if (empty($discountId) || $discountId === 'custom') {
+            return null;
+        }
+
+        if (is_numeric($discountId)) {
+            return (int) $discountId;
+        }
+
+        // If it's a string name, try to find the ID
+        $discount = \App\Models\Discount::where('name', $discountId)->first();
+        return $discount ? $discount->id : null;
     }
 }

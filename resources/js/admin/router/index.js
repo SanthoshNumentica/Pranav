@@ -59,6 +59,12 @@ const routes = [
                 meta: { module: 'invoices' },
             },
             {
+                path: 'invoices/:id/edit',
+                name: 'InvoiceEdit',
+                component: () => import("../views/invoices/InvoiceEdit.vue"),
+                meta: { module: 'invoices' }
+            },
+            {
                 path: 'invoices/:id',
                 name: 'InvoiceDetail',
                 component: () => import("../views/invoices/InvoiceDetail.vue"),

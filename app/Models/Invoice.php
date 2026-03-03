@@ -18,10 +18,12 @@ class Invoice extends Model
         'case_report_id',
         'patient_id',
         'branch_id',
+        'discount_id',
         'sub_total',
         'discount_amount',
         'tax_amount',
         'total_amount',
+        'paid_amount',
         'status', // pending, paid, cancelled
         'invoice_date',
         'notes',
@@ -35,6 +37,7 @@ class Invoice extends Model
         'discount_amount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
     ];
 
     public function caseReport(): BelongsTo

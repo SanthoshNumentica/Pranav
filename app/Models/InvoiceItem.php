@@ -14,24 +14,34 @@ class InvoiceItem extends Model
     protected $fillable = [
         'invoice_id',
         'case_report_item_id',
+        'scan_id',
         'description',
-        'quantity',
-        'unit_price',
         'amount',
     ];
 
     protected $casts = [
-        'unit_price' => 'decimal:2',
         'amount' => 'decimal:2',
     ];
+
+    protected $appends = ['scan_type_name'];
 
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
     }
 
+    public function getScanTypeNameAttribute(): ?string
+    {
+        return $this->caseReportItem?->scanType?->name;
+    }
+
     public function caseReportItem(): BelongsTo
     {
-        return $this->belongsTo(CaseReportItem::class);
+        return $this->belongsTo(CaseReportItem::class)->withTrashed();
+    }
+
+    public function scan(): BelongsTo
+    {
+        return $this->belongsTo(Scan::class)->withTrashed();
     }
 }

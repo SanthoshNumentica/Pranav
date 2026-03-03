@@ -74,11 +74,11 @@ export function useCaseReportForm(isEdit = false) {
         is_stat: false,
         patient_type: "out_patient",
 
-        // Invoice Details
-        invoice_date: (() => {
+        // Invoice Details - initialized as null for new cases
+        invoice_date: isEdit ? (() => {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-        })(),
+        })() : null,
         discount_amount: 0,
         discount_id: "custom",
         tax_amount: 0,
@@ -88,6 +88,9 @@ export function useCaseReportForm(isEdit = false) {
         status: "pending",
         invoice_items: [],
     });
+
+    const deletedInvoiceItemIds = ref([]);
+    const deletedCaseReportItemIds = ref([]);
 
     const subTotal = computed(() => {
         return form.invoice_items.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
@@ -113,7 +116,7 @@ export function useCaseReportForm(isEdit = false) {
 
     // Wrapper methods to pass 'form' context
     const fetchNextCaseId = () => fetchNextIdBase(form);
-    const handleGeneralFiles = (e) => handleGeneralFilesBase(e, form);
+    const handleGeneralFiles = (e) => handleGeneralFilesBase(e, form, form.id);
     const removeGeneralDoc = (idx) => removeGeneralDocBase(idx, form);
     const removeDoc = (iIdx, dIdx) => removeDocBase(iIdx, dIdx, form);
     const removeFolder = (idx, name) => removeFolderBase(idx, name, form);
@@ -124,9 +127,9 @@ export function useCaseReportForm(isEdit = false) {
 
     // Default item structure
     const createNewItem = () => ({
-        custom_id: "",
-        group_token: Math.random().toString(36).substring(2, 11),
+        item_reference: "",
         scan_type_id: "",
+        scan_type_name: "",
         scan_id: "", // This will be the "temp" selector value in the UI
         selected_scans: [], // { scan_id, scan_name, amount }
         documents: [],
@@ -140,6 +143,41 @@ export function useCaseReportForm(isEdit = false) {
     if (!isEdit && form.items.length === 0) {
         form.items.push(createNewItem());
     }
+
+    /**
+     * Helper to reconstruct the frontend tracking key for invoice items.
+     * This links an invoice item back to a specific scan in the items list.
+     */
+    const resolveItemKey = (invoiceItem, caseReportItems) => {
+        if (!invoiceItem || !invoiceItem.case_report_item_id) return null;
+
+        const crId = String(invoiceItem.case_report_item_id);
+        const crItem = (caseReportItems || []).find(cri => String(cri.id) === crId);
+        if (!crItem) return null;
+
+        // NEW: If invoice item has scan_id, use it for direct matching
+        if (invoiceItem.scan_id) {
+            return `${String(crItem.id)}-${String(crItem.scan_type_id)}-${String(invoiceItem.scan_id)}`;
+        }
+
+        // Fallback: The item might have scan_details (raw) or scans_with_names (enriched)
+        const scans = crItem.scans_with_names && crItem.scans_with_names.length > 0
+            ? crItem.scans_with_names
+            : (Array.isArray(crItem.scan_details) ? crItem.scan_details : (crItem.scan_details ? [crItem.scan_details] : []));
+
+        const descMatch = (invoiceItem.description || "").trim().toLowerCase();
+
+        // Match by name/description
+        const match = scans.find(s => {
+            const sName = (s.scan_name || s.name || "").trim().toLowerCase();
+            return sName === descMatch;
+        });
+
+        if (match) {
+            return `${String(crItem.id)}-${String(crItem.scan_type_id)}-${String(match.scan_id || match.id)}`;
+        }
+        return null;
+    };
 
     const fetchMasters = async () => {
         try {
@@ -198,6 +236,45 @@ export function useCaseReportForm(isEdit = false) {
             form.is_stat = data.is_stat ?? false;
             form.patient_type = data.patient_type || "out_patient";
 
+
+            form.documents = (data.documents || []).map((path) => ({
+                name: typeof path === 'string' ? path.split("/").pop() : path.name,
+                path: typeof path === 'string' ? path : path.path
+            }));
+            const groupedItems = [];
+            // Restoration of grouped items from scan_details array
+            (data.items || []).forEach(item => {
+                // Prefer scans_with_names appended by backend, fallback to scan_details
+                const scans = item.scans_with_names && item.scans_with_names.length > 0
+                    ? item.scans_with_names
+                    : (Array.isArray(item.scan_details) ? item.scan_details : (item.scan_details ? [item.scan_details] : []));
+
+                const selectedScans = scans.map(s => ({
+                    id: item.id, // For tracking
+                    scan_id: s.scan_id?.toString() || "",
+                    scan_name: s.scan_name || (item.scan?.name && scans.length === 1 ? item.scan.name : "Scan"),
+                    amount: s.amount || 0,
+                }));
+
+                groupedItems.push({
+                    id: item.id,
+                    item_reference: item.item_reference || "",
+                    scan_type_id: item.scan_type_id?.toString() || "",
+                    scan_type_name: item.scan_type?.name || "",
+                    scan_id: "", // Reset to empty for the selector
+                    selected_scans: selectedScans,
+                    documents: (item.documents || []).map((path) => ({
+                        name: typeof path === 'string' ? path.split("/").pop() : path.name,
+                        path: typeof path === 'string' ? path : path.path
+                    })),
+                    remarks: item.remarks || "",
+                    processing: false,
+                    amount: selectedScans.reduce((total, s) => total + parseFloat(s.amount || 0), 0),
+                });
+            });
+            form.items = groupedItems;
+
+            // Sync invoice items initially - only if invoice exists
             if (data.invoice) {
                 form.invoice_id = data.invoice.id;
                 form.invoice_no = data.invoice.invoice_no || "";
@@ -206,117 +283,53 @@ export function useCaseReportForm(isEdit = false) {
                 form.tax_amount = data.invoice.tax_amount || 0;
                 form.invoice_date = data.invoice.invoice_date ? data.invoice.invoice_date.split('T')[0] : "";
                 form.notes = data.invoice.notes || "";
-                form.invoice_items = (data.invoice.items || []).map(item => ({
-                    id: item.id,
-                    case_report_item_id: item.case_report_item_id,
-                    description: item.description,
-                    quantity: item.quantity || 1,
-                    unit_price: item.unit_price,
-                    amount: item.amount
-                }));
-            }
 
-            form.documents = (data.documents || []).map((path) => ({
-                name: typeof path === 'string' ? path.split("/").pop() : path.name,
-                path: typeof path === 'string' ? path : path.path
-            }));
-
-            // Group items by group_token or custom_id (fallback for legacy)
-            const groupedItems = [];
-
-            // To handle records with NULL group_token AND NULL custom_id, we'll try to group by scan_type_id 
-            // if they belong to the same sequence of nulls
-            let lastNullGroupToken = null;
-            let lastNullScanTypeId = null;
-
-            (data.items || []).forEach(item => {
-                const scanData = item.scan_id ? {
-                    id: item.id,
-                    scan_id: item.scan_id.toString(),
-                    scan_name: item.scan?.name || "Scan",
-                    amount: item.amount || 0,
-                } : null;
-
-                // Stronger grouping logic
-                let existingGroup = groupedItems.find(g => {
-                    if (item.group_token && g.group_token === item.group_token) return true;
-                    if (item.custom_id && g.custom_id === item.custom_id && g.scan_type_id === item.scan_type_id?.toString()) return true;
-                    return false;
-                });
-
-                // Emergency fallback: If both are null, check if it's the same scan type as the previous item 
-                // and assign them to the same emergency group token
-                if (!existingGroup && !item.group_token && !item.custom_id) {
-                    if (item.scan_type_id?.toString() === lastNullScanTypeId) {
-                        existingGroup = groupedItems.find(g => g.group_token === lastNullGroupToken);
-                    }
-                }
-
-                if (existingGroup) {
-                    if (scanData) {
-                        const isDuplicate = existingGroup.selected_scans.some(s => s.scan_id.toString() === item.scan_id?.toString());
-                        if (!isDuplicate) {
-                            existingGroup.selected_scans.push(scanData);
-                        }
-                    }
+                if (!data.invoice.items || data.invoice.items.length === 0) {
+                    form.invoice_items = [];
                 } else {
-                    const newToken = item.group_token || Math.random().toString(36).substring(2, 11);
-                    if (!item.group_token && !item.custom_id) {
-                        lastNullGroupToken = newToken;
-                        lastNullScanTypeId = item.scan_type_id?.toString();
-                    }
+                    console.log("[Diagnostic] Total Invoice Items:", data.invoice.items.length);
+                    // If invoice exists with items, use those
+                    form.invoice_items = (data.invoice.items || []).map(item => {
+                        console.log("[Diagnostic] Processing Invoice Item:", item.description, "CRI ID:", item.case_report_item_id);
+                        let key = resolveItemKey(item, data.items);
+                        console.log("[Diagnostic] resolveItemKey result:", key);
 
-                    groupedItems.push({
-                        id: item.id,
-                        group_token: newToken,
-                        custom_id: item.custom_id || "",
-                        scan_type_id: item.scan_type_id?.toString() || "",
-                        scan_id: item.scan_id?.toString() || "",
-                        selected_scans: scanData ? [scanData] : [],
-                        documents: (item.documents || []).map((path) => ({
-                            name: typeof path === 'string' ? path.split("/").pop() : path.name,
-                            path: typeof path === 'string' ? path : path.path
-                        })),
-                        remarks: item.remarks || "",
-                        processing: false,
-                        amount: item.amount || 0,
-                    });
-                }
-            });
-            form.items = groupedItems;
+                        // Fallback: If we can't resolve by name/details, but we have a cri match, try to guess
+                        if (!key && item.case_report_item_id) {
+                            const cri = (data.items || []).find(i => String(i.id) === String(item.case_report_item_id));
+                            if (cri) {
+                                console.log("[Diagnostic] Found CRI for fallback:", cri.id, "Scan Type:", cri.scan_type_id);
+                                const scans = cri.scans_with_names && cri.scans_with_names.length > 0
+                                    ? cri.scans_with_names
+                                    : (Array.isArray(cri.scan_details) ? cri.scan_details : (cri.scan_details ? [cri.scan_details] : []));
 
-            // Sync invoice items initially
-            if (!data.invoice || !data.invoice.items || data.invoice.items.length === 0) {
-                form.invoice_items = [];
-                groupedItems.forEach(block => {
-                    (block.selected_scans || []).forEach(scan => {
-                        // Check for duplicates before pushing
-                        const exists = form.invoice_items.some(inv =>
-                            (inv.case_report_item_id && String(inv.case_report_item_id) === String(scan.id)) ||
-                            (inv.description === scan.scan_name && inv.amount === scan.amount)
-                        );
-
-                        if (!exists) {
-                            form.invoice_items.push({
-                                case_report_item_id: scan.id || null,
-                                description: scan.scan_name || "Scan",
-                                quantity: 1,
-                                unit_price: scan.amount || 0,
-                                amount: scan.amount || 0
-                            });
+                                console.log("[Diagnostic] CRI Scans:", scans);
+                                const firstScan = scans[0];
+                                if (firstScan) {
+                                    key = `${String(cri.scan_type_id)}-${String(firstScan.scan_id || firstScan.id)}`;
+                                    console.log("[Diagnostic] Fallback Key Generated:", key);
+                                }
+                            } else {
+                                console.log("[Diagnostic] CRI NOT FOUND in data.items for ID:", item.case_report_item_id);
+                            }
                         }
+
+                        return {
+                            id: item.id,
+                            case_report_item_id: item.case_report_item_id,
+                            scan_id: item.scan_id,
+                            description: item.description,
+                            scan_type_name: item.scan_type_name || null,
+                            amount: item.amount,
+                            _key: key
+                        };
                     });
-                });
+                    console.log("[Diagnostic] Final Form Invoice Items Keys:", form.invoice_items.map(i => i._key));
+                }
             } else {
-                // If invoice exists with items, use those
-                form.invoice_items = (data.invoice.items || []).map(item => ({
-                    id: item.id,
-                    case_report_item_id: item.case_report_item_id,
-                    description: item.description,
-                    quantity: item.quantity,
-                    unit_price: item.unit_price,
-                    amount: item.amount
-                }));
+                form.invoice_id = null;
+                form.invoice_no = "";
+                form.invoice_items = [];
             }
 
         } catch (err) {
@@ -359,53 +372,58 @@ export function useCaseReportForm(isEdit = false) {
     };
 
     const addItem = () => form.items.push(createNewItem());
-    const removeItem = (index) => form.items.splice(index, 1);
+    const removeItem = (index) => {
+        const item = form.items[index];
+        if (item && item.id) {
+            deletedCaseReportItemIds.value.push(item.id);
+        }
+        form.items.splice(index, 1);
+    };
 
-    const addInvoiceItem = (item) => {
-        const safeItem = item || {};
-
-        // If it's a grouped scan block with multiple selections
-        if (safeItem.selected_scans && safeItem.selected_scans.length > 0) {
-            safeItem.selected_scans.forEach((scan) => {
-                // Duplicate check
-                const exists = form.invoice_items.some(inv =>
-                    (inv.case_report_item_id && String(inv.case_report_item_id) === String(scan.id)) ||
-                    (inv.description === scan.scan_name && inv.amount === scan.amount)
-                );
-
-                if (!exists) {
-                    form.invoice_items.push({
-                        case_report_item_id: scan.id || null,
-                        description: scan.scan_name || "Scan",
-                        quantity: 1,
-                        unit_price: scan.amount || 0,
-                        amount: scan.amount || 0,
-                    });
-                }
+    const addInvoiceItem = (scan = null) => {
+        if (!scan) {
+            // Manual addition of an empty row
+            form.invoice_items.push({
+                case_report_item_id: null,
+                scan_id: null,
+                description: "",
+                amount: 0,
             });
             return;
         }
 
-        // Fallback for manual addition or single scan records
-        const exists = form.invoice_items.some(inv =>
-            (inv.case_report_item_id && String(inv.case_report_item_id) === String(safeItem.id)) ||
-            (inv.description === safeItem.scan_name && inv.amount === safeItem.amount)
-        );
+        // Check if this scan is already in the invoice
+        const key = scan.id
+            ? `${String(scan.id)}-${String(scan.scan_type_id)}-${String(scan.scan_id)}`
+            : `${String(scan.scan_type_id)}-${String(scan.scan_id)}`;
+
+        const exists = form.invoice_items.some(inv => {
+            if (inv._key && String(inv._key) === key) return true;
+            if (scan.id && String(inv.case_report_item_id) === String(scan.id) && String(inv.scan_id) === String(scan.scan_id)) return true;
+            return false;
+        });
 
         if (!exists) {
             form.invoice_items.push({
-                case_report_item_id: safeItem.id || null,
-                description: safeItem.scan_name || (safeItem.scan_id ? "Scan" : ""),
-                quantity: 1,
-                unit_price: safeItem.amount || 0,
-                amount: safeItem.amount || 0,
+                _key: key,
+                case_report_item_id: scan.id || null,
+                scan_id: scan.scan_id || null,
+                description: scan.scan_name || "Scan",
+                scan_type_name: scan.scan_type_name || "",
+                amount: scan.amount || 0,
             });
         }
     };
 
-    const removeInvoiceItem = (index) => form.invoice_items.splice(index, 1);
+    const removeInvoiceItem = (index) => {
+        const item = form.invoice_items[index];
+        if (item && item.id) {
+            deletedInvoiceItemIds.value.push(item.id);
+        }
+        form.invoice_items.splice(index, 1);
+    };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (options = {}) => {
         loading.value = true;
         error.value = null;
 
@@ -452,38 +470,77 @@ export function useCaseReportForm(isEdit = false) {
                 send_whatsapp_patient: form.send_whatsapp_patient ?? true,
                 send_whatsapp_referer: form.send_whatsapp_referer ?? true,
                 documents: (form.documents || []).map((d) => d.path || d),
-                items: (form.items || []).flatMap((itemBlock) => {
-                    // Calculate total for this block
-                    const blockTotal = (itemBlock.selected_scans || []).reduce((sum, s) => {
-                        return sum + (parseFloat(s.amount) || 0);
-                    }, 0);
+                case_report_items: (() => {
+                    const items = (form.items || []).map((itemBlock) => {
+                        // Calculate total for this block
+                        const blockTotal = (itemBlock.selected_scans || []).reduce((sum, s) => {
+                            return sum + (parseFloat(s.amount) || 0);
+                        }, 0);
 
-                    // Flatten multi-scans into individual case report items
-                    return (itemBlock.selected_scans || []).map(scan => ({
-                        custom_id: itemBlock.custom_id,
-                        group_token: itemBlock.group_token,
-                        scan_type_id: itemBlock.scan_type_id,
-                        scan_id: scan.scan_id,
-                        documents: (itemBlock.documents || []).map((d) => d.path || d),
-                        remarks: itemBlock.remarks || "",
-                        amount: scan.amount || 0,
-                        total_amount: blockTotal,
-                    }));
-                }),
-                // Invoice fields
-                invoice_date: form.invoice_date || null,
-                discount_amount: form.discount_amount || 0,
-                discount_id: form.discount_id || null,
-                tax_amount: form.tax_amount || 0,
-                notes: form.notes || "",
-                invoice_items: (form.invoice_items || []).map((item) => ({
-                    case_report_item_id: item.case_report_item_id || null,
-                    description: item.description,
-                    quantity: item.quantity,
-                    unit_price: item.unit_price,
-                    amount: item.amount,
-                })),
+                        // Send one CaseReportItem per block with all scans nested
+                        return {
+                            id: itemBlock.id || null,
+                            case_report_item_id: itemBlock.id || null, // Shared naming convention
+                            item_reference: itemBlock.item_reference,
+                            scan_type_id: itemBlock.scan_type_id,
+                            scans: (itemBlock.selected_scans || []).map(scan => ({
+                                scan_id: scan.scan_id,
+                                scan_name: scan.scan_name,
+                                amount: scan.amount || 0,
+                            })),
+                            documents: (itemBlock.documents || []).map((d) => d.path || d),
+                            remarks: itemBlock.remarks || "",
+                            total_amount: blockTotal,
+                            action: itemBlock.id ? 2 : 1 // 1: New, 2: Update
+                        };
+                    });
+
+                    // Append deleted items with action 3
+                    deletedCaseReportItemIds.value.forEach(id => {
+                        items.push({
+                            id: id,
+                            case_report_item_id: id,
+                            action: 3 // 3: Delete
+                        });
+                    });
+
+                    return items;
+                })(),
             };
+
+            // Only send invoice fields if we are explicitly generating or if it already exists
+            if (options.generateInvoice || form.invoice_id) {
+                payload.invoice_date = form.invoice_date || (() => {
+                    const d = new Date();
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                })();
+                payload.discount_amount = form.discount_amount || 0;
+                payload.tax_amount = form.tax_amount || 0;
+                payload.notes = form.notes || "";
+
+                // Construct invoice items with action codes
+                const invoiceItems = (form.invoice_items || []).map((item) => ({
+                    id: item.id || null, // Map to id for backend
+                    invoice_item_id: item.id || null, // Keeping both for compatibility with user request
+                    case_report_item_id: item.case_report_item_id || null,
+                    scan_id: item.scan_id || null,
+                    description: item.description,
+                    scan_type_name: item.scan_type_name || null,
+                    amount: item.amount,
+                    action: item.id ? 2 : 1 // 1: New, 2: Update
+                }));
+
+                // Append deleted items with action 3
+                deletedInvoiceItemIds.value.forEach(id => {
+                    invoiceItems.push({
+                        id: id,
+                        invoice_item_id: id,
+                        action: 3 // 3: Delete
+                    });
+                });
+
+                payload.invoice_items = invoiceItems;
+            }
 
             let response;
             if (isEdit) {
@@ -506,17 +563,37 @@ export function useCaseReportForm(isEdit = false) {
                     form.status = updatedData.invoice.status || "pending";
                     form.invoice_date = updatedData.invoice.invoice_date ? updatedData.invoice.invoice_date.split('T')[0] : "";
                     form.notes = updatedData.invoice.notes || "";
-                    form.invoice_items = (updatedData.invoice.items || []).map(item => ({
-                        id: item.id,
-                        case_report_item_id: item.case_report_item_id,
-                        description: item.description,
-                        quantity: item.quantity || 1,
-                        unit_price: item.unit_price,
-                        amount: item.amount
-                    }));
+                    form.invoice_items = (updatedData.invoice.items || []).map(item => {
+                        let key = resolveItemKey(item, updatedData.items);
+
+                        if (!key && item.case_report_item_id) {
+                            const cri = (updatedData.items || []).find(i => String(i.id) === String(item.case_report_item_id));
+                            if (cri && cri.scan_details) {
+                                const scans = Array.isArray(cri.scan_details) ? cri.scan_details : [cri.scan_details];
+                                const firstScan = scans[0];
+                                if (firstScan) {
+                                    key = `${String(cri.id)}-${String(cri.scan_type_id)}-${String(item.scan_id || firstScan.scan_id || firstScan.id)}`;
+                                }
+                            }
+                        }
+
+                        return {
+                            id: item.id,
+                            case_report_item_id: item.case_report_item_id,
+                            scan_id: item.scan_id,
+                            description: item.description,
+                            scan_type_name: item.scan_type_name || null,
+                            amount: item.amount,
+                            _key: key
+                        };
+                    });
                 }
 
-                router.push("/case-reports");
+                if (!isEdit || !options.generateInvoice) {
+                    router.push("/case-reports");
+                } else if (options.generateInvoice || form.invoice_id) {
+                    router.push("/invoices");
+                }
             }
         } catch (err) {
             console.error("Save failed", err);

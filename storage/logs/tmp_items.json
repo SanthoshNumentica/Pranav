@@ -1,0 +1,26 @@
+[
+    {
+        "id": 3,
+        "case_report_id": 2,
+        "scan_type_id": 6,
+        "item_reference": "DO0002",
+        "scan_details": [
+            {
+                "scan_id": "28",
+                "scan_name": "Maxilla",
+                "amount": "1000.00"
+            },
+            {
+                "scan_id": "29",
+                "scan_name": "Mandible",
+                "amount": "1000.00"
+            }
+        ],
+        "total_amount": "2000.00",
+        "documents": [],
+        "remarks": null,
+        "created_at": "2026-03-02T07:14:49.000000Z",
+        "updated_at": "2026-03-02T07:14:49.000000Z",
+        "deleted_at": null
+    }
+]

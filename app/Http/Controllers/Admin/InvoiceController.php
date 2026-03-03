@@ -57,7 +57,7 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        $invoice = Invoice::with(['patient', 'branch', 'caseReport', 'items', 'payments.paymentMethod'])->findOrFail($id);
+        $invoice = Invoice::with(['patient', 'branch', 'caseReport', 'items.caseReportItem.scanType', 'payments.paymentMethod'])->findOrFail($id);
         return response()->json($invoice);
     }
 
@@ -65,13 +65,13 @@ class InvoiceController extends Controller
     {
         $request->validate([
             'case_report_id' => 'required|exists:case_reports,id',
+            'discount_id' => 'nullable',
             'discount_amount' => 'nullable|numeric',
             'tax_amount' => 'nullable|numeric',
             'invoice_date' => 'required|date',
             'items' => 'required|array',
             'items.*.description' => 'required|string',
-            'items.*.unit_price' => 'required|numeric',
-            'items.*.quantity' => 'required|integer',
+            'items.*.amount' => 'required|numeric',
         ]);
 
         $caseReport = CaseReport::findOrFail($request->case_report_id);
@@ -84,11 +84,12 @@ class InvoiceController extends Controller
                 'case_report_id' => $caseReport->id,
                 'patient_id' => $caseReport->patient_fk_id,
                 'branch_id' => $caseReport->branch_id,
+                'discount_id' => $this->resolveDiscountId($request->discount_id),
                 'discount_amount' => $request->discount_amount ?? 0,
                 'tax_amount' => $request->tax_amount ?? 0,
                 'sub_total' => 0, // Will be updated
                 'total_amount' => 0, // Will be updated
-                'status' => 'pending',
+                'status' => 'unpaid',
                 'invoice_date' => $request->invoice_date,
                 'notes' => $request->notes,
             ]);
@@ -96,10 +97,9 @@ class InvoiceController extends Controller
             foreach ($request->items as $item) {
                 $invoice->items()->create([
                     'case_report_item_id' => $item['case_report_item_id'] ?? null,
+                    'scan_id' => $item['scan_id'] ?? null,
                     'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'amount' => $item['unit_price'] * $item['quantity'],
+                    'amount' => $item['amount'],
                 ]);
             }
 
@@ -124,5 +124,23 @@ class InvoiceController extends Controller
     public function getNextInvoiceNo()
     {
         return response()->json(['invoice_no' => $this->invoiceService->generateInvoiceNo()]);
+    }
+
+    /**
+     * Resolve discount_id if it's a name or "custom".
+     */
+    private function resolveDiscountId($discountId): ?int
+    {
+        if (empty($discountId) || $discountId === 'custom') {
+            return null;
+        }
+
+        if (is_numeric($discountId)) {
+            return (int) $discountId;
+        }
+
+        // If it's a string name, try to find the ID
+        $discount = \App\Models\Discount::where('name', $discountId)->first();
+        return $discount ? $discount->id : null;
     }
 }

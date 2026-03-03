@@ -33,12 +33,19 @@ class InvoiceService
      */
     public function updateStatus(Invoice $invoice): void
     {
-        $paidAmount = $invoice->payments()->sum('amount');
+        if ($invoice->status === 'cancelled') {
+            return;
+        }
 
-        if ($paidAmount >= $invoice->total_amount && $invoice->total_amount > 0) {
-            $invoice->status = 'paid';
-        } elseif ($invoice->status !== 'cancelled') {
-            $invoice->status = 'pending';
+        $paidAmount = $invoice->paid_amount;
+        $totalAmount = $invoice->total_amount;
+
+        if ($paidAmount <= 0) {
+            $invoice->status = 'unpaid';
+        } elseif ($paidAmount < $totalAmount) {
+            $invoice->status = 'due';
+        } else {
+            $invoice->status = 'fully_paid';
         }
 
         $invoice->save();
@@ -80,8 +87,21 @@ class InvoiceService
         return [
             'total_revenue' => (clone $query)->sum('total_amount'),
             'total_collected' => (clone $query)->withSum('payments', 'amount')->get()->sum('payments_sum_amount'),
-            'paid_count' => (clone $query)->where('status', 'paid')->count(),
-            'pending_count' => (clone $query)->whereIn('status', ['pending', 'unpaid'])->count(),
+            'paid_count' => (clone $query)->where('status', 'fully_paid')->count(),
+            'pending_count' => (clone $query)->whereIn('status', ['unpaid', 'due'])->count(),
         ];
+    }
+
+    /**
+     * Synchronize paid_amount for existing invoices.
+     */
+    public function syncExistingPaidAmounts(): void
+    {
+        $invoices = Invoice::all();
+        foreach ($invoices as $invoice) {
+            $paidTotal = $invoice->payments()->sum('amount');
+            $invoice->update(['paid_amount' => $paidTotal]);
+            $this->updateStatus($invoice);
+        }
     }
 }

@@ -18,7 +18,19 @@ class FileController extends Controller
             'file' => ['required', 'file', 'max:2097152'], // 2GB max
             'type' => ['required', 'in:document,dicom'],
             'relative_path' => ['nullable', 'string'],
+            'case_report_id' => ['nullable', 'exists:case_reports,id'],
         ]);
+
+        $caseReportId = $request->input('case_report_id');
+        if ($caseReportId) {
+            $caseReport = \App\Models\CaseReport::with('invoice')->find($caseReportId);
+            if ($caseReport && (!$caseReport->invoice || $caseReport->invoice->status !== 'fully_paid')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Files can be uploaded only after the invoice is fully paid.'
+                ], 403);
+            }
+        }
 
         $file = $request->file('file');
         $type = $request->input('type');

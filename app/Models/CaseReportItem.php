@@ -15,19 +15,20 @@ class CaseReportItem extends Model
 
     protected $fillable = [
         'case_report_id',
-        'custom_id',
-        'group_token',
         'scan_type_id',
-        'scan_id',
+        'item_reference',
+        'scan_details',
         'documents',
         'remarks',
-        'amount',
         'total_amount',
     ];
 
     protected $casts = [
         'documents' => 'array',
+        'scan_details' => 'array',
     ];
+
+    protected $appends = ['scans_with_names'];
 
     public function caseReport(): BelongsTo
     {
@@ -41,6 +42,37 @@ class CaseReportItem extends Model
 
     public function scan(): BelongsTo
     {
-        return $this->belongsTo(Scan::class);
+        // For backward compatibility and single items, return the first scan ID if it's an array
+        $details = $this->scan_details;
+        $scanId = is_array($details) 
+            ? ($details[0]['scan_id'] ?? ($details['scan_id'] ?? null))
+            : null;
+            
+        return $this->belongsTo(Scan::class, 'id', 'id')->where('id', $scanId);
+    }
+
+    public function getScansWithNamesAttribute(): array
+    {
+        $details = $this->scan_details ?? [];
+        $scans = is_array($details) ? (isset($details[0]) ? $details : [$details]) : [];
+        
+        $enrichedScans = [];
+        foreach ($scans as $s) {
+            if (empty($s['scan_id'])) continue;
+            
+            $scanName = $s['scan_name'] ?? null;
+            if (!$scanName) {
+                $scanModel = \App\Models\Scan::find($s['scan_id']);
+                $scanName = $scanModel ? $scanModel->name : 'Scan';
+            }
+            
+            $enrichedScans[] = [
+                'scan_id' => $s['scan_id'],
+                'scan_name' => $scanName,
+                'amount' => $s['amount'] ?? 0,
+            ];
+        }
+        
+        return $enrichedScans;
     }
 }

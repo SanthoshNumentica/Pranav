@@ -153,14 +153,16 @@
                 <td class="px-3 py-4">
                   <span :class="cn(
                     'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                    invoice.status === 'paid'
+                    invoice.status === 'fully_paid'
                       ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                      : invoice.status === 'pending'
+                      : invoice.status === 'due'
                         ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                        : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
+                        : invoice.status === 'unpaid'
+                          ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                          : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
                   )
                     ">
-                    {{ invoice.status }}
+                    {{ invoice.status.replace('_', ' ') }}
                   </span>
                 </td>
               </tr>
@@ -230,14 +232,14 @@ const quickStats = computed(() => [
     color: "text-violet-500",
   },
   {
-    label: "Paid Invoices",
+    label: "Fully Paid",
     value: stats.value.paid_count,
     icon: PaidIcon,
     bg: "bg-emerald-50",
     color: "text-emerald-500",
   },
   {
-    label: "Pending",
+    label: "Pending (Unpaid/Due)",
     value: stats.value.pending_count,
     icon: PendingIcon,
     bg: "bg-amber-50",
@@ -282,11 +284,12 @@ const fetchInvoiceData = async (page = 1) => {
 
 const getStatusClass = (status) => {
   switch (status) {
-    case "paid":
+    case "fully_paid":
       return "bg-emerald-50 text-emerald-600 border border-emerald-100";
-    case "unpaid":
-    case "pending":
+    case "due":
       return "bg-amber-50 text-amber-600 border border-amber-100";
+    case "unpaid":
+      return "bg-rose-50 text-rose-600 border border-rose-100";
     default:
       return "bg-slate-50 text-slate-600 border border-slate-100";
   }

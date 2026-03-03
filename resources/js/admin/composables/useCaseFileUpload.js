@@ -47,7 +47,7 @@ export function useCaseFileUpload(addToast) {
     };
 
     // --- General Document Handling ---
-    const handleGeneralFiles = async (event, form) => {
+    const handleGeneralFiles = async (event, form, caseReportId = null) => {
         const files = Array.from(event.target.files);
         if (files.length === 0) return;
         event.target.value = "";
@@ -57,6 +57,9 @@ export function useCaseFileUpload(addToast) {
                 const formData = new FormData();
                 formData.append("file", file);
                 formData.append("type", "document");
+                if (caseReportId) {
+                    formData.append("case_report_id", caseReportId);
+                }
                 const response = await axios.post("/api/v1/files/upload", formData, {
                     headers: { "Content-Type": "multipart/form-data" },
                 });
@@ -135,7 +138,7 @@ export function useCaseFileUpload(addToast) {
         return files;
     };
 
-    const uploadDicomFiles = async (files, index, form, isUsingModal = false) => {
+    const uploadDicomFiles = async (files, index, form, isUsingModal = false, caseReportId = null) => {
         if (files.length === 0) return;
         const item = form.items[index];
         item.processing = true;
@@ -155,6 +158,9 @@ export function useCaseFileUpload(addToast) {
                 const file = rootFiles[i];
                 if (isUsingModal) { uploadModal.currentFileName = file.name; uploadModal.progress = (i / files.length) * 100; }
                 const fd = new FormData(); fd.append("file", file); fd.append("type", "dicom");
+                if (caseReportId) {
+                    fd.append("case_report_id", caseReportId);
+                }
                 const res = await axios.post("/api/v1/files/upload", fd, { headers: { "Content-Type": "multipart/form-data" } });
                 if (res.data.success) item.documents.push({ name: res.data.name, path: res.data.path });
             }
@@ -174,6 +180,9 @@ export function useCaseFileUpload(addToast) {
                 const zipFile = new File([zipBlob], `${folderName}.zip`, { type: "application/zip" });
                 if (isUsingModal) uploadModal.currentFileName = `Uploading ${folderName} (${folderFiles.length} files)...`;
                 const fd = new FormData(); fd.append("file", zipFile); fd.append("type", "dicom");
+                if (caseReportId) {
+                    fd.append("case_report_id", caseReportId);
+                }
                 const res = await axios.post("/api/v1/files/upload", fd, {
                     headers: { "Content-Type": "multipart/form-data" },
                     onUploadProgress: (pe) => {
@@ -206,7 +215,7 @@ export function useCaseFileUpload(addToast) {
             uploadModal.state = "confirm";
             uploadModal.isOpen = true;
         } else {
-            await uploadDicomFiles(files, index, form);
+            await uploadDicomFiles(files, index, form, false, form.id);
         }
     };
 
@@ -221,7 +230,7 @@ export function useCaseFileUpload(addToast) {
             uploadModal.state = "confirm";
             uploadModal.isOpen = true;
         } else {
-            await uploadDicomFiles(files, index, form);
+            await uploadDicomFiles(files, index, form, false, form.id);
         }
     };
 
@@ -231,7 +240,7 @@ export function useCaseFileUpload(addToast) {
         uploadModal.state = "uploading";
         uploadModal.progress = 0;
         uploadModal.totalFiles = files.length;
-        await uploadDicomFiles(files, index, form, true);
+        await uploadDicomFiles(files, index, form, true, form.id);
         uploadModal.isOpen = false;
     };
 

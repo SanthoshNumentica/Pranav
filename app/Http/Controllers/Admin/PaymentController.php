@@ -39,7 +39,20 @@ class PaymentController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            $this->invoiceService->updateStatus($payment->invoice);
+            $invoice = $payment->invoice;
+            
+            // Increment paid_amount
+            $invoice->paid_amount += $payment->amount;
+
+            // Optional: validation to prevent paid_amount from exceeding total_amount
+            if ($invoice->paid_amount > $invoice->total_amount) {
+                // You might want to allow overpayment or throw an error
+                // For now, let's just proceed as requested, but we could cap it
+            }
+
+            $invoice->save();
+
+            $this->invoiceService->updateStatus($invoice);
 
             DB::commit();
 
