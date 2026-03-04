@@ -21,12 +21,12 @@ class CaseReportController extends Controller
     public function index(Request $request): JsonResponse
     {
         $caseReports = $this->caseReportService->listCaseReports(
-            $request->only(['status', 'search', 'branch_id', 'from_date', 'to_date']),
+            $request->only(['status', 'search', 'branch_id', 'from_date', 'to_date', 'filter_type', 'filter_option', 'start_date', 'end_date']),
             $request->get('limit', 10)
         );
 
         $stats = $this->caseReportService->getReportStats(
-            $request->only(['from_date', 'to_date', 'branch_id'])
+            $request->only(['from_date', 'to_date', 'branch_id', 'filter_type', 'filter_option', 'start_date', 'end_date'])
         );
 
         return response()->json([

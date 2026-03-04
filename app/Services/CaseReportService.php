@@ -22,29 +22,80 @@ class CaseReportService
             ->where('expires_at', '<', now())
             ->update(['status' => 'expired']);
 
-        return CaseReport::query()
-            ->with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items.caseReportItem.scanType'])
+        $query = CaseReport::query()
+            ->with(['patient', 'referer', 'branch', 'items.scanType'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
                     $query->onlyTrashed();
                 }
             })
-            ->when(isset($filters['search']), function (Builder $query) use ($filters) {
-                $query->where('case_id', 'like', "%{$filters['search']}%")
-                    ->orWhereHas('patient', function ($q) use ($filters) {
-                        $q->where('name', 'like', "%{$filters['search']}%")
-                            ->orWhere('patient_id', 'like', "%{$filters['search']}%");
-                    });
+            ->when(isset($filters['search']) && !empty($filters['search']), function (Builder $query) use ($filters) {
+                $search = $filters['search'];
+                $query->where(function ($q) use ($search) {
+                    $q->where('case_id', 'like', "%{$search}%")
+                        ->orWhereHas('branch', function ($bq) use ($search) {
+                            $bq->where('name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('items.scanType', function ($sq) use ($search) {
+                            $sq->where('name', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('patient', function ($pq) use ($search) {
+                            $pq->where('name', 'like', "%{$search}%")
+                                ->orWhere('whatsapp_no', 'like', "%{$search}%")
+                                ->orWhere('mobile_no', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('referer', function ($rq) use ($search) {
+                            $rq->where('name', 'like', "%{$search}%")
+                                ->orWhere('mobile_no', 'like', "%{$search}%");
+                        });
+                });
             })
             ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('branch_id', $filters['branch_id']);
             })
-            ->when(isset($filters['from_date']) && isset($filters['to_date']), function (Builder $query) use ($filters) {
-                $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
-            })
-            ->latest()
+            ->when(isset($filters['scan_type_id']) && $filters['scan_type_id'] !== 'all', function (Builder $query) use ($filters) {
+                $query->whereHas('items', function ($q) use ($filters) {
+                    $q->where('scan_type_id', $filters['scan_type_id']);
+                });
+            });
+
+        $this->applyBasicFilters($query, $filters);
+
+        return $query->latest()
             ->paginate($perPage);
+    }
+
+    /**
+     * Get basic stats for case reports.
+     */
+    public function getReportStats(array $filters = []): array
+    {
+        $query = CaseReport::query();
+
+        if (isset($filters['from_date']) && isset($filters['to_date'])) {
+            $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
+        }
+
+        if (isset($filters['branch_id']) && $filters['branch_id'] !== 'all') {
+            $query->where('branch_id', $filters['branch_id']);
+        }
+
+        return [
+            'total_cases' => $query->count(),
+            'pending_count' => (clone $query)->where('status', 'pending')->count(),
+            'available_count' => (clone $query)->where('status', 'available')->count(),
+        ];
+    }
+
+    /**
+     * Apply basic filters for general listing.
+     */
+    private function applyBasicFilters(Builder $query, array $filters): void
+    {
+        if (isset($filters['from_date']) && isset($filters['to_date'])) {
+            $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
+        }
     }
 
     /**
@@ -436,25 +487,7 @@ class CaseReportService
         return $caseReport;
     }
 
-    /**
-     * Get summary statistics for reports based on filters.
-     */
-    public function getReportStats(array $filters = []): array
-    {
-        $query = CaseReport::query()
-            ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
-                $query->where('branch_id', $filters['branch_id']);
-            })
-            ->when(isset($filters['from_date']) && isset($filters['to_date']), function (Builder $query) use ($filters) {
-                $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
-            });
 
-        return [
-            'total' => (clone $query)->count(),
-            'completed' => (clone $query)->where('status', 'available')->count(),
-            'pending' => (clone $query)->whereIn('status', ['pending', 'draft'])->count(),
-        ];
-    }
 
     /**
      * Send WhatsApp notification for the case report.

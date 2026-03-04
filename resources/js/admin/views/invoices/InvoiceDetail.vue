@@ -155,20 +155,10 @@
             </h4>
           </div>
 
-          <div :class="[
-            'w-full py-4 rounded-2xl flex flex-col items-center justify-center gap-1 border',
-            invoice?.status === 'fully_paid'
-              ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-              : invoice?.status === 'due'
-                ? 'bg-amber-50 border-amber-100 text-amber-600'
-                : invoice?.status === 'unpaid'
-                  ? 'bg-rose-50 border-rose-100 text-rose-600'
-                  : 'bg-slate-50 border-slate-100 text-slate-400',
-          ]">
-            <span class="text-[10px] font-bold uppercase tracking-widest opacity-60">Current State</span>
-            <span class="text-xl font-bold uppercase tracking-widest">{{
-              invoice?.status?.replace('_', ' ')
-            }}</span>
+          <div
+            class="w-full h-24 rounded-2xl flex flex-col items-center justify-center gap-2 border bg-slate-50/50 border-slate-100">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Current State</span>
+            <StatusBadge :status="invoice?.status || ''" type="invoice" class="scale-125 origin-center" />
           </div>
 
           <div class="space-y-3 pt-2 border-t border-slate-100">
@@ -345,6 +335,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import StatusBadge from "../../components/ui/StatusBadge.vue";
 import {
   Dialog,
   DialogPanel,

@@ -81,25 +81,8 @@
                   }}</span>
                 </div>
                 <div class="w-px h-6 bg-slate-200"></div>
-                <div :class="[
-                  'px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-tight flex items-center gap-1',
-                  form.status === 'fully_paid'
-                    ? 'bg-emerald-50 text-emerald-600'
-                    : form.status === 'due'
-                      ? 'bg-amber-50 text-amber-600'
-                      : form.status === 'unpaid'
-                        ? 'bg-rose-50 text-rose-600'
-                        : 'bg-slate-50 text-slate-600',
-                ]">
-                  <div :class="[
-                    'h-1.5 w-1.5 rounded-full',
-                    form.status === 'fully_paid'
-                      ? 'bg-emerald-500'
-                      : (form.status === 'due' || form.status === 'unpaid')
-                        ? 'bg-amber-500 animate-pulse'
-                        : 'bg-slate-400',
-                  ]"></div>
-                  {{ form.status.replace('_', ' ') }}
+                <div class="flex items-center gap-2 px-1">
+                  <StatusBadge :status="form.status || ''" type="invoice" />
                 </div>
               </div>
             </div>
@@ -296,6 +279,7 @@
 
 <script setup>
 import { computed } from "vue";
+import StatusBadge from "../../ui/StatusBadge.vue";
 import {
   Receipt as ReceiptIcon,
   Calendar as CalendarIcon,

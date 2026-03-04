@@ -125,18 +125,7 @@
               <span class="text-sm font-bold text-slate-900">₹{{ parseFloat(invoice.total_amount).toFixed(2) }}</span>
             </td>
             <td class="px-3 py-4">
-              <span :class="[
-                'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider',
-                invoice.status === 'fully_paid'
-                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                  : invoice.status === 'due'
-                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                    : invoice.status === 'unpaid'
-                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                      : 'bg-slate-500/10 text-slate-500 border border-slate-500/20',
-              ]">
-                {{ invoice.status.replace('_', ' ') }}
-              </span>
+              <StatusBadge :status="invoice.status" type="invoice" />
             </td>
             <td class="px-3 py-4 text-right">
               <TableActions :item="invoice" :permissions="modulePermissions" :show-edit="true" :show-delete="false"
@@ -160,6 +149,7 @@ import axios from "axios";
 import { Search as SearchIcon, Filter as FilterIcon } from "lucide-vue-next";
 import Pagination from "../../components/ui/Pagination.vue";
 import TableActions from "../../components/ui/TableActions.vue";
+import StatusBadge from "../../components/ui/StatusBadge.vue";
 import {
   Select,
   SelectContent,

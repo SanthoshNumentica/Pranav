@@ -33,17 +33,17 @@ return [
     'github' => [
         'client_id' => 'YOUR_GITHUB_API', //Github API
         'client_secret' => 'YOUR_GITHUB_SECRET', //Github Secret
-        'redirect' => 'http://localhost:8000/login/github/callback',
+        'redirect' => env('APP_URL') . '/login/github/callback',
     ],
     'google' => [
         'client_id' => 'YOUR_GOOGLE_API', //Google API
         'client_secret' => 'YOUR_GOOGLE_SECRET', //Google Secret
-        'redirect' => 'http://localhost:8000/login/google/callback',
+        'redirect' => env('APP_URL') . '/login/google/callback',
     ],
     'facebook' => [
         'client_id' => 'YOUR_FACEBOOK_API', //Facebook API
         'client_secret' => 'YOUR_FACEBOK_SECRET', //Facebook Secret
-        'redirect' => 'http://localhost:8000/login/facebook/callback',
+        'redirect' => env('APP_URL') . '/login/facebook/callback',
     ],
     'whatsapp' => [
         'appkey' => env('WHATSAPP_APPKEY'),

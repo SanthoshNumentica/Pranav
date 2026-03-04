@@ -19,142 +19,172 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-4 no-print">
-      <div class="flex-1 min-w-[200px] relative">
-        <label class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-          <CalendarIcon class="h-4 w-4" />
-        </label>
-        <input v-model="filters.from_date" type="date"
-          class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-      </div>
-      <div class="flex-1 min-w-[200px] relative">
-        <label class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-          <CalendarIcon class="h-4 w-4" />
-        </label>
-        <input v-model="filters.to_date" type="date"
-          class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-      </div>
-      <button @click="fetchOrderStats"
-        class="bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-md shadow-primary/10 hover:bg-primary/90 transition-all active:scale-95 shrink-0">
-        <FilterIcon class="h-4 w-4" />
-        Filter
-      </button>
-      <button @click="exportToCSV"
-        class="bg-slate-900 text-white px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-md shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 shrink-0">
-        <DownloadIcon class="h-4 w-4" />
-        Export
-      </button>
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 no-print">
+      <AdvancedDateFilter v-model="filters" @change="fetchOrderStats" />
     </div>
 
-    <!-- Stats Summary (The 3 things) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div v-for="stat in quickStats" :key="stat.label"
-        class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-primary/50 transition-colors">
-        <div :class="cn(
-          'p-4 rounded-2xl transition-transform group-hover:scale-110',
-          stat.bg,
-        )
-          ">
-          <component :is="stat.icon" :class="cn('h-7 w-7', stat.color)" />
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.1em] leading-none mb-1">
-            {{ stat.label }}
-          </p>
-          <p class="text-2xl font-bold text-slate-900 mt-0.5">
-            {{ stat.value }}
-          </p>
-        </div>
+    <!-- Dynamic Summary Cards -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Filter by Scan Type</h2>
+      </div>
+
+      <!-- Multi-section Grid - Compact -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+        <!-- "All" Reset Card -->
+        <SummaryCard label="All Scans"
+          :value="(reports.length > 0 && filters.scan_type_id === 'all') ? stats.total_cases : stats.total_cases_unfiltered || stats.total_cases"
+          :active="filters.scan_type_id === 'all'" orientation="vertical"
+          @click="filters.scan_type_id = 'all'; fetchOrderStats(1)" />
+
+        <!-- Dynamic Scan Type Cards -->
+        <SummaryCard v-for="stat in stats.scan_type_stats" :key="stat.id" :label="stat.name" :value="stat.count"
+          :active="filters.scan_type_id === stat.id" orientation="vertical"
+          active-border-class="border-indigo-600 text-indigo-600" active-icon-color-class="text-indigo-600"
+          active-label-color-class="text-indigo-600" @click="filters.scan_type_id = stat.id; fetchOrderStats(1)" />
       </div>
     </div>
 
     <!-- Report Table -->
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider ml-2">
-          Detailed Order Log
-        </h3>
-        <div class="flex items-center gap-4">
-          <!-- Filters -->
+      <!-- Table Header with Search and Export -->
+      <div
+        class="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-1 bg-primary rounded-full"></div>
+          <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Case Reports <span class="text-slate-400 ml-1">({{ stats.total_cases || 0 }})</span>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-4 flex-1 justify-end">
+          <!-- Global Search In Header -->
+          <div class="relative w-full md:w-64 group no-print">
+            <SearchIcon
+              class="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input v-model="filters.search" type="text" placeholder="Search across all fields..."
+              class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm group-hover:border-slate-300" />
+            <button v-if="filters.search" @click="filters.search = ''"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+              <XIcon class="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          <button @click="exportToCSV" :disabled="loading || reports.length === 0"
+            class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed no-print">
+            <DownloadIcon v-if="!loading" class="h-3.5 w-3.5" />
+            <div v-else class="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            Export
+          </button>
         </div>
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-slate-50/50 border-b border-slate-100 text-slate-500">
-              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                S.No
+            <tr class="bg-slate-50/50 border-b border-slate-100">
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider w-16">
+                Sl.No
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Case ID
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Scan Types
+              </th>
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Patient
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Mobile No
+              </th>
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 Referrer
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Scanning Date
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Referrer Mobile
               </th>
-              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                Status
+              <th class="px-4 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Scanning Date
               </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
             <template v-if="loading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">
-                <td v-for="j in 6" :key="j" class="px-6 py-4">
-                  <div class="h-4 bg-slate-100 rounded-md"></div>
+                <td v-for="j in 8" :key="j" class="px-4 py-4">
+                  <div class="h-4 bg-slate-50 rounded-md w-full"></div>
                 </td>
               </tr>
             </template>
             <template v-else>
               <tr v-for="(report, index) in reports" :key="report.id"
-                class="hover:bg-primary/5 transition-colors group">
-                <td class="px-3 py-4 text-sm text-slate-500">
+                class="hover:bg-slate-50/80 transition-colors group">
+                <td class="px-4 py-4 text-xs font-medium text-slate-400">
                   {{ (pagination?.from || 1) + index }}
                 </td>
-                <td class="px-3 py-4">
-                  <span class="text-sm text-primary font-medium">
-                    {{ report.case_id }}
+                <td class="px-4 py-4">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-primary group-hover:underline cursor-pointer"
+                      @click="$router.push(`/case-reports/${report.id}/edit`)">
+                      {{ report.case_id }}
+                    </span>
+                    <span v-if="report.branch"
+                      class="text-[9px] w-fit font-bold uppercase px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded mt-0.5">
+                      {{ report.branch.name }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-4 py-4">
+                  <div class="flex flex-wrap gap-1">
+                    <span class="text-xs font-semibold text-slate-600">
+                      {{report.items?.map(i => i.scan_type?.name).filter(Boolean).filter((v, i, a) => a.indexOf(v) ===
+                        i).join(', ')}}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-4 py-4">
+                  <span class="text-sm font-bold text-slate-900 truncate block max-w-[150px]">
+                    {{ report.patient?.name }}
                   </span>
                 </td>
-                <td class="px-3 py-4">
-                  <span class="text-sm font-semibold text-slate-900">{{ report.patient?.title?.title_name }}
-                    {{ report.patient?.name }}</span>
-                </td>
-                <td class="px-3 py-4">
-                  <span class="text-sm text-slate-600">{{
-                    report.referer?.name
-                  }}</span>
-                </td>
-                <td class="px-3 py-4 text-xs text-slate-600">
-                  {{ formatDate(report.created_at) }}
-                </td>
-                <td class="px-3 py-4">
-                  <span :class="cn(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                    getStatusClass(report.status),
-                  )
-                    ">
-                    {{ report.status }}
+                <td class="px-4 py-4">
+                  <span class="text-xs text-slate-500 font-medium">
+                    {{ report.patient?.whatsapp_no || report.patient?.mobile_no || 'N/A' }}
                   </span>
+                </td>
+                <td class="px-4 py-4">
+                  <span class="text-sm text-slate-600 font-medium">
+                    {{ report.referer?.name }}
+                  </span>
+                </td>
+                <td class="px-4 py-4">
+                  <span class="text-xs text-slate-500 font-medium">
+                    {{ report.referer?.mobile_no || 'N/A' }}
+                  </span>
+                </td>
+                <td class="px-4 py-4">
+                  <div class="flex items-center gap-1.5 text-xs text-slate-600 font-bold">
+                    <CalendarIcon class="h-3 w-3 text-slate-400" />
+                    {{ report.rct_date ? new Date(report.rct_date).toLocaleDateString('en-GB').replace(/\//g, '-') :
+                      'N/A' }}
+                  </div>
                 </td>
               </tr>
             </template>
             <tr v-if="!loading && reports.length === 0">
-              <td colspan="5" class="px-6 py-20 text-center text-slate-400 italic">
-                No order records found.
+              <td colspan="8" class="px-6 py-20 text-center">
+                <div class="flex flex-col items-center justify-center text-slate-400 italic">
+                  <SearchIcon class="h-10 w-10 mb-2 opacity-20" />
+                  <p>No order records found matching your criteria.</p>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Pagination (Matching Screenshot Style) -->
+      <!-- Pagination -->
       <Pagination v-if="pagination && pagination.total > 0" :pagination="pagination" @page-change="fetchOrderStats"
         class="no-print" />
     </div>
@@ -172,26 +202,46 @@ import {
   Clock as PendingIcon,
   Calendar as CalendarIcon,
   Filter as FilterIcon,
+  Search as SearchIcon,
+  X as XIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   ArrowLeft as ArrowLeftIcon,
+  MapPin as MapPinIcon,
+  CheckCircle2 as CheckCircle2Icon,
 } from "lucide-vue-next";
+import { debounce } from "lodash";
 import { formatDate } from "../../utils/format";
 import Pagination from "../../components/ui/Pagination.vue";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 const reports = ref([]);
 const loading = ref(true);
 const pagination = ref(null);
 const filters = ref({
-  from_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-    .toISOString()
-    .split("T")[0],
+  filter_type: "day",
+  filter_option: "today",
+  from_date: new Date().toISOString().split("T")[0],
   to_date: new Date().toISOString().split("T")[0],
+  search: "",
+  scan_type_id: "all",
 });
+
+import StatusBadge from "../../components/ui/StatusBadge.vue";
+import AdvancedDateFilter from "../../components/reports/AdvancedDateFilter.vue";
+import SummaryCard from "../../components/reports/SummaryCard.vue";
+
+
 const stats = ref({
-  total: 0,
-  completed: 0,
-  pending: 0,
+  total_cases: 0,
+  scan_type_stats: [],
+  branch_stats: [],
 });
 
 const currentDateTime = computed(() => {
@@ -201,38 +251,24 @@ const currentDateTime = computed(() => {
   });
 });
 
-const quickStats = computed(() => [
-  {
-    label: "Total Orders",
-    value: stats.value.total,
-    icon: TotalIcon,
-    bg: "bg-indigo-50",
-    color: "text-indigo-500",
-  },
-  {
-    label: "Completed",
-    value: stats.value.completed,
-    icon: CompletedIcon,
-    bg: "bg-emerald-50",
-    color: "text-emerald-500",
-  },
-  {
-    label: "Pending",
-    value: stats.value.pending,
-    icon: PendingIcon,
-    bg: "bg-amber-50",
-    color: "text-amber-500",
-  },
-]);
-
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 const fetchOrderStats = async (page = 1) => {
   loading.value = true;
   try {
-    const response = await axios.get("/api/v1/case-reports", {
-      params: { limit: 10, page, ...filters.value },
-    });
+    const params = {
+      limit: 10,
+      page,
+      filter_type: filters.value.filter_type,
+      filter_option: filters.value.filter_option,
+      start_date: filters.value.from_date,
+      end_date: filters.value.to_date,
+      search: filters.value.search,
+      scan_type_id: filters.value.scan_type_id,
+    };
+
+    const response = await axios.get("/api/v1/reports/case-analysis", { params });
+
     if (response.data.success) {
       reports.value = response.data.data.data;
       pagination.value = {
@@ -246,10 +282,10 @@ const fetchOrderStats = async (page = 1) => {
       };
 
       if (response.data.report_stats) {
-        stats.value.total = response.data.report_stats.total;
-        stats.value.completed = response.data.report_stats.completed;
-        stats.value.pending = response.data.report_stats.pending;
+        stats.value = response.data.report_stats;
       }
+
+      // No need to manually update label here as it's handled by component
     }
   } catch (err) {
     console.error("Failed to fetch order report data", err);
@@ -257,6 +293,7 @@ const fetchOrderStats = async (page = 1) => {
     loading.value = false;
   }
 };
+
 
 const getStatusClass = (status) => {
   switch (status) {
@@ -273,16 +310,29 @@ const getStatusClass = (status) => {
   }
 };
 
+const debouncedSearch = debounce(() => {
+  fetchOrderStats(1);
+}, 500);
+
+import { watch } from "vue";
+watch(() => filters.value.search, () => {
+  debouncedSearch();
+});
+
 const exportToCSV = () => {
   if (reports.value.length === 0) return;
 
-  const headers = ["Case ID", "Patient Name", "Referer", "Date", "Status"];
-  const rows = reports.value.map((r) => [
+  const headers = ["Sl.No", "Case ID", "Branch Name", "Scan Types", "Patient Name", "Patient Mobile", "Referrer Name", "Referrer Mobile", "Scanning Date"];
+  const rows = reports.value.map((r, index) => [
+    (pagination.value?.from || 1) + index,
     r.case_id,
+    r.branch?.name || "N/A",
+    r.items?.map(i => i.scan_type?.name).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ') || "N/A",
     r.patient?.name || "N/A",
+    r.patient?.whatsapp_no || r.patient?.mobile_no || "N/A",
     r.referer?.name || "N/A",
-    formatDate(r.created_at),
-    r.status,
+    r.referer?.mobile_no || "N/A",
+    r.rct_date ? new Date(r.rct_date).toLocaleDateString('en-GB').replace(/\//g, '-') : "N/A",
   ]);
 
   const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
@@ -292,7 +342,7 @@ const exportToCSV = () => {
   link.setAttribute("href", url);
   link.setAttribute(
     "download",
-    `Case_Report_${filters.value.from_date}_to_${filters.value.to_date}.csv`,
+    `Case_Analysis_Report_${new Date().toISOString().split('T')[0]}.csv`,
   );
   link.style.visibility = "hidden";
   document.body.appendChild(link);

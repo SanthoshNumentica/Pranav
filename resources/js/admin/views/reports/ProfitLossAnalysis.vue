@@ -19,63 +19,48 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center gap-4 no-print">
-      <div class="flex-1 min-w-[200px] relative">
-        <label class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-          <CalendarIcon class="h-4 w-4" />
-        </label>
-        <input v-model="filters.from_date" type="date"
-          class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          placeholder="Start Date" />
-      </div>
-      <div class="flex-1 min-w-[200px] relative">
-        <label class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-          <CalendarIcon class="h-4 w-4" />
-        </label>
-        <input v-model="filters.to_date" type="date"
-          class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-          placeholder="End Date" />
-      </div>
-      <button @click="fetchFinancialData"
-        class="bg-primary text-white px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-md shadow-primary/10 hover:bg-primary/90 transition-all active:scale-95 shrink-0">
-        <FilterIcon class="h-4 w-4" />
-        Filter
-      </button>
-      <button @click="exportToCSV"
-        class="bg-slate-900 text-white px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-md shadow-slate-200 hover:bg-slate-800 transition-all active:scale-95 shrink-0">
-        <DownloadIcon class="h-4 w-4" />
-        Export
-      </button>
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 no-print">
+      <AdvancedDateFilter v-model="filters" @change="fetchFinancialData" />
     </div>
 
-    <!-- P&L Stats (The 3 things) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div v-for="stat in quickStats" :key="stat.label"
-        class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4 group hover:border-primary/50 transition-colors">
-        <div :class="cn(
-          'p-4 rounded-2xl transition-transform group-hover:scale-110',
-          stat.bg,
-        )
-          ">
-          <component :is="stat.icon" :class="cn('h-7 w-7', stat.color)" />
-        </div>
-        <div>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.1em] leading-none mb-1">
-            {{ stat.label }}
-          </p>
-          <p class="text-2xl font-bold text-slate-900 mt-0.5">
-            {{ stat.value }}
-          </p>
-        </div>
-      </div>
+    <!-- P&L Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <SummaryCard v-for="stat in quickStats" :key="stat.label" :label="stat.label" :value="stat.value"
+        :icon="stat.icon" :icon-bg-class="stat.bg" :icon-color-class="stat.color" :clickable="false" />
     </div>
 
     <!-- Detailed Ledger -->
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="p-6 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider ml-2">
-          Recent Financial Transactions
-        </h3>
+      <!-- Table Header -->
+      <div
+        class="p-6 border-b border-slate-100 bg-slate-50/30 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-1 bg-primary rounded-full"></div>
+          <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            Profit & Loss Records <span class="text-slate-400 ml-1">({{ pagination?.total || 0 }})</span>
+          </h3>
+        </div>
+
+        <div class="flex items-center gap-4 flex-1 justify-end">
+          <!-- Global Search In Header -->
+          <div class="relative w-full md:w-64 group no-print">
+            <SearchIcon
+              class="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input v-model="filters.search" type="text" placeholder="Search transactions..."
+              class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm group-hover:border-slate-300" />
+            <button v-if="filters.search" @click="filters.search = ''"
+              class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors">
+              <XIcon class="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          <button @click="exportToCSV" :disabled="loading || ledger.length === 0"
+            class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed no-print shrink-0">
+            <DownloadIcon v-if="!loading" class="h-3.5 w-3.5" />
+            <div v-else class="h-3.5 w-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            Export
+          </button>
+        </div>
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
@@ -134,15 +119,7 @@
                   </span>
                 </td>
                 <td class="px-3 py-4">
-                  <span :class="cn(
-                    'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                    item.type === 'Income'
-                      ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                      : 'bg-rose-500/10 text-rose-500 border border-rose-500/20',
-                  )
-                    ">
-                    {{ item.type }}
-                  </span>
+                  <StatusBadge :status="item.type" type="invoice" />
                 </td>
                 <td class="px-3 py-4 text-xs text-slate-600">
                   {{ formatDate(item.date) }}
@@ -179,23 +156,31 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   ArrowLeft as ArrowLeftIcon,
+  Search as SearchIcon,
+  X as XIcon,
 } from "lucide-vue-next";
+import { debounce } from "lodash";
 import { formatDate } from "../../utils/format";
 import Pagination from "../../components/ui/Pagination.vue";
+import StatusBadge from "../../components/ui/StatusBadge.vue";
+import AdvancedDateFilter from "../../components/reports/AdvancedDateFilter.vue";
+import SummaryCard from "../../components/reports/SummaryCard.vue";
 
 const loading = ref(true);
 const ledger = ref([]);
 const pagination = ref(null);
 const filters = ref({
-  from_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-    .toISOString()
-    .split("T")[0],
+  filter_type: "day",
+  filter_option: "today",
+  from_date: new Date().toISOString().split("T")[0],
   to_date: new Date().toISOString().split("T")[0],
+  search: "",
 });
 const stats = ref({
   total_income: 0,
-  total_expenses: 0, // Placeholder for future expense module
+  total_expenses: 0,
   net_profit: 0,
+  profit_percentage: 0,
 });
 
 const currentDateTime = computed(() => {
@@ -207,7 +192,7 @@ const currentDateTime = computed(() => {
 
 const quickStats = computed(() => [
   {
-    label: "Gross Income",
+    label: "Total Revenue",
     value: "₹" + stats.value.total_income,
     icon: IncomeIcon,
     bg: "bg-emerald-50",
@@ -215,17 +200,24 @@ const quickStats = computed(() => [
   },
   {
     label: "Total Expenses",
-    value: "₹0", // Currently as we don't have expenses module
+    value: "₹" + stats.value.total_expenses,
     icon: ExpenseIcon,
     bg: "bg-rose-50",
     color: "text-rose-500",
   },
   {
     label: "Net Profit",
-    value: "₹" + stats.value.total_income, // Simplified for now
+    value: "₹" + stats.value.net_profit,
     icon: ProfitIcon,
     bg: "bg-blue-50",
     color: "text-blue-500",
+  },
+  {
+    label: "Profit Percentage",
+    value: stats.value.profit_percentage.toFixed(2) + "%",
+    icon: TrendingUpIcon,
+    bg: "bg-amber-50",
+    color: "text-amber-500",
   },
 ]);
 
@@ -234,29 +226,21 @@ const cn = (...classes) => classes.filter(Boolean).join(" ");
 const fetchFinancialData = async (page = 1) => {
   loading.value = true;
   try {
-    // We'll use the invoices and payments to build a ledger
-    const [payRes] = await Promise.all([
-      axios.get("/api/v1/payments", {
-        params: { limit: 10, page, ...filters.value },
-      }),
-    ]);
+    const params = {
+      limit: 10,
+      page,
+      filter_type: filters.value.filter_type,
+      filter_option: filters.value.filter_option,
+      from_date: filters.value.from_date,
+      to_date: filters.value.to_date,
+      search: filters.value.search
+    };
+    const response = await axios.get("/api/v1/reports/profit-loss-analysis", {
+      params,
+    });
 
-    if (payRes.data.success) {
-      const payments = payRes.data.data.data;
-      pagination.value = {
-        current_page: payRes.data.data.current_page,
-        last_page: payRes.data.data.last_page,
-        total: payRes.data.data.total,
-        from: payRes.data.data.from,
-        to: payRes.data.data.to,
-        prev_page_url: payRes.data.data.prev_page_url,
-        next_page_url: payRes.data.data.next_page_url,
-      };
-      stats.value.total_income = payments
-        .reduce((acc, p) => acc + parseFloat(p.amount), 0)
-        .toFixed(2);
-
-      ledger.value = payments.map((p) => ({
+    if (response.data.success) {
+      ledger.value = response.data.data.data.map(p => ({
         id: p.id,
         ref: p.transaction_id || "CASH",
         source: p.invoice?.patient?.name || "Walk-in",
@@ -264,6 +248,20 @@ const fetchFinancialData = async (page = 1) => {
         amount: p.amount,
         date: p.payment_date,
       }));
+
+      pagination.value = {
+        current_page: response.data.data.current_page,
+        last_page: response.data.data.last_page,
+        total: response.data.data.total,
+        from: response.data.data.from,
+        to: response.data.data.to,
+        prev_page_url: response.data.data.prev_page_url,
+        next_page_url: response.data.data.next_page_url,
+      };
+
+      if (response.data.report_stats) {
+        stats.value = response.data.report_stats;
+      }
     }
   } catch (err) {
     console.error("Failed to fetch financial data", err);
@@ -298,6 +296,15 @@ const exportToCSV = () => {
   link.click();
   document.body.removeChild(link);
 };
+
+const debouncedSearch = debounce(() => {
+  fetchFinancialData(1);
+}, 500);
+
+import { watch } from "vue";
+watch(() => filters.value.search, () => {
+  debouncedSearch();
+});
 
 onMounted(fetchFinancialData);
 </script>

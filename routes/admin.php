@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\PrintController;
+use App\Http\Controllers\Admin\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -150,6 +151,11 @@ Route::prefix('v1')->group(function () {
         Route::post('branches/{id}/status', [BranchController::class, 'updateStatus']);
         Route::get('branches/next-code', [BranchController::class, 'getNextCode']);
         Route::apiResource('branches', BranchController::class);
+
+        // Reports
+        Route::get('reports/case-analysis', [ReportController::class, 'caseAnalysis']);
+        Route::get('reports/invoice-analysis', [ReportController::class, 'invoiceAnalysis']);
+        Route::get('reports/profit-loss-analysis', [ReportController::class, 'profitLossAnalysis']);
 
         Route::get('masters/roles', [MasterController::class, 'roles']);
         Route::get('masters/branches', [UserController::class, 'branches']);

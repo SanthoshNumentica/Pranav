@@ -25,7 +25,7 @@
             Link Status
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Payment
+            Payment Status
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             RCT Date
@@ -103,25 +103,10 @@
               {{ report.referer?.name || "N/A" }}
             </td>
             <td class="px-3 py-3 text-sm">
-              <span :class="cn(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase transition-colors duration-200',
-                statusStyles[(report.status || 'pending').toLowerCase()] ||
-                'bg-slate-100 text-slate-800',
-              )
-                ">
-                {{ report.status }}
-              </span>
+              <StatusBadge :status="report.status || 'pending'" type="case" />
             </td>
             <td class="px-3 py-3 text-sm">
-              <span v-if="report.invoice" :class="cn(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                paymentStatusStyles[
-                (report.invoice.status || 'pending').toLowerCase()
-                ] || 'bg-slate-100 text-slate-500',
-              )
-                ">
-                {{ report.invoice.status }}
-              </span>
+              <StatusBadge v-if="report.invoice" :status="report.invoice.status" type="invoice" />
               <span v-else class="text-slate-400 text-xs">—</span>
             </td>
             <td class="px-3 py-3">
@@ -166,6 +151,7 @@ import {
 import { useRouter } from "vue-router";
 import { formatDate } from "../../utils/format";
 import TableActions from "../ui/TableActions.vue";
+import StatusBadge from "../ui/StatusBadge.vue";
 
 const props = defineProps({
   reports: {
@@ -190,19 +176,6 @@ const router = useRouter();
 
 defineEmits(["view-info", "delete", "send-whatsapp"]);
 
-const statusStyles = {
-  pending: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-  available: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  expired: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-  deleted: "bg-slate-500/10 text-slate-500 border-slate-500/20",
-};
-
-const paymentStatusStyles = {
-  pending: "bg-amber-500/10 text-amber-500",
-  paid: "bg-emerald-500/10 text-emerald-500",
-  cancelled: "bg-rose-500/10 text-rose-500",
-  partial: "bg-blue-500/10 text-blue-500",
-};
 
 function cn(...classes) {
   return classes.filter(Boolean).join(" ");

@@ -26,6 +26,18 @@ export default defineConfig({
             output: {
                 manualChunks(id) {
                     if (id.includes('node_modules')) {
+                        if (id.includes('cornerstone')) {
+                            return 'cornerstone';
+                        }
+                        if (id.includes('jszip')) {
+                            return 'jszip';
+                        }
+                        if (id.includes('lucide-vue-next')) {
+                            return 'lucide';
+                        }
+                        if (id.includes('vue') || id.includes('vue-router')) {
+                            return 'vue-core';
+                        }
                         return 'vendor';
                     }
                 }
