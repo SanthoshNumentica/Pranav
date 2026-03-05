@@ -29,7 +29,7 @@ class ReportService
         $this->applyBranchFilter($query, $filters['branch_id'] ?? 'all');
 
         // Applying Date Filters
-        $this->applyDateFilters($query, $filters);
+        $this->applyDateFilters($query, $filters, 'rct_date');
 
         // Get unfiltered stats (before scan_type_id filter)
         $unfilteredCaseIds = (clone $query)->pluck('id');
@@ -37,20 +37,18 @@ class ReportService
         // Apply Scan Type Filter for the final listing
         $this->applyScanTypeFilter($query, $filters['scan_type_id'] ?? 'all');
 
-        $paginatedData = $query->latest()->paginate($perPage);
-        $caseIds = $query->pluck('id');
+        $paginatedData = $query->orderBy('rct_date', 'desc')->paginate($perPage);
 
-        // Calculate Scan Type Stats
+        // Calculate Scan Type Stats (based on date+branch+search filtered IDs, before scan type filter)
         $scanTypeStats = $this->calculateScanTypeStats($unfilteredCaseIds);
 
         return [
             'success' => true,
             'data' => $paginatedData,
             'report_stats' => [
-                'total_cases' => count($caseIds),
-                'total_cases_unfiltered' => count($unfilteredCaseIds),
-                'scan_type_stats' => $scanTypeStats,
-                'total' => count($caseIds),
+                'total_cases'             => $paginatedData->total(),          // filtered by scan type too
+                'total_cases_unfiltered'  => count($unfilteredCaseIds),        // date/branch/search only
+                'scan_type_stats'         => $scanTypeStats,
             ],
         ];
     }
@@ -85,17 +83,17 @@ class ReportService
     /**
      * Apply Branch Filter.
      */
-    private function applyBranchFilter(Builder $query, $branchId): void
+    private function applyBranchFilter($query, $branchId, string $column = 'branch_id'): void
     {
         if ($branchId && $branchId !== 'all') {
-            $query->where('branch_id', $branchId);
+            $query->where($column, $branchId);
         }
     }
 
     /**
      * Apply Scan Type Filter.
      */
-    private function applyScanTypeFilter(Builder $query, $scanTypeId): void
+    private function applyScanTypeFilter($query, $scanTypeId): void
     {
         if ($scanTypeId && $scanTypeId !== 'all') {
             $query->whereHas('items', function ($q) use ($scanTypeId) {
@@ -129,18 +127,19 @@ class ReportService
     public function getInvoiceAnalysisReport(array $filters = []): array
     {
         $perPage = $filters['limit'] ?? 10;
+        $statusFilter = $filters['status_filter'] ?? 'all';
 
-        $query = \App\Models\Invoice::query()
-            ->with(['patient'])
+        $baseQuery = \App\Models\Invoice::query()
+            ->with(['patient', 'caseReport.branch', 'caseReport.referer'])
             ->withSum('payments', 'amount');
 
-        // Apply Branch Filter (If Invoice has branch_id, check model)
-        $this->applyBranchFilter($query, $filters['branch_id'] ?? 'all');
+        // Apply Branch Filter
+        $this->applyBranchFilter($baseQuery, $filters['branch_id'] ?? 'all');
 
         // Apply Search Filter
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
+            $baseQuery->where(function ($q) use ($search) {
                 $q->where('invoice_no', 'like', "%{$search}%")
                     ->orWhereHas('patient', function ($pq) use ($search) {
                         $pq->where('name', 'like', "%{$search}%");
@@ -148,90 +147,162 @@ class ReportService
             });
         }
 
-        // Applying Date Filters (Using invoice_date for Invoices)
-        $this->applyDateFilters($query, $filters, 'invoice_date');
+        // Apply Date Filter
+        $this->applyDateFilters($baseQuery, $filters, 'invoice_date');
 
-        $paginatedData = $query->latest('invoice_date')->paginate($perPage);
+        // ── Aggregate Stats (computed BEFORE status filter so cards always show date-range totals) ──
+        $allInvoices = (clone $baseQuery)->get(['total_amount', 'paid_amount', 'status']);
 
-        // Calculate Stats
-        $statsQuery = clone $query;
-        $totalRevenue = $statsQuery->sum('total_amount');
-        
-        $paidCount = (clone $query)->where('status', 'fully_paid')->count();
-        $pendingCount = (clone $query)->whereIn('status', ['unpaid', 'due'])->count();
+        $totalRevenueCount  = $allInvoices->count();
+        $totalRevenueAmount = $allInvoices->sum('total_amount');
+
+        $fullyPaidGroup     = $allInvoices->where('status', 'fully_paid');
+        $fullyPaidCount     = $fullyPaidGroup->count();
+        $fullyPaidAmount    = $fullyPaidGroup->sum('total_amount');
+
+        $pendingGroup       = $allInvoices->whereIn('status', ['unpaid', 'due']);
+        $pendingCount       = $pendingGroup->count();
+        $pendingAmount      = $pendingGroup->sum(fn ($i) => $i->total_amount - $i->paid_amount);
+
+        // ── Apply Status Filter for table listing ──
+        $listQuery = clone $baseQuery;
+        if ($statusFilter === 'fully_paid') {
+            $listQuery->where('status', 'fully_paid');
+        } elseif ($statusFilter === 'pending') {
+            $listQuery->whereIn('status', ['unpaid', 'due']);
+        }
+
+        $paginatedData = $listQuery->orderBy('invoice_date', 'desc')->paginate($perPage);
 
         return [
             'success' => true,
-            'data' => $paginatedData,
+            'data'    => $paginatedData,
             'report_stats' => [
-                'total_revenue' => $totalRevenue,
-                'paid_count' => $paidCount,
-                'pending_count' => $pendingCount,
+                // Legacy keys (kept for any other consumer)
+                'total_revenue'         => $totalRevenueAmount,
+                'paid_count'            => $fullyPaidCount,
+                'pending_count'         => $pendingCount,
+                // Enhanced keys
+                'total_revenue_count'   => $totalRevenueCount,
+                'total_revenue_amount'  => $totalRevenueAmount,
+                'fully_paid_count'      => $fullyPaidCount,
+                'fully_paid_amount'     => $fullyPaidAmount,
+                'pending_count_detail'  => $pendingCount,
+                'pending_amount'        => $pendingAmount,
             ],
         ];
     }
 
     /**
-     * Get Profit & Loss Analysis Report data.
+     * Get Referer × Scan Type pivot matrix for the P&L Analysis screen.
      */
-    public function getProfitLossReport(array $filters = []): array
+    public function getRefererScanMatrix(array $filters = []): array
     {
         $perPage = $filters['limit'] ?? 10;
+        $search = $filters['search'] ?? null;
 
-        // Currently, we only have Income (Payments)
-        // Expenses are not yet implemented in the system, but we'll leave placeholders
-        $query = \App\Models\Payment::query()
-            ->with(['invoice.patient', 'paymentMethod']);
+        // 1. Define base query scope with common filters (Date, Branch, Search)
+        $baseQuery = DB::table('case_report_items as cri')
+            ->join('case_reports as cr', 'cri.case_report_id', '=', 'cr.id')
+            ->join('referers as r', 'cr.referer_id', '=', 'r.id')
+            ->whereNull('cri.deleted_at')
+            ->whereNull('cr.deleted_at')
+            ->whereNull('r.deleted_at');
 
-        // Filter by Branch via Invoice
-        if (!empty($filters['branch_id']) && $filters['branch_id'] !== 'all') {
-            $query->whereHas('invoice', function ($q) use ($filters) {
-                $q->where('branch_id', $filters['branch_id']);
-            });
+        $this->applyDateFilters($baseQuery, $filters, 'cr.rct_date');
+        $this->applyBranchFilter($baseQuery, $filters['branch_id'] ?? 'all', 'cr.branch_id');
+
+        if (!empty($search)) {
+            $baseQuery->where('r.name', 'like', "%{$search}%");
         }
 
-        // Apply Search Filter
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('transaction_id', 'like', "%{$search}%")
-                    ->orWhereHas('invoice.patient', function ($pq) use ($search) {
-                        $pq->where('name', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('paymentMethod', function ($mq) use ($search) {
-                        $mq->where('name', 'like', "%{$search}%");
-                    });
-            });
+        // 2. Identify all filtered referers IDs
+        $filteredRefererIds = (clone $baseQuery)->distinct()->pluck('r.id')->all();
+
+        // 3. Calculate Global Column Totals and Scan Types for the entire filtered set
+        $globalStatsQuery = (clone $baseQuery)
+            ->join('scan_types as st', 'cri.scan_type_id', '=', 'st.id')
+            ->select(
+                'st.id as scan_type_id',
+                'st.name as scan_type_name',
+                DB::raw('COUNT(DISTINCT cri.case_report_id) as scan_count')
+            )
+            ->groupBy('st.id', 'st.name');
+
+        $globalStats = $globalStatsQuery->get();
+
+        $scanTypes = $globalStats->map(fn($row) => [
+            'id' => $row->scan_type_id,
+            'name' => $row->scan_type_name
+        ])->sortBy('name')->values()->all();
+
+        $columnTotals = $globalStats->pluck('scan_count', 'scan_type_id')->all();
+        $grandTotal = array_sum($columnTotals);
+
+        // 4. Paginate referers (the rows)
+        if ($perPage == -1) {
+            $rowsQuery = DB::table('referers')->whereIn('id', $filteredRefererIds)->orderBy('name')->get();
+            $currentPageRefererIds = $rowsQuery->pluck('id')->all();
+            $paginatedReferers = $rowsQuery; // Not really paginated, but the variable name is kept
+        } else {
+            $paginatedReferers = DB::table('referers')
+                ->whereIn('id', $filteredRefererIds)
+                ->orderBy('name')
+                ->paginate($perPage);
+            $currentPageRefererIds = $paginatedReferers->pluck('id')->all();
         }
 
-        // Applying Date Filters (Using payment_date for Payments)
-        $this->applyDateFilters($query, $filters, 'payment_date');
+        // 5. Fetch Matrix Data only for the current page referers
+        $matrixData = (clone $baseQuery)
+            ->join('scan_types as st', 'cri.scan_type_id', '=', 'st.id')
+            ->whereIn('r.id', $currentPageRefererIds)
+            ->select(
+                'r.id as referer_id',
+                'r.name as referer_name',
+                'st.id as scan_type_id',
+                'st.name as scan_type_name',
+                DB::raw('COUNT(DISTINCT cri.case_report_id) as scan_count')
+            )
+            ->groupBy('r.id', 'r.name', 'st.id', 'st.name')
+            ->get();
 
-        $paginatedData = $query->latest('payment_date')->paginate($perPage);
+        // 6. Transform matrix data into rows
+        $refererGroups = $matrixData->groupBy('referer_id');
+        $rows = [];
 
-        // Calculate Stats
-        $statsQuery = clone $query;
-        $totalIncome = $statsQuery->sum('amount');
-        $totalExpenses = 0; // Placeholder
-        $netProfit = $totalIncome - $totalExpenses;
-        $profitPercentage = $totalIncome > 0 ? ($netProfit / $totalIncome) * 100 : 0;
+        // We use the paginated referers to maintain consistent order even if some scan counts are zero
+        foreach ($paginatedReferers as $referer) {
+            $items = $refererGroups->get($referer->id) ?? collect();
+            $counts = [];
+            $rowTotal = 0;
+
+            foreach ($items as $item) {
+                $counts[$item->scan_type_id] = (int) $item->scan_count;
+                $rowTotal += (int) $item->scan_count;
+            }
+
+            $rows[] = [
+                'referer_id'   => $referer->id,
+                'referer_name' => $referer->name,
+                'counts'       => $counts,
+                'total'        => $rowTotal,
+            ];
+        }
 
         return [
-            'success' => true,
-            'data' => $paginatedData,
-            'report_stats' => [
-                'total_income' => $totalIncome,
-                'total_expenses' => $totalExpenses,
-                'net_profit' => $netProfit,
-                'profit_percentage' => $profitPercentage,
-            ],
+            'success'       => true,
+            'data'          => $paginatedReferers, // Contains pagination metadata
+            'scan_types'    => $scanTypes,
+            'rows'          => $rows,
+            'column_totals' => $columnTotals,
+            'grand_total'   => $grandTotal,
         ];
     }
 
     /**
      * Helper to apply advanced date filters.
      */
-    private function applyDateFilters(Builder $query, array $filters, string $dateColumn = 'created_at'): void
+    private function applyDateFilters($query, array $filters, string $dateColumn = 'created_at'): void
     {
         $type = $filters['filter_type'] ?? null;
         $option = $filters['filter_option'] ?? null;
@@ -240,7 +311,12 @@ class ReportService
 
         if (!$type || !$option) {
             if ($startDate && $endDate) {
-                $query->whereBetween($dateColumn, [$startDate . ' 00:00:00', $endDate . ' 23:59:59']);
+                $query->whereBetween($dateColumn, [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ]);
+            } elseif ($startDate) {
+                $query->where($dateColumn, '>=', Carbon::parse($startDate)->startOfDay());
             }
             return;
         }
@@ -276,16 +352,16 @@ class ReportService
             case 'week':
                 switch ($option) {
                     case 'this_week':
-                        $start = $now->copy()->startOfWeek();
-                        $end = $now->copy()->endOfWeek();
+                        $start = $now->copy()->startOfWeek(Carbon::MONDAY);
+                        $end = $now->copy()->endOfWeek(Carbon::SUNDAY);
                         break;
                     case 'last_week':
-                        $start = $now->copy()->subWeek()->startOfWeek();
-                        $end = $now->copy()->subWeek()->endOfWeek();
+                        $start = $now->copy()->subWeek()->startOfWeek(Carbon::MONDAY);
+                        $end = $now->copy()->subWeek()->endOfWeek(Carbon::SUNDAY);
                         break;
                     case 'last_2_weeks':
-                        $start = $now->copy()->subWeeks(2)->startOfWeek();
-                        $end = $now->copy()->subWeek()->endOfWeek();
+                        $start = $now->copy()->subWeeks(2)->startOfWeek(Carbon::MONDAY);
+                        $end = $now->copy()->subWeek()->endOfWeek(Carbon::SUNDAY);
                         break;
                     case 'custom':
                         if ($startDate && $endDate) {
@@ -312,8 +388,11 @@ class ReportService
                         break;
                     case 'custom':
                         if ($startDate && $endDate) {
-                            $start = Carbon::parse($startDate)->startOfMonth();
-                            $end = Carbon::parse($endDate)->endOfMonth();
+                            if ($startDate > $endDate) {
+                                throw new \InvalidArgumentException('Start month cannot be after end month.');
+                            }
+                            $start = Carbon::parse($startDate . "-01")->startOfMonth();
+                            $end = Carbon::parse($endDate . "-01")->endOfMonth();
                         }
                         break;
                 }
@@ -335,8 +414,12 @@ class ReportService
                         break;
                     case 'custom':
                         if ($startDate && $endDate) {
-                            $start = Carbon::parse($startDate)->startOfYear();
-                            $end = Carbon::parse($endDate)->endOfYear();
+                            if ($startDate > $endDate) {
+                                throw new \InvalidArgumentException('Start year cannot be after end year.');
+                            }
+                            // Explicitly construct start and end dates for the year range
+                            $start = Carbon::createFromDate($startDate, 1, 1)->startOfDay();
+                            $end = Carbon::createFromDate($endDate, 12, 31)->endOfDay();
                         }
                         break;
                 }
@@ -352,24 +435,54 @@ class ReportService
      * Get Dashboard Stats.
      * Moving this from DashboardController to centralize report logic.
      */
-    public function getDashboardStats(): array
+    public function getDashboardStats(?int $branchId = null): array
     {
-        $stats = [
-            'total_patients' => \App\Models\Patient::count(),
-            'total_referers' => \App\Models\Referer::count(),
-            'total_case_reports' => \App\Models\CaseReport::count(),
-            'today_case_reports' => \App\Models\CaseReport::whereDate('created_at', Carbon::today())->count(),
+        $today = Carbon::today();
+
+        $statsQuery = [
+            'total_patients' => \App\Models\Patient::query(),
+            'total_referers' => \App\Models\Referer::query(),
+            'total_case_reports' => \App\Models\CaseReport::query(),
+            'today_case_reports' => \App\Models\CaseReport::whereDate('rct_date', $today),
         ];
 
-        $recent_reports = CaseReport::with(['patient', 'referer'])
-            ->latest()
-            ->limit(5)
-            ->get();
+        if ($branchId) {
+            // Note: Referers and Patients might not have branch_id directly, 
+            // but CaseReport definitely does. 
+            // In this specific system, Referers and Patients are currently global 
+            // or we only filter CaseReports. Let's filter CaseReports by branch.
+            $statsQuery['total_case_reports']->where('branch_id', $branchId);
+            $statsQuery['today_case_reports']->where('branch_id', $branchId);
+        }
 
-        $scan_stats = DB::table('case_report_items')
+        $stats = [
+            'total_patients' => $statsQuery['total_patients']->count(),
+            'total_referers' => $statsQuery['total_referers']->count(),
+            'total_case_reports' => $statsQuery['total_case_reports']->count(),
+            'today_case_reports' => $statsQuery['today_case_reports']->count(),
+        ];
+
+        $recentReportsQuery = CaseReport::with(['patient', 'referer', 'branch'])
+            ->whereDate('rct_date', $today)
+            ->orderByRaw('check_out IS NULL DESC')
+            ->orderBy('rct_hour', 'desc');
+
+        if ($branchId) {
+            $recentReportsQuery->where('branch_id', $branchId);
+        }
+
+        $recent_reports = $recentReportsQuery->get();
+
+        $scanStatsQuery = DB::table('case_report_items')
+            ->join('case_reports', 'case_report_items.case_report_id', '=', 'case_reports.id')
             ->join('scan_types', 'case_report_items.scan_type_id', '=', 'scan_types.id')
-            ->select('scan_types.name', DB::raw('count(*) as total'))
-            ->groupBy('scan_types.id', 'scan_types.name')
+            ->select('scan_types.name', DB::raw('count(*) as total'));
+
+        if ($branchId) {
+            $scanStatsQuery->where('case_reports.branch_id', $branchId);
+        }
+
+        $scan_stats = $scanStatsQuery->groupBy('scan_types.id', 'scan_types.name')
             ->orderBy('total', 'desc')
             ->get();
 

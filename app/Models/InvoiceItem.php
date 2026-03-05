@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class InvoiceItem extends Model
+class InvoiceItem extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -21,6 +21,8 @@ class InvoiceItem extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected $appends = ['scan_type_name'];

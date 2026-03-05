@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
 
-class Branch extends Model
+class Branch extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
@@ -34,5 +34,7 @@ class Branch extends Model
      */
     protected $casts = [
         'status' => 'string',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }

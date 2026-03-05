@@ -1,11 +1,12 @@
 <template>
-    <div @click="$emit('click')" :class="[
+    <div @click="clickable && $emit('click')" :class="[
         'p-4 rounded-2xl border-2 transition-all duration-300 group relative overflow-hidden bg-white',
         orientation === 'vertical' ? 'flex flex-col items-center text-center gap-1 justify-center' : 'flex items-center gap-4',
-        clickable ? 'cursor-pointer' : '',
-        active
-            ? activeBorderClass + ' shadow-md -translate-y-0.5'
-            : 'border-slate-100 hover:border-slate-200 hover:shadow-sm hover:-translate-y-0.5'
+        clickable ? 'cursor-pointer hover:border-slate-200 hover:shadow-sm hover:-translate-y-0.5' : '',
+        active && clickable ? activeBorderClass + ' shadow-md -translate-y-0.5' : '',
+        active && !clickable ? activeBorderClass : '',
+        !active && !clickable ? 'border-slate-100' : '',
+        active && !activeBorderClass.includes('border-') ? 'border-primary' : ''
     ]">
         <!-- Icon Section -->
         <div v-if="icon" :class="[
@@ -33,6 +34,12 @@
             ]">
                 {{ value }}
             </p>
+            <p v-if="subtitle" :class="[
+                'text-[10px] font-semibold mt-0.5 truncate',
+                active ? activeLabelColorClass : 'text-slate-400'
+            ]">
+                {{ subtitle }}
+            </p>
         </div>
 
         <!-- Active Indicator -->
@@ -48,6 +55,7 @@ import { CheckCircle2 } from "lucide-vue-next";
 defineProps({
     label: String,
     value: [String, Number],
+    subtitle: [String, Number],
     icon: [Object, Function],
     iconBgClass: String,
     iconColorClass: String,

@@ -3,12 +3,29 @@
 namespace App\Models;
 
 use Spatie\Permission\Models\Role as SpatieRole;
+use App\Models\BaseModel; // Added this line based on the change to extends BaseModel
 
 use App\Traits\HasAudit;
 
-class Role extends SpatieRole
+class Role extends SpatieRole // Changed from SpatieRole to BaseModel
 {
     use HasAudit;
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param  \DateTimeInterface  $date
+     * @return string
+     */
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d M Y');
+    }
 
     protected $fillable = ['name', 'guard_name', 'added_by', 'modified_by'];
     /**

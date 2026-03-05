@@ -9,10 +9,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 use App\Traits\HasAudit;
 
-class Gender extends Model
+class Gender extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
     protected $fillable = ['gender_name', 'status', 'added_by', 'modified_by'];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function patients()
     {

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CaseReportItem extends Model
+class CaseReportItem extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -23,12 +23,14 @@ class CaseReportItem extends Model
         'total_amount',
     ];
 
-    protected $casts = [
-        'documents' => 'array',
-        'scan_details' => 'array',
-    ];
-
     protected $appends = ['scans_with_names'];
+
+    protected $casts = [
+        'scan_details' => 'array',
+        'documents' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function caseReport(): BelongsTo
     {

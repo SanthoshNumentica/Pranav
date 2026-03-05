@@ -20,13 +20,16 @@
 
     <!-- Filter Bar -->
     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 no-print">
-      <AdvancedDateFilter v-model="filters" @change="fetchInvoiceData" />
+      <AdvancedDateFilter v-model="filters" @change="onDateFilterChange" />
     </div>
 
     <!-- Stats Summary -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <SummaryCard v-for="stat in quickStats" :key="stat.label" :label="stat.label" :value="stat.value"
-        :icon="stat.icon" :icon-bg-class="stat.bg" :icon-color-class="stat.color" :clickable="false" />
+      <SummaryCard v-for="stat in quickStats" :key="stat.key" :label="stat.label" :value="stat.value"
+        :subtitle="stat.subtitle" :icon="stat.icon" :icon-bg-class="stat.bg" :icon-color-class="stat.color"
+        :active="selectedCard === stat.key" :active-border-class="stat.activeBorder"
+        :active-label-color-class="stat.activeColor" :active-value-color-class="'text-slate-900'"
+        @click="selectCard(stat.key)" />
     </div>
 
     <!-- Report Table -->
@@ -74,7 +77,13 @@
                 Invoice No
               </th>
               <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Case ID
+              </th>
+              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Patient
+              </th>
+              <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Referer
               </th>
               <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Total Amount
@@ -96,7 +105,7 @@
           <tbody class="divide-y divide-slate-50">
             <template v-if="loading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">
-                <td v-for="j in 8" :key="j" class="px-6 py-4">
+                <td v-for="j in 10" :key="j" class="px-6 py-4">
                   <div class="h-4 bg-slate-100 rounded-md"></div>
                 </td>
               </tr>
@@ -112,10 +121,36 @@
                     {{ invoice.invoice_no }}
                   </span>
                 </td>
+                <!-- Case ID + Branch -->
                 <td class="px-3 py-4">
-                  <span class="text-sm font-semibold text-slate-900">{{
-                    invoice.patient?.name
-                  }}</span>
+                  <div class="flex flex-col">
+                    <span class="text-sm font-bold text-primary cursor-pointer hover:underline"
+                      @click="$router.push(`/case-reports/${invoice.case_report_id}/edit`)">
+                      {{ invoice.case_report?.case_id || '—' }}
+                    </span>
+                    <span class="text-[10px] text-slate-400 font-medium mt-0.5">
+                      {{ invoice.case_report?.branch?.name || '' }}
+                    </span>
+                  </div>
+                </td>
+                <!-- Patient + Mobile -->
+                <td class="px-3 py-4">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-slate-900">{{ invoice.patient?.name || '—' }}</span>
+                    <span class="text-[10px] text-slate-400 font-medium mt-0.5">
+                      {{ invoice.patient?.mobile_no || invoice.patient?.whatsapp_no || '' }}
+                    </span>
+                  </div>
+                </td>
+                <!-- Referer + Mobile -->
+                <td class="px-3 py-4">
+                  <div class="flex flex-col">
+                    <span class="text-sm font-semibold text-slate-700">{{ invoice.case_report?.referer?.name || '—'
+                    }}</span>
+                    <span class="text-[10px] text-slate-400 font-medium mt-0.5">
+                      {{ invoice.case_report?.referer?.mobile_no || '' }}
+                    </span>
+                  </div>
                 </td>
                 <td class="px-3 py-4">
                   <span class="text-sm font-semibold text-slate-900">₹{{ parseFloat(invoice.total_amount).toFixed(2)
@@ -179,12 +214,15 @@ import { debounce } from "lodash";
 import { formatDate } from "../../utils/format";
 import Pagination from "../../components/ui/Pagination.vue";
 import StatusBadge from "../../components/ui/StatusBadge.vue";
+import { useBranchContext } from "../../composables/useBranchContext";
 import AdvancedDateFilter from "../../components/reports/AdvancedDateFilter.vue";
 import SummaryCard from "../../components/reports/SummaryCard.vue";
 
+const { selectedBranchId } = useBranchContext();
 const invoices = ref([]);
 const loading = ref(true);
 const pagination = ref(null);
+const selectedCard = ref('all');
 const filters = ref({
   filter_type: "day",
   filter_option: "today",
@@ -193,9 +231,12 @@ const filters = ref({
   search: "",
 });
 const stats = ref({
-  total_revenue: "0.00",
-  paid_count: 0,
-  pending_count: 0,
+  total_revenue_amount: 0,
+  total_revenue_count: 0,
+  fully_paid_amount: 0,
+  fully_paid_count: 0,
+  pending_amount: 0,
+  pending_count_detail: 0,
 });
 
 const currentDateTime = computed(() => {
@@ -207,25 +248,37 @@ const currentDateTime = computed(() => {
 
 const quickStats = computed(() => [
   {
+    key: 'all',
     label: "Total Revenue",
-    value: "₹" + stats.value.total_revenue,
+    value: "₹" + parseFloat(stats.value.total_revenue_amount || 0).toFixed(2),
+    subtitle: stats.value.total_revenue_count + " Invoice" + (stats.value.total_revenue_count !== 1 ? 's' : ''),
     icon: RevenueIcon,
     bg: "bg-violet-50",
     color: "text-violet-500",
+    activeBorder: "border-violet-500",
+    activeColor: "text-violet-600",
   },
   {
+    key: 'fully_paid',
     label: "Fully Paid",
-    value: stats.value.paid_count,
+    value: "₹" + parseFloat(stats.value.fully_paid_amount || 0).toFixed(2),
+    subtitle: stats.value.fully_paid_count + " Invoice" + (stats.value.fully_paid_count !== 1 ? 's' : ''),
     icon: PaidIcon,
     bg: "bg-emerald-50",
     color: "text-emerald-500",
+    activeBorder: "border-emerald-500",
+    activeColor: "text-emerald-600",
   },
   {
+    key: 'pending',
     label: "Pending (Unpaid/Due)",
-    value: stats.value.pending_count,
+    value: "₹" + parseFloat(stats.value.pending_amount || 0).toFixed(2),
+    subtitle: stats.value.pending_count_detail + " Invoice" + (stats.value.pending_count_detail !== 1 ? 's' : ''),
     icon: PendingIcon,
     bg: "bg-amber-50",
     color: "text-amber-500",
+    activeBorder: "border-amber-500",
+    activeColor: "text-amber-600",
   },
 ]);
 
@@ -241,7 +294,9 @@ const fetchInvoiceData = async (page = 1) => {
       filter_option: filters.value.filter_option,
       from_date: filters.value.from_date,
       to_date: filters.value.to_date,
-      search: filters.value.search
+      search: filters.value.search,
+      status_filter: selectedCard.value,
+      branch_id: selectedBranchId.value,
     };
     const response = await axios.get("/api/v1/reports/invoice-analysis", {
       params,
@@ -259,11 +314,13 @@ const fetchInvoiceData = async (page = 1) => {
       };
 
       if (response.data.report_stats) {
-        stats.value.total_revenue = parseFloat(
-          response.data.report_stats.total_revenue,
-        ).toFixed(2);
-        stats.value.paid_count = response.data.report_stats.paid_count;
-        stats.value.pending_count = response.data.report_stats.pending_count;
+        const s = response.data.report_stats;
+        stats.value.total_revenue_amount = s.total_revenue_amount ?? s.total_revenue ?? 0;
+        stats.value.total_revenue_count = s.total_revenue_count ?? 0;
+        stats.value.fully_paid_amount = s.fully_paid_amount ?? 0;
+        stats.value.fully_paid_count = s.fully_paid_count ?? s.paid_count ?? 0;
+        stats.value.pending_amount = s.pending_amount ?? 0;
+        stats.value.pending_count_detail = s.pending_count_detail ?? s.pending_count ?? 0;
       }
     }
   } catch (err) {
@@ -290,21 +347,33 @@ const exportToCSV = () => {
   if (invoices.value.length === 0) return;
 
   const headers = [
+    "S.No",
     "Invoice No",
+    "Case ID",
+    "Branch",
     "Patient",
+    "Patient Mobile",
+    "Referer",
+    "Referer Mobile",
     "Total Amount",
     "Paid Amount",
     "Balance",
     "Date",
     "Status",
   ];
-  const rows = invoices.value.map((i) => {
+  const rows = invoices.value.map((i, idx) => {
     const total = parseFloat(i.total_amount);
     const paid = parseFloat(i.payments_sum_amount || 0);
     const balance = total - paid;
     return [
+      (pagination.value?.from || 1) + idx,
       i.invoice_no,
-      i.patient?.name || "N/A",
+      i.case_report?.case_id || 'N/A',
+      i.case_report?.branch?.name || 'N/A',
+      i.patient?.name || 'N/A',
+      i.patient?.mobile_no || i.patient?.whatsapp_no || 'N/A',
+      i.case_report?.referer?.name || 'N/A',
+      i.case_report?.referer?.mobile_no || 'N/A',
       total.toFixed(2),
       paid.toFixed(2),
       balance.toFixed(2),
@@ -336,6 +405,26 @@ import { watch } from "vue";
 watch(() => filters.value.search, () => {
   debouncedSearch();
 });
+
+watch(selectedBranchId, () => {
+  fetchInvoiceData(1);
+});
+
+/**
+ * Select a card and re-fetch the table data with the new status filter.
+ */
+const selectCard = (key) => {
+  selectedCard.value = key;
+  fetchInvoiceData(1);
+};
+
+/**
+ * When date filter changes, reset card to 'all' and fetch.
+ */
+const onDateFilterChange = () => {
+  selectedCard.value = 'all';
+  fetchInvoiceData(1);
+};
 
 onMounted(fetchInvoiceData);
 </script>

@@ -21,6 +21,9 @@ class BranchController extends Controller
             ->when($request->status && $request->status !== 'all', function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
+            ->when($request->branch_id && $request->branch_id !== 'all', function ($query) {
+                $query->where('id', request('branch_id'));
+            })
             ->latest()
             ->paginate($request->per_page ?? 10);
 

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use App\Traits\HasAudit;
 
-class Patient extends Model
+class Patient extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
@@ -38,6 +38,8 @@ class Patient extends Model
 
     protected $casts = [
         'dob' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function gender()

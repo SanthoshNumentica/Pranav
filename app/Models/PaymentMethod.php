@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
 
-class PaymentMethod extends Model
+class PaymentMethod extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
@@ -18,6 +18,11 @@ class PaymentMethod extends Model
         'status',
         'added_by',
         'modified_by',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function payments()

@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, watch } from "vue";
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
@@ -104,9 +104,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import { useBranchContext } from "../../composables/useBranchContext";
 
 const { addToast } = useToast();
 const { getModulePermissions } = usePermissions();
+const { selectedBranchId } = useBranchContext();
 const modulePermissions = getModulePermissions("user");
 
 const users = ref([]);
@@ -132,7 +134,11 @@ const fetchUsers = async (page = 1) => {
   loading.value = true;
   try {
     const response = await axios.get("/api/v1/users", {
-      params: { ...filters, page },
+      params: {
+        ...filters,
+        page,
+        branch_id: selectedBranchId.value
+      },
     });
     if (response.data.success) {
       users.value = response.data.data.data;
@@ -234,6 +240,10 @@ const confirmToggleStatus = async () => {
 };
 
 onMounted(() => {
+  fetchUsers(1);
+});
+
+watch(selectedBranchId, () => {
   fetchUsers(1);
 });
 </script>

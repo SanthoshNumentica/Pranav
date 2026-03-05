@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Traits\HasAudit;
 
-class ScanType extends Model
+class ScanType extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
@@ -19,6 +19,11 @@ class ScanType extends Model
         'status',
         'added_by',
         'modified_by'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function scans()

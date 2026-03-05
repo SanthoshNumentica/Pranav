@@ -173,6 +173,12 @@ const routes = [
         component: () => import('../views/dicom/DicomView.vue')
     },
     {
+        path: '/monitor',
+        name: 'Monitor',
+        component: () => import('../views/monitor/MonitorView.vue'),
+        meta: { requiresAuth: true, module: 'case-reports' }
+    },
+    {
         // Default redirect
         path: '/:pathMatch(.*)*',
         redirect: '/'

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 use App\Traits\HasAudit;
 
-class CaseReport extends Model
+class CaseReport extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
@@ -31,6 +31,7 @@ class CaseReport extends Model
         'rct_hour',
         'is_stat',
         'patient_type',
+        'check_out',
         'added_by',
         'modified_by'
     ];
@@ -39,6 +40,10 @@ class CaseReport extends Model
         'documents' => 'array',
         'is_stat' => 'boolean',
         'rct_date' => 'date',
+        'check_out' => 'datetime',
+        'expires_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function patient(): BelongsTo

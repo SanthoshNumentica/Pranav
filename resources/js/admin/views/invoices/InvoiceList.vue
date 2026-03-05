@@ -70,6 +70,9 @@
               Amount
             </th>
             <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Paid Amount
+            </th>
+            <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Status
             </th>
             <th class="px-3 py-4 text-right text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -79,7 +82,7 @@
         </thead>
         <tbody class="divide-y divide-slate-100">
           <tr v-if="loading" v-for="i in 5" :key="i" class="animate-pulse">
-            <td colspan="7" class="px-3 py-4">
+            <td colspan="9" class="px-3 py-4">
               <div class="h-4 bg-slate-100 rounded-md w-full"></div>
             </td>
           </tr>
@@ -91,7 +94,7 @@
           <tr v-for="(invoice, index) in invoices" :key="invoice.id"
             class="group hover:bg-primary/5 transition-colors duration-300">
             <td class="px-3 py-4 text-sm text-slate-500">
-              {{ index + 1 }}
+              {{ (pagination?.from ?? 1) + index }}
             </td>
             <td class="px-3 py-4">
               <span
@@ -125,6 +128,12 @@
               <span class="text-sm font-bold text-slate-900">₹{{ parseFloat(invoice.total_amount).toFixed(2) }}</span>
             </td>
             <td class="px-3 py-4">
+              <span class="text-sm font-semibold"
+                :class="parseFloat(invoice.paid_amount || 0) > 0 ? 'text-emerald-600' : 'text-slate-400'">
+                ₹{{ parseFloat(invoice.paid_amount || 0).toFixed(2) }}
+              </span>
+            </td>
+            <td class="px-3 py-4">
               <StatusBadge :status="invoice.status" type="invoice" />
             </td>
             <td class="px-3 py-4 text-right">
@@ -137,7 +146,7 @@
       </table>
 
       <!-- Pagination -->
-      <Pagination v-if="pagination" :pagination="pagination" @page-change="fetchInvoices" />
+      <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
     </div>
   </div>
 </template>
@@ -190,21 +199,11 @@ const fetchInvoices = async (page = 1) => {
     });
     if (response.data.success) {
       invoices.value = response.data.data.data;
-      pagination.value = {
-        current_page: response.data.data.current_page,
-        last_page: response.data.data.last_page,
-        total: response.data.data.total,
-        per_page: response.data.data.per_page,
-      };
+      pagination.value = response.data.data;
     } else {
-      // Fallback for old style if success key is missing
+      // Fallback for old style
       invoices.value = response.data.data;
-      pagination.value = {
-        current_page: response.data.current_page,
-        last_page: response.data.last_page,
-        total: response.data.total,
-        per_page: response.data.per_page,
-      };
+      pagination.value = response.data;
     }
   } catch (error) {
     console.error("Failed to fetch invoices", error);
@@ -214,6 +213,10 @@ const fetchInvoices = async (page = 1) => {
 };
 
 const debouncedFetch = debounce(() => fetchInvoices(1), 300);
+
+const handlePageChange = (page) => {
+  fetchInvoices(page);
+};
 
 const formatDate = (date) => {
   if (!date) return "N/A";

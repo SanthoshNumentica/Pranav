@@ -32,6 +32,7 @@ class PaymentController extends Controller
             DB::beginTransaction();
 
             $payment = Payment::create([
+                'payment_id' => $this->generatePaymentId(),
                 'invoice_id' => $request->invoice_id,
                 'payment_method_id' => $request->payment_method_id,
                 'amount' => $request->amount,
@@ -79,5 +80,15 @@ class PaymentController extends Controller
             'success' => true,
             'data' => $query->latest('payment_date')->paginate($request->get('limit', 15))
         ]);
+    }
+
+    /**
+     * Generate a sequential payment_id in the format PAY0001.
+     */
+    private function generatePaymentId(): string
+    {
+        $last = Payment::withTrashed()->whereNotNull('payment_id')->orderBy('id', 'desc')->first();
+        $nextId = $last ? ((int) substr($last->payment_id, 3)) + 1 : 1;
+        return 'PAY' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
     }
 }

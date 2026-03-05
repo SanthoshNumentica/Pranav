@@ -23,7 +23,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         $query = CaseReport::query()
-            ->with(['patient', 'referer', 'branch', 'items.scanType'])
+            ->with(['patient', 'referer', 'branch', 'items.scanType', 'invoice'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -62,7 +62,8 @@ class CaseReportService
 
         $this->applyBasicFilters($query, $filters);
 
-        return $query->latest()
+        return $query->orderBy('rct_date', 'desc')
+            ->orderBy('rct_hour', 'desc')
             ->paginate($perPage);
     }
 
@@ -73,8 +74,10 @@ class CaseReportService
     {
         $query = CaseReport::query();
 
-        if (isset($filters['from_date']) && isset($filters['to_date'])) {
-            $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
+        if (isset($filters['filter_option']) && $filters['filter_option'] === 'today') {
+            $query->whereDate('rct_date', \Carbon\Carbon::today());
+        } elseif (isset($filters['from_date']) && isset($filters['to_date'])) {
+            $query->whereBetween('rct_date', [$filters['from_date'], $filters['to_date']]);
         }
 
         if (isset($filters['branch_id']) && $filters['branch_id'] !== 'all') {
@@ -93,8 +96,10 @@ class CaseReportService
      */
     private function applyBasicFilters(Builder $query, array $filters): void
     {
-        if (isset($filters['from_date']) && isset($filters['to_date'])) {
-            $query->whereBetween('created_at', [$filters['from_date'] . ' 00:00:00', $filters['to_date'] . ' 23:59:59']);
+        if (isset($filters['filter_option']) && $filters['filter_option'] === 'today') {
+            $query->whereDate('rct_date', \Carbon\Carbon::today());
+        } elseif (isset($filters['from_date']) && isset($filters['to_date'])) {
+            $query->whereBetween('rct_date', [$filters['from_date'], $filters['to_date']]);
         }
     }
 

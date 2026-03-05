@@ -13,12 +13,6 @@
             Patient
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Branch
-          </th>
-          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Mobile No
-          </th>
-          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Referer
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -28,7 +22,13 @@
             Payment Status
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            RCT Date
+            Scanning Date
+          </th>
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            Check-in
+          </th>
+          <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            Check-out
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Expires On
@@ -49,16 +49,10 @@
               <div class="h-4 bg-slate-100 rounded-md w-32"></div>
             </td>
             <td class="px-3 py-3">
-              <div class="h-4 bg-slate-100 rounded-md w-20"></div>
-            </td>
-            <td class="px-3 py-3">
-              <div class="h-4 bg-slate-100 rounded-md w-40"></div>
-            </td>
-            <td class="px-3 py-3">
               <div class="h-4 bg-slate-100 rounded-md w-28"></div>
             </td>
             <td class="px-3 py-3">
-              <div class="h-4 bg-slate-100 rounded-md w-36"></div>
+              <div class="h-4 bg-slate-100 rounded-md w-28"></div>
             </td>
             <td class="px-3 py-3">
               <div class="h-6 bg-slate-100 rounded-full w-20"></div>
@@ -68,6 +62,12 @@
             </td>
             <td class="px-3 py-3">
               <div class="h-4 bg-slate-100 rounded-md w-24"></div>
+            </td>
+            <td class="px-3 py-3">
+              <div class="h-4 bg-slate-100 rounded-md w-16"></div>
+            </td>
+            <td class="px-3 py-3">
+              <div class="h-4 bg-slate-100 rounded-md w-16"></div>
             </td>
             <td class="px-3 py-3">
               <div class="h-4 bg-slate-100 rounded-md w-24"></div>
@@ -89,18 +89,20 @@
               </div>
             </td>
             <td class="px-3 py-3">
-              <span class="text-sm font-medium text-slate-900">{{
-                report.patient?.name || "N/A"
-              }}</span>
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-slate-900">{{ report.patient?.name || "N/A" }}</span>
+                <span v-if="report.patient?.mobile_no" class="text-[10px] text-slate-400 font-medium">
+                  {{ report.patient.mobile_no }}
+                </span>
+              </div>
             </td>
-            <td class="px-3 py-3 text-sm text-slate-600">
-              {{ report.branch?.name || "N/A" }}
-            </td>
-            <td class="px-3 py-3 text-sm text-slate-600">
-              {{ report.patient?.mobile_no || "N/A" }}
-            </td>
-            <td class="px-3 py-3 text-sm text-slate-600">
-              {{ report.referer?.name || "N/A" }}
+            <td class="px-3 py-3">
+              <div class="flex flex-col">
+                <span class="text-sm font-medium text-slate-900">{{ report.referer?.name || "N/A" }}</span>
+                <span v-if="report.referer?.mobile_no" class="text-[10px] text-slate-400 font-medium">
+                  {{ report.referer.mobile_no }}
+                </span>
+              </div>
             </td>
             <td class="px-3 py-3 text-sm">
               <StatusBadge :status="report.status || 'pending'" type="case" />
@@ -109,13 +111,19 @@
               <StatusBadge v-if="report.invoice" :status="report.invoice.status" type="invoice" />
               <span v-else class="text-slate-400 text-xs">—</span>
             </td>
+            <td class="px-3 py-3 text-xs text-slate-600">
+              {{ report.rct_date ? formatDate(report.rct_date) : "—" }}
+            </td>
+            <td class="px-3 py-3 text-[11px] text-slate-500 font-medium">
+              {{ report.rct_hour || "—" }}
+            </td>
             <td class="px-3 py-3">
-              <div class="flex flex-col">
-                <span class="text-xs text-slate-600">{{
-                  report.rct_date ? formatDate(report.rct_date) : "—"
-                }}</span>
-                <span v-if="report.rct_hour" class="text-[10px] text-slate-400 font-medium">{{ report.rct_hour }}</span>
-              </div>
+              <button @click="$emit('open-check-out', report)"
+                class="px-2 py-1 rounded text-[11px] font-bold transition-all"
+                :class="report.check_out ? 'text-primary bg-primary/5 hover:bg-primary/10' : 'text-slate-400 bg-slate-50 hover:bg-slate-100/80'"
+                :disabled="!report.rct_hour">
+                {{ report.check_out || "Set Time" }}
+              </button>
             </td>
             <td class="px-3 py-3 text-xs text-slate-600">
               {{ report.expires_at ? formatDate(report.expires_at) : "—" }}
@@ -174,7 +182,7 @@ const props = defineProps({
 
 const router = useRouter();
 
-defineEmits(["view-info", "delete", "send-whatsapp"]);
+defineEmits(["view-info", "delete", "send-whatsapp", "open-check-out"]);
 
 
 function cn(...classes) {

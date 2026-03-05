@@ -45,7 +45,7 @@ class RefererController extends Controller
             'referer_type_id' => 'required|exists:referer_types,id',
             'title_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
-            'mobile_no' => 'required|string|max:20',
+            'mobile_no' => ['required', 'digits:10', 'regex:/^[6-9][0-9]{9}$/'],
             'email_id' => 'nullable|email|max:255',
             'place' => 'nullable|string|max:255',
             'hospital_name' => 'nullable|string|max:255',
@@ -53,6 +53,7 @@ class RefererController extends Controller
         ]);
 
         $referer = Referer::create([
+            'referer_id' => $this->generateRefererId(),
             'referer_type_id' => $request->referer_type_id,
             'title_id' => $request->title_id,
             'name' => $request->name,
@@ -80,7 +81,7 @@ class RefererController extends Controller
             'referer_type_id' => 'sometimes|nullable|exists:referer_types,id',
             'title_id' => 'sometimes|nullable|exists:titles,id',
             'name' => 'sometimes|required|string|max:255',
-            'mobile_no' => 'sometimes|required|string|max:20',
+            'mobile_no' => ['sometimes', 'required', 'digits:10', 'regex:/^[6-9][0-9]{9}$/'],
             'email_id' => 'sometimes|nullable|email|max:255',
             'place' => 'sometimes|nullable|string|max:255',
             'hospital_name' => 'sometimes|nullable|string|max:255',
@@ -144,5 +145,14 @@ class RefererController extends Controller
             'message' => 'Status updated successfully',
             'data' => $referer
         ]);
+    }
+    /**
+     * Generate a sequential referer_id in the format REF0001.
+     */
+    private function generateRefererId(): string
+    {
+        $last = Referer::withTrashed()->whereNotNull('referer_id')->orderBy('id', 'desc')->first();
+        $nextId = $last ? ((int) substr($last->referer_id, 3)) + 1 : 1;
+        return 'REF' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
     }
 }

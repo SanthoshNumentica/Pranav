@@ -51,6 +51,7 @@ class ReportController extends Controller
             'end_date', 
             'search', 
             'branch_id',
+            'status_filter',
             'limit'
         ]);
 
@@ -60,7 +61,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Get Profit & Loss Analysis Report.
+     * Get Referer × Scan Type matrix (replaces old P&L endpoint).
      */
     public function profitLossAnalysis(Request $request): JsonResponse
     {
@@ -71,12 +72,11 @@ class ReportController extends Controller
             'to_date', 
             'start_date', 
             'end_date', 
-            'search', 
+            'search',
             'branch_id',
-            'limit'
         ]);
 
-        $data = $this->reportService->getProfitLossReport($filters);
+        $data = $this->reportService->getRefererScanMatrix($filters);
 
         return response()->json($data);
     }

@@ -50,7 +50,7 @@ class InvoiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $query->latest('invoice_date')->paginate($request->get('limit', 15)),
+            'data' => $query->orderBy('invoice_date', 'desc')->orderBy('id', 'desc')->paginate($request->get('limit', 15)),
             'report_stats' => $stats,
         ]);
     }

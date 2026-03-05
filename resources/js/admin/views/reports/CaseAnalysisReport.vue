@@ -20,7 +20,7 @@
 
     <!-- Filter Bar -->
     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 no-print">
-      <AdvancedDateFilter v-model="filters" @change="fetchOrderStats" />
+      <AdvancedDateFilter v-model="filters" @change="onDateFilterChange" />
     </div>
 
     <!-- Dynamic Summary Cards -->
@@ -32,8 +32,7 @@
       <!-- Multi-section Grid - Compact -->
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
         <!-- "All" Reset Card -->
-        <SummaryCard label="All Scans"
-          :value="(reports.length > 0 && filters.scan_type_id === 'all') ? stats.total_cases : stats.total_cases_unfiltered || stats.total_cases"
+        <SummaryCard label="All Scans" :value="stats.scan_type_stats.reduce((s, t) => s + t.count, 0)"
           :active="filters.scan_type_id === 'all'" orientation="vertical"
           @click="filters.scan_type_id = 'all'; fetchOrderStats(1)" />
 
@@ -53,7 +52,7 @@
         <div class="flex items-center gap-3">
           <div class="h-8 w-1 bg-primary rounded-full"></div>
           <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
-            Case Reports <span class="text-slate-400 ml-1">({{ stats.total_cases || 0 }})</span>
+            Case Reports <span class="text-slate-400 ml-1">({{ pagination?.total || 0 }})</span>
           </h3>
         </div>
 
@@ -213,6 +212,7 @@ import {
 import { debounce } from "lodash";
 import { formatDate } from "../../utils/format";
 import Pagination from "../../components/ui/Pagination.vue";
+import { useBranchContext } from "../../composables/useBranchContext";
 import {
   Select,
   SelectContent,
@@ -221,6 +221,7 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 
+const { selectedBranchId } = useBranchContext();
 const reports = ref([]);
 const loading = ref(true);
 const pagination = ref(null);
@@ -265,21 +266,14 @@ const fetchOrderStats = async (page = 1) => {
       end_date: filters.value.to_date,
       search: filters.value.search,
       scan_type_id: filters.value.scan_type_id,
+      branch_id: selectedBranchId.value,
     };
 
     const response = await axios.get("/api/v1/reports/case-analysis", { params });
 
     if (response.data.success) {
       reports.value = response.data.data.data;
-      pagination.value = {
-        current_page: response.data.data.current_page,
-        last_page: response.data.data.last_page,
-        total: response.data.data.total,
-        from: response.data.data.from,
-        to: response.data.data.to,
-        prev_page_url: response.data.data.prev_page_url,
-        next_page_url: response.data.data.next_page_url,
-      };
+      pagination.value = response.data.data;
 
       if (response.data.report_stats) {
         stats.value = response.data.report_stats;
@@ -318,6 +312,21 @@ import { watch } from "vue";
 watch(() => filters.value.search, () => {
   debouncedSearch();
 });
+
+watch(selectedBranchId, () => {
+  fetchOrderStats(1);
+});
+
+/**
+ * When the date filter changes, reset scan type to 'all' then fetch.
+ */
+const onDateFilterChange = () => {
+  filters.value.scan_type_id = 'all';
+  fetchOrderStats(1);
+};
+
+// Rely on AdvancedDateFilter's own onMounted emitChange to trigger the first fetch.
+// Do NOT call fetchOrderStats() here to avoid a double-fetch on load.
 
 const exportToCSV = () => {
   if (reports.value.length === 0) return;

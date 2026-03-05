@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class RefererType extends Model
+class RefererType extends BaseModel
 {
     use HasFactory, SoftDeletes;
     use \App\Traits\HasAudit;
@@ -16,6 +16,11 @@ class RefererType extends Model
         'status',
         'added_by',
         'modified_by'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function addedByUser()

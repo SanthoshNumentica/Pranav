@@ -12,19 +12,30 @@
     </div>
 
     <div v-if="pagination.last_page > 1" class="flex items-center gap-2">
+      <!-- First Page Button -->
+      <button @click="changePage(1)" :disabled="pagination.current_page === 1" :class="cn(
+        'h-9 w-9 flex items-center justify-center rounded-xl transition-all',
+        pagination.current_page !== 1
+          ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 shadow-sm'
+          : 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed',
+      )
+        " title="First Page">
+        <ChevronsLeftIcon class="h-4 w-4" />
+      </button>
+
       <!-- Previous Button -->
       <button @click="changePage(pagination.current_page - 1)" :disabled="!pagination.prev_page_url" :class="cn(
         'h-9 w-9 flex items-center justify-center rounded-xl transition-all',
         pagination.prev_page_url
-          ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95'
-          : 'bg-slate-100 text-slate-300 cursor-not-allowed',
+          ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 shadow-sm'
+          : 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed',
       )
-        ">
+        " title="Previous Page">
         <ChevronLeftIcon class="h-4 w-4" />
       </button>
 
       <!-- Page Numbers -->
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1 mx-1">
         <button v-for="page in visiblePages" :key="page" @click="changePage(page)" :class="cn(
           'h-9 min-w-[36px] px-2 flex items-center justify-center rounded-xl text-sm font-bold transition-all',
           page === pagination.current_page
@@ -40,11 +51,23 @@
       <button @click="changePage(pagination.current_page + 1)" :disabled="!pagination.next_page_url" :class="cn(
         'h-9 w-9 flex items-center justify-center rounded-xl transition-all',
         pagination.next_page_url
-          ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95'
-          : 'bg-slate-100 text-slate-300 cursor-not-allowed',
+          ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 shadow-sm'
+          : 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed',
       )
-        ">
+        " title="Next Page">
         <ChevronRightIcon class="h-4 w-4" />
+      </button>
+
+      <!-- Last Page Button -->
+      <button @click="changePage(pagination.last_page)" :disabled="pagination.current_page === pagination.last_page"
+        :class="cn(
+          'h-9 w-9 flex items-center justify-center rounded-xl transition-all',
+          pagination.current_page !== pagination.last_page
+            ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:scale-95 shadow-sm'
+            : 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed',
+        )
+          " title="Last Page">
+        <ChevronsRightIcon class="h-4 w-4" />
       </button>
     </div>
   </div>
@@ -55,6 +78,8 @@ import { computed } from "vue";
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  ChevronsLeft as ChevronsLeftIcon,
+  ChevronsRight as ChevronsRightIcon,
 } from "lucide-vue-next";
 
 const props = defineProps({

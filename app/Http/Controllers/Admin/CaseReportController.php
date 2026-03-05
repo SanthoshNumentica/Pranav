@@ -206,6 +206,33 @@ class CaseReportController extends Controller
         ]);
     }
 
+    /**
+     * Update the check-out time of the specified case report.
+     */
+    public function updateCheckOut(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'check_out' => ['required', 'date_format:H:i'],
+        ]);
+
+        $caseReport = CaseReport::findOrFail($id);
+        
+        if (!$caseReport->rct_hour) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot check-out without a check-in time.',
+            ], 422);
+        }
+
+        $caseReport->update(['check_out' => $request->check_out]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Check-out time updated successfully.',
+            'data' => $caseReport,
+        ]);
+    }
+
     public function getNextCaseId(): JsonResponse
     {
         \Log::info("Fetching next Case ID");

@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RefererAndPatientSeeder::class,
             ScanSeeder::class,
+            ReportInvoiceSeeder::class,
         ]);
 
         // $role = Role::create(['name' => 'Admin']);

@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/case-reports/{id}', [CaseReportController::class, 'update']);
         Route::delete('/case-reports/{id}', [CaseReportController::class, 'destroy']);
         Route::post('/case-reports/{id}/status', [CaseReportController::class, 'updateStatus']);
+        Route::put('/case-reports/{id}/check-out', [CaseReportController::class, 'updateCheckOut']);
         Route::post('/case-reports/{id}/whatsapp', [CaseReportController::class, 'notifyWhatsApp']);
 
         // File Uploads

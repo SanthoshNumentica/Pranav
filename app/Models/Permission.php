@@ -8,6 +8,22 @@ class Permission extends SpatiePermission
 {
     protected $fillable = ['module_id', 'action_id'];
 
+    /**
+     * Prepare a date for array / JSON serialization.
+     *
+     * @param  \DateTimeInterface  $date
+     * @return string
+     */
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('d M Y');
+    }
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     protected $appends = ['name'];
 
     public function module()

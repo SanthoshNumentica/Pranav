@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\HasAudit;
 
-class Payment extends Model
+class Payment extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
     protected $fillable = [
+        'payment_id',
         'invoice_id',
         'payment_method_id',
         'amount',
@@ -25,6 +26,8 @@ class Payment extends Model
     protected $casts = [
         'payment_date' => 'datetime',
         'amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function invoice(): BelongsTo

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WhatsappLog extends Model
+class WhatsappLog extends BaseModel
 {
     use HasFactory;
     protected $table = 'whatsapp_log';
@@ -20,5 +20,10 @@ class WhatsappLog extends Model
         'recipient_mobile_no',
         'created_at',
         'updated_at',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }

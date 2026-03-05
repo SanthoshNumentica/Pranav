@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Referer extends Model
+class Referer extends BaseModel
 {
     use HasFactory, SoftDeletes;
     use \App\Traits\HasAudit;
 
     protected $fillable = [
+        'referer_id',
         'referer_type_id',
         'title_id',
         'name',
@@ -23,6 +24,11 @@ class Referer extends Model
         'status',
         'added_by',
         'modified_by'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function refererType()

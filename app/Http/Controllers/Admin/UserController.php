@@ -59,8 +59,8 @@ class UserController extends Controller
             ->when($request->role_id, function ($query, $role_id) {
                 $query->where('role_id', $role_id);
             })
-            ->when($request->branch_id, function ($query, $branch_id) {
-                $query->where('branch_id', $branch_id);
+            ->when($request->branch_id && $request->branch_id !== 'all', function ($query) {
+                $query->where('branch_id', request('branch_id'));
             })
             ->with(['role', 'branch'])
             ->latest()

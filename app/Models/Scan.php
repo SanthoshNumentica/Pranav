@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Scan extends Model
+class Scan extends BaseModel
 {
     use HasFactory, SoftDeletes;
 
@@ -17,6 +17,11 @@ class Scan extends Model
         'name',
         'status',
         'amount',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function scanType()

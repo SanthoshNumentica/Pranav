@@ -15,7 +15,8 @@ class DashboardController extends Controller
 
     public function index(): JsonResponse
     {
-        $data = $this->reportService->getDashboardStats();
+        $branchId = request('branch_id');
+        $data = $this->reportService->getDashboardStats($branchId && $branchId !== 'all' ? (int)$branchId : null);
 
         return response()->json([
             'success' => true,

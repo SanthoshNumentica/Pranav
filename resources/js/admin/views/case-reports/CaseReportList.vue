@@ -55,7 +55,7 @@
       class="bg-white rounded-3xl border border-slate-200 shadow-soft-xl overflow-x-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
       <CaseReportsTable :reports="reports" :loading="loading" :permissions="modulePermissions"
         :start-index="pagination?.from || 1" @view-info="handleView" @send-whatsapp="confirmWhatsApp"
-        @delete="confirmDelete" />
+        @delete="confirmDelete" @open-check-out="confirmCheckOut" />
 
       <!-- WhatsApp Recipient Selection Modal -->
       <WhatsAppRecipientModal :is-open="isWhatsappModalOpen" :report="reportForWhatsapp" :loading="sendingWhatsapp"
@@ -69,6 +69,10 @@
 
       <!-- Info Dialog -->
       <CaseReportInfoDialog :is-open="isInfoOpen" :report="selectedReport" @close="isInfoOpen = false" />
+
+      <!-- Check-out Modal -->
+      <CheckOutModal :is-open="isCheckOutModalOpen" :report="reportForCheckOut" :loading="updatingCheckOut"
+        @close="isCheckOutModalOpen = false" @confirm="handleCheckOut" />
 
       <!-- Pagination -->
       <Pagination v-if="pagination" :pagination="pagination" @page-change="handlePageChange" />
@@ -89,6 +93,7 @@ import axios from "axios";
 import { debounce } from "lodash";
 import CaseReportsTable from "../../components/case-reports/CaseReportsTable.vue";
 import CaseReportInfoDialog from "../../components/case-reports/CaseReportInfoDialog.vue";
+import CheckOutModal from "../../components/case-reports/CheckOutModal.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
@@ -123,6 +128,45 @@ const filters = reactive({
 const isWhatsappModalOpen = ref(false);
 const sendingWhatsapp = ref(false);
 const reportForWhatsapp = ref(null);
+
+const isCheckOutModalOpen = ref(false);
+const updatingCheckOut = ref(false);
+const reportForCheckOut = ref(null);
+
+const confirmCheckOut = (report) => {
+  reportForCheckOut.value = report;
+  isCheckOutModalOpen.value = true;
+};
+
+const handleCheckOut = async (time) => {
+  if (!reportForCheckOut.value) return;
+
+  updatingCheckOut.value = true;
+  try {
+    const response = await axios.put(
+      `/api/v1/case-reports/${reportForCheckOut.value.id}/check-out`,
+      { check_out: time },
+    );
+    if (response.data.success) {
+      isCheckOutModalOpen.value = false;
+      fetchReports();
+      addToast({
+        title: "Success",
+        description: "Check-out time updated successfully.",
+        variant: "success",
+      });
+    }
+  } catch (error) {
+    console.error("Failed to update check-out", error);
+    addToast({
+      title: "Error",
+      description: error.response?.data?.message || "Failed to update check-out time.",
+      variant: "error",
+    });
+  } finally {
+    updatingCheckOut.value = false;
+  }
+};
 
 const fetchReports = async (page = 1) => {
   loading.value = true;

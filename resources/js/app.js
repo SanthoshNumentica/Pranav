@@ -42,8 +42,10 @@ axios.interceptors.response.use(
     }
 );
 
+import { formatDate } from './admin/utils/format';
 const app = createApp(App);
 
+app.config.globalProperties.$indianDate = formatDate;
 app.use(router);
 
 app.mount('#app');

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\HasAudit;
 
-class Invoice extends Model
+class Invoice extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
@@ -38,6 +38,8 @@ class Invoice extends Model
         'tax_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function caseReport(): BelongsTo

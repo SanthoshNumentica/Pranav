@@ -73,8 +73,8 @@ const reports = [
     bgClass: "bg-emerald-500 shadow-emerald-200"
   },
   {
-    title: "Profit & Loss",
-    description: "Comprehensive financial performance and margin analysis.",
+    title: "Referer Scan Analysis",
+    description: "Scan type counts per referer based on selected period.",
     url: "/reports/profit-loss",
     icon: PaymentIcon,
     bgClass: "bg-rose-500 shadow-rose-200"

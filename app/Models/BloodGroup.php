@@ -8,11 +8,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use App\Traits\HasAudit;
 
-class BloodGroup extends Model
+class BloodGroup extends BaseModel
 {
     use HasFactory, SoftDeletes, HasAudit;
 
     protected $table = 'blood_groups';
 
     protected $fillable = ['name', 'status', 'added_by', 'modified_by'];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 }

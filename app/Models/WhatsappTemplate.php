@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class WhatsappTemplate extends Model
+class WhatsappTemplate extends BaseModel
 {
     protected $fillable = [
         'event_name',
@@ -15,5 +15,11 @@ class WhatsappTemplate extends Model
         'allow_to_send',
         'status',
         'sender_id',
+        'modified_by'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 }
