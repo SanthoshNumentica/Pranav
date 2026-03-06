@@ -424,12 +424,21 @@
                       <tbody class="divide-y divide-slate-100">
                         <tr v-for="item in report?.items" :key="item.id">
                           <td
-                            class="px-4 py-3 text-sm font-medium text-slate-900"
+                            class="px-4 py-3 text-sm font-bold text-slate-900"
                           >
-                            {{ item.scan_type?.name || "N/A" }}
+                            <div class="flex items-center gap-2">
+                              <span class="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
+                              {{ item.scan_type?.name || "N/A" }}
+                            </div>
                           </td>
                           <td class="px-4 py-3 text-sm text-slate-600">
-                            {{ item.scan?.name || "N/A" }}
+                             <div class="flex flex-wrap gap-1.5">
+                              <span v-for="scan in (item.scans_with_names || [])" :key="scan.scan_id"
+                                class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100/50 text-slate-700 text-[10px] font-bold border border-slate-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-300 transform hover:-translate-y-0.5 cursor-default">
+                                {{ scan.scan_name }}
+                              </span>
+                              <span v-if="!item.scans_with_names?.length" class="text-slate-400 italic text-[10px]">No specific scans listed</span>
+                            </div>
                           </td>
                           <td
                             class="px-4 py-3 text-sm text-slate-500/80 italic"

@@ -23,7 +23,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         $query = CaseReport::query()
-            ->with(['patient', 'referer', 'branch', 'items.scanType', 'invoice'])
+            ->with(['patient', 'referer.refererType', 'branch', 'items.scanType'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -108,7 +108,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'referer', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items.caseReportItem.scanType'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'referer.refererType', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items.caseReportItem.scanType'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
