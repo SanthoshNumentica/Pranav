@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 use App\Traits\HasAudit;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Carbon\Carbon;
 
 class CaseReport extends BaseModel
 {
@@ -69,6 +71,16 @@ class CaseReport extends BaseModel
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    /**
+     * Get the check_out time in HH:MM format.
+     */
+    protected function checkOut(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->format('H:i') : null,
+        );
     }
 
 }

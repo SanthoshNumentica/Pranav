@@ -80,4 +80,73 @@ class ReportController extends Controller
 
         return response()->json($data);
     }
+    /**
+     * Export Case Analysis Report to Excel.
+     */
+    public function exportCaseAnalysis(Request $request)
+    {
+        $filters = $request->only([
+            'filter_type', 
+            'filter_option', 
+            'from_date', 
+            'to_date', 
+            'start_date', 
+            'end_date', 
+            'search', 
+            'branch_id', 
+            'scan_type_id'
+        ]);
+
+        $filters['limit'] = -1;
+        $data = $this->reportService->getCaseAnalysisReport($filters);
+
+        $fileName = 'case-analysis-report.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\CaseReportExport($data['data']->getCollection()), $fileName);
+    }
+
+    /**
+     * Export Invoice Analysis Report to Excel.
+     */
+    public function exportInvoiceAnalysis(Request $request)
+    {
+        $filters = $request->only([
+            'filter_type', 
+            'filter_option', 
+            'from_date', 
+            'to_date', 
+            'start_date', 
+            'end_date', 
+            'search', 
+            'branch_id',
+            'status_filter'
+        ]);
+
+        $filters['limit'] = -1;
+        $data = $this->reportService->getInvoiceAnalysisReport($filters);
+
+        $fileName = 'invoice-analysis-report.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InvoiceAnalysisExport($data['data']->getCollection()), $fileName);
+    }
+
+    /**
+     * Export Referer Scan Analysis Report to Excel.
+     */
+    public function exportProfitLossAnalysis(Request $request)
+    {
+        $filters = $request->only([
+            'filter_type', 
+            'filter_option', 
+            'from_date', 
+            'to_date', 
+            'start_date', 
+            'end_date', 
+            'search',
+            'branch_id',
+        ]);
+        
+        $data = $this->reportService->getRefererScanFlatData($filters);
+
+        $fileName = 'referer-scan-analysis.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\RefererScanAnalysisExport($data), $fileName);
+    }
 }

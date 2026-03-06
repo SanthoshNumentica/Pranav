@@ -46,8 +46,10 @@
         class="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
         <div class="p-6 border-b border-slate-50 flex items-center justify-between">
           <h2 class="text-lg font-bold text-slate-900">Recent Case Reports</h2>
-          <router-link to="/monitor" class="text-xs font-bold text-primary hover:underline">View on
-            Monitor</router-link>
+          <a href="/monitor" target="_blank"
+            class="px-4 py-2 bg-primary hover:bg-primary-700 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all shadow-md shadow-primary/10 active:scale-95 flex items-center gap-2">
+            View on Monitor
+          </a>
         </div>
         <div class="flex-1 overflow-x-auto custom-scrollbar max-h-[460px] overflow-y-auto relative">
           <table class="w-full text-left border-collapse">

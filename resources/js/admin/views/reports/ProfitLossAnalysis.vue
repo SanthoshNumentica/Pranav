@@ -246,45 +246,31 @@ const fetchMatrix = async (page = 1) => {
 
 // ── Export ──────────────────────────────
 const exportToCSV = async () => {
-  if (rows.value.length === 0) return;
   loading.value = true;
   try {
     const params = {
-      limit: -1, // Request all records for export
       filter_type: filters.value.filter_type,
       filter_option: filters.value.filter_option,
       from_date: filters.value.from_date,
       to_date: filters.value.to_date,
       search: search.value,
-      branch_id: selectedBranchId.value,
+      branch_id: selectedBranchId.value || 'all',
     };
-    const { data } = await axios.get("/api/v1/reports/profit-loss-analysis", { params });
-    if (!data.success) return;
 
-    const exportRows = data.rows;
-    const headers = ["Referer Name", ...scanTypes.value.map(s => s.name), "Total"];
-    const dataRows = exportRows.map(row => [
-      row.referer_name,
-      ...scanTypes.value.map(st => row.counts[st.id] ?? 0),
-      row.total,
-    ]);
-    const totalRow = [
-      "Total",
-      ...scanTypes.value.map(st => data.column_totals[st.id] ?? 0),
-      data.grand_total,
-    ];
+    const response = await axios.get('/api/admin/v1/reports/profit-loss-analysis/export', {
+      params,
+      responseType: 'blob',
+    });
 
-    const csv = [headers, ...dataRows, totalRow].map(e => e.join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.setAttribute("href", URL.createObjectURL(blob));
-    link.setAttribute("download", `Referer_Scan_Analysis_${filters.value.from_date}.csv`);
-    link.style.visibility = "hidden";
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Referer_Scan_Analysis_${new Date().toISOString().split('T')[0]}.xlsx`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   } catch (err) {
-    console.error("Failed to export data", err);
+    console.error("Failed to export Excel report", err);
   } finally {
     loading.value = false;
   }

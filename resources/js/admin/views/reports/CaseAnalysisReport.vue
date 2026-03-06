@@ -328,35 +328,36 @@ const onDateFilterChange = () => {
 // Rely on AdvancedDateFilter's own onMounted emitChange to trigger the first fetch.
 // Do NOT call fetchOrderStats() here to avoid a double-fetch on load.
 
-const exportToCSV = () => {
-  if (reports.value.length === 0) return;
+const exportToCSV = async () => {
+  loading.value = true;
+  try {
+    const params = {
+      filter_type: filters.value.filter_type,
+      filter_option: filters.value.filter_option,
+      from_date: filters.value.from_date,
+      to_date: filters.value.to_date,
+      search: filters.value.search,
+      scan_type_id: filters.value.scan_type_id,
+      branch_id: selectedBranchId.value || 'all',
+    };
 
-  const headers = ["Sl.No", "Case ID", "Branch Name", "Scan Types", "Patient Name", "Patient Mobile", "Referrer Name", "Referrer Mobile", "Scanning Date"];
-  const rows = reports.value.map((r, index) => [
-    (pagination.value?.from || 1) + index,
-    r.case_id,
-    r.branch?.name || "N/A",
-    r.items?.map(i => i.scan_type?.name).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i).join(', ') || "N/A",
-    r.patient?.name || "N/A",
-    r.patient?.whatsapp_no || r.patient?.mobile_no || "N/A",
-    r.referer?.name || "N/A",
-    r.referer?.mobile_no || "N/A",
-    r.rct_date ? new Date(r.rct_date).toLocaleDateString('en-GB').replace(/\//g, '-') : "N/A",
-  ]);
+    const response = await axios.get('/api/admin/v1/reports/case-analysis/export', {
+      params,
+      responseType: 'blob',
+    });
 
-  const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute(
-    "download",
-    `Case_Analysis_Report_${new Date().toISOString().split('T')[0]}.csv`,
-  );
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Case_Analysis_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error("Failed to export Excel report", err);
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(fetchOrderStats);

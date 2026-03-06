@@ -343,58 +343,36 @@ const getStatusClass = (status) => {
   }
 };
 
-const exportToCSV = () => {
-  if (invoices.value.length === 0) return;
+const exportToCSV = async () => {
+  loading.value = true;
+  try {
+    const params = {
+      filter_type: filters.value.filter_type,
+      filter_option: filters.value.filter_option,
+      from_date: filters.value.from_date,
+      to_date: filters.value.to_date,
+      search: filters.value.search,
+      status_filter: selectedCard.value,
+      branch_id: selectedBranchId.value || 'all',
+    };
 
-  const headers = [
-    "S.No",
-    "Invoice No",
-    "Case ID",
-    "Branch",
-    "Patient",
-    "Patient Mobile",
-    "Referer",
-    "Referer Mobile",
-    "Total Amount",
-    "Paid Amount",
-    "Balance",
-    "Date",
-    "Status",
-  ];
-  const rows = invoices.value.map((i, idx) => {
-    const total = parseFloat(i.total_amount);
-    const paid = parseFloat(i.payments_sum_amount || 0);
-    const balance = total - paid;
-    return [
-      (pagination.value?.from || 1) + idx,
-      i.invoice_no,
-      i.case_report?.case_id || 'N/A',
-      i.case_report?.branch?.name || 'N/A',
-      i.patient?.name || 'N/A',
-      i.patient?.mobile_no || i.patient?.whatsapp_no || 'N/A',
-      i.case_report?.referer?.name || 'N/A',
-      i.case_report?.referer?.mobile_no || 'N/A',
-      total.toFixed(2),
-      paid.toFixed(2),
-      balance.toFixed(2),
-      formatDate(i.invoice_date),
-      i.status,
-    ];
-  });
+    const response = await axios.get('/api/admin/v1/reports/invoice-analysis/export', {
+      params,
+      responseType: 'blob',
+    });
 
-  const csvContent = [headers, ...rows].map((e) => e.join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.setAttribute("href", url);
-  link.setAttribute(
-    "download",
-    `Invoice_Report_${filters.value.from_date}_to_${filters.value.to_date}.csv`,
-  );
-  link.style.visibility = "hidden";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Invoice_Analysis_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error("Failed to export Excel report", err);
+  } finally {
+    loading.value = false;
+  }
 };
 
 const debouncedSearch = debounce(() => {

@@ -158,6 +158,11 @@ Route::prefix('v1')->group(function () {
         Route::get('reports/invoice-analysis', [ReportController::class, 'invoiceAnalysis']);
         Route::get('reports/profit-loss-analysis', [ReportController::class, 'profitLossAnalysis']);
 
+        // Excel Export Routes
+        Route::get('reports/case-analysis/export', [ReportController::class, 'exportCaseAnalysis']);
+        Route::get('reports/invoice-analysis/export', [ReportController::class, 'exportInvoiceAnalysis']);
+        Route::get('reports/profit-loss-analysis/export', [ReportController::class, 'exportProfitLossAnalysis']);
+
         Route::get('masters/roles', [MasterController::class, 'roles']);
         Route::get('masters/branches', [UserController::class, 'branches']);
     });

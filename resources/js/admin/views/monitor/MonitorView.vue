@@ -56,7 +56,7 @@
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mb-2 px-1">Patient
                                     Name</p>
                                 <h2
-                                    class="text-5xl font-black text-slate-900 tracking-tight leading-tight uppercase group-hover:text-primary transition-colors duration-500">
+                                    class="text-3xl font-black text-slate-900 tracking-tight leading-tight uppercase group-hover:text-primary transition-colors duration-500">
                                     {{ item.patient?.name }}
                                 </h2>
                             </div>
@@ -109,7 +109,7 @@
             <div class="flex items-center gap-3 text-slate-400">
                 <ActivityIcon class="h-4 w-4" />
                 <span class="text-[10px] font-black uppercase tracking-[0.3em]">Update in {{ nextRefreshSeconds
-                }}s</span>
+                    }}s</span>
             </div>
         </footer>
     </div>

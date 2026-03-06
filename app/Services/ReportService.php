@@ -37,7 +37,16 @@ class ReportService
         // Apply Scan Type Filter for the final listing
         $this->applyScanTypeFilter($query, $filters['scan_type_id'] ?? 'all');
 
-        $paginatedData = $query->orderBy('rct_date', 'desc')->paginate($perPage);
+        $query->orderBy('rct_date', 'desc');
+
+        if ($perPage == -1) {
+            $data = $query->get();
+            $paginatedData = new \Illuminate\Pagination\LengthAwarePaginator($data, $data->count(), $data->count() ?: 1, 1);
+        } else {
+            $paginatedData = $query->paginate($perPage);
+        }
+
+        // Calculate Scan Type Stats (based on date+branch+search filtered IDs, before scan type filter)
 
         // Calculate Scan Type Stats (based on date+branch+search filtered IDs, before scan type filter)
         $scanTypeStats = $this->calculateScanTypeStats($unfilteredCaseIds);
@@ -130,7 +139,7 @@ class ReportService
         $statusFilter = $filters['status_filter'] ?? 'all';
 
         $baseQuery = \App\Models\Invoice::query()
-            ->with(['patient', 'caseReport.branch', 'caseReport.referer'])
+            ->with(['patient', 'caseReport.branch', 'caseReport.referer', 'caseReport.items.scanType'])
             ->withSum('payments', 'amount');
 
         // Apply Branch Filter
@@ -172,7 +181,14 @@ class ReportService
             $listQuery->whereIn('status', ['unpaid', 'due']);
         }
 
-        $paginatedData = $listQuery->orderBy('invoice_date', 'desc')->paginate($perPage);
+        $listQuery->orderBy('invoice_date', 'desc');
+
+        if ($perPage == -1) {
+            $data = $listQuery->get();
+            $paginatedData = new \Illuminate\Pagination\LengthAwarePaginator($data, $data->count(), $data->count() ?: 1, 1);
+        } else {
+            $paginatedData = $listQuery->paginate($perPage);
+        }
 
         return [
             'success' => true,
@@ -491,5 +507,38 @@ class ReportService
             'recent_reports' => $recent_reports,
             'scan_stats' => $scan_stats,
         ];
+    }
+
+    /**
+     * Get Referer × Scan Type flat data for Excel export.
+     */
+    public function getRefererScanFlatData(array $filters = []): array
+    {
+        $query = DB::table('case_report_items as cri')
+            ->join('case_reports as cr', 'cri.case_report_id', '=', 'cr.id')
+            ->join('referers as r', 'cr.referer_id', '=', 'r.id')
+            ->join('scan_types as st', 'cri.scan_type_id', '=', 'st.id')
+            ->whereNull('cri.deleted_at')
+            ->whereNull('cr.deleted_at')
+            ->whereNull('r.deleted_at')
+            ->select(
+                'r.name as referer_name',
+                'st.name as scan_type_name',
+                DB::raw('COUNT(cri.id) as total_scans'),
+                DB::raw('SUM(cri.total_amount) as total_amount'),
+                'cr.rct_date as date'
+            );
+
+        $this->applyDateFilters($query, $filters, 'cr.rct_date');
+        $this->applyBranchFilter($query, $filters['branch_id'] ?? 'all', 'cr.branch_id');
+
+        if (!empty($filters['search'])) {
+            $query->where('r.name', 'like', "%{$filters['search']}%");
+        }
+
+        return $query->groupBy('r.name', 'st.name', 'cr.rct_date')
+            ->orderBy('cr.rct_date', 'desc')
+            ->get()
+            ->toArray();
     }
 }
