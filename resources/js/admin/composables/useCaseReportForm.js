@@ -24,7 +24,9 @@ export function useCaseReportForm(isEdit = false) {
         paymentMethods,
         discounts,
         fetchMasters: fetchMastersBase,
-        fetchNextCaseId: fetchNextIdBase
+        fetchNextCaseId: fetchNextIdBase,
+        fetchNextInvoiceNo: fetchNextInvoiceNoBase,
+        fetchNextPaymentId: fetchNextPaymentIdBase
     } = useCaseMasters();
 
     // --- File Handling Composable ---
@@ -52,8 +54,11 @@ export function useCaseReportForm(isEdit = false) {
         id: null,
         case_id: "",
         patient_fk_id: "",
+        title_fk_id: "",
         patient_name: "",
         patient_place: "",
+        gender_fk_id: "",
+        age: "",
         send_whatsapp_patient: true,
         send_whatsapp_referer: true,
         whatsapp_no_patient: "",
@@ -63,16 +68,17 @@ export function useCaseReportForm(isEdit = false) {
         items: [],
         branch_id: "",
         referer_id: "",
+        title_id: "",
+        referer_type_id: "",
         referer_name: "",
         hospital_name: "",
         hospital_id: "",
-        rct_date: (() => {
+        scanning_date: (() => {
             const d = new Date();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         })(),
-        rct_hour: new Date().toTimeString().slice(0, 5),
-        is_stat: false,
-        patient_type: "out_patient",
+        check_in: new Date().toTimeString().slice(0, 5),
+        is_stat_case: false,
 
         // Invoice Details - initialized as null for new cases
         invoice_date: isEdit ? (() => {
@@ -87,6 +93,20 @@ export function useCaseReportForm(isEdit = false) {
         invoice_no: "",
         status: "pending",
         invoice_items: [],
+
+        // Multi-Row Payment Details
+        payment_id: "", // Auto-generated ID for the payment section
+        payments: [
+            {
+                payment_method_id: "",
+                amount: 0,
+                payment_date: (() => {
+                    const d = new Date();
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                })(),
+                notes: ""
+            }
+        ]
     });
 
     const deletedInvoiceItemIds = ref([]);
@@ -114,6 +134,17 @@ export function useCaseReportForm(isEdit = false) {
     watch(() => form.discount_id, calculateDiscount);
     watch(subTotal, calculateDiscount);
 
+    // Sync first payment amount with grand total
+    watch(totalAmount, (newTotal) => {
+        if (form.payments.length > 0) {
+            form.payments[0].amount = newTotal;
+        }
+    }, { immediate: true });
+
+    const totalPaid = computed(() => {
+        return (form.payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    });
+
     // Wrapper methods to pass 'form' context
     const fetchNextCaseId = () => fetchNextIdBase(form);
     const handleGeneralFiles = (e) => handleGeneralFilesBase(e, form, form.id);
@@ -124,6 +155,25 @@ export function useCaseReportForm(isEdit = false) {
     const handleDrop = (e, idx) => handleDropBase(e, idx, form);
     const startBatchedUpload = () => startBatchedUploadBase(form);
     const getUniqueFolders = (docs, ret) => getUniqueFoldersBase(docs, ret);
+    const fetchNextInvoiceNo = () => fetchNextInvoiceNoBase(form);
+    const fetchNextPaymentId = () => fetchNextPaymentIdBase(form);
+
+    const addPaymentRow = () => {
+        const d = new Date();
+        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        form.payments.push({
+            payment_method_id: "",
+            amount: 0,
+            payment_date: today,
+            notes: ""
+        });
+    };
+
+    const removePaymentRow = (index) => {
+        if (form.payments.length > 1) {
+            form.payments.splice(index, 1);
+        }
+    };
 
     // Default item structure
     const createNewItem = () => ({
@@ -189,6 +239,12 @@ export function useCaseReportForm(isEdit = false) {
                 if (!form.case_id) {
                     await fetchNextCaseId();
                 }
+                if (!form.invoice_no) {
+                    await fetchNextInvoiceNo();
+                }
+                if (!form.payment_id) {
+                    await fetchNextPaymentId();
+                }
             }
         } catch (err) {
             console.error("Failed to fetch master data", err);
@@ -212,8 +268,11 @@ export function useCaseReportForm(isEdit = false) {
             }
 
             form.patient_fk_id = data.patient_fk_id?.toString() || "";
+            form.title_fk_id = data.patient?.title_fk_id?.toString() || "";
             form.patient_name = data.patient?.name || "";
             form.patient_place = data.patient?.place || "";
+            form.gender_fk_id = data.patient?.gender_fk_id?.toString() || "";
+            form.age = data.patient?.age || "";
 
             // Inject current referer into list if it's not there
             if (data.referer && !referers.value.find(r => r.id === data.referer.id)) {
@@ -221,6 +280,8 @@ export function useCaseReportForm(isEdit = false) {
             }
 
             form.referer_id = data.referer_id?.toString() || "";
+            form.title_id = data.referer?.title_id?.toString() || "";
+            form.referer_type_id = data.referer?.referer_type_id?.toString() || "";
             form.referer_name = data.referer?.name || "";
             form.whatsapp_no_patient = data.whatsapp_no_patient || "";
             form.whatsapp_no_referer = data.whatsapp_no_referer || "";
@@ -231,10 +292,9 @@ export function useCaseReportForm(isEdit = false) {
             form.description = data.description || "";
             form.branch_id = data.branch_id?.toString() || "";
             form.case_id = data.case_id || "";
-            form.rct_date = data.rct_date ? data.rct_date.split('T')[0] : "";
-            form.rct_hour = data.rct_hour || "";
-            form.is_stat = data.is_stat ?? false;
-            form.patient_type = data.patient_type || "out_patient";
+            form.scanning_date = data.scanning_date ? data.scanning_date.split('T')[0] : "";
+            form.check_in = data.check_in || "";
+            form.is_stat_case = data.is_stat_case ?? false;
 
 
             form.documents = (data.documents || []).map((path) => ({
@@ -352,6 +412,74 @@ export function useCaseReportForm(isEdit = false) {
         }
     });
 
+    // --- Synchronization Logic ---
+    watch(() => form.items, (newItems) => {
+        if (fetching.value) return;
+
+        // Flatten all selected scans from items
+        const currentScans = [];
+        newItems.forEach(item => {
+            (item.selected_scans || []).forEach(scan => {
+                const key = item.id
+                    ? `${String(item.id)}-${String(item.scan_type_id)}-${String(scan.scan_id)}`
+                    : `${String(item.scan_type_id)}-${String(scan.scan_id)}`;
+
+                currentScans.push({
+                    key,
+                    case_report_item_id: item.id || null,
+                    scan_id: scan.scan_id,
+                    description: `${scan.scan_name} (${item.scan_type_name || 'Scan'})`,
+                    amount: scan.amount,
+                    scan_type_name: item.scan_type_name
+                });
+            });
+        });
+
+        // 1. Add missing scans or update existing ones
+        currentScans.forEach(scan => {
+            const index = form.invoice_items.findIndex(inv =>
+                inv._key === scan.key ||
+                (inv.case_report_item_id && String(inv.case_report_item_id) === String(scan.case_report_item_id) && String(inv.scan_id) === String(scan.scan_id))
+            );
+
+            if (index === -1) {
+                // Check if it was manually deleted? 
+                // For now, let's keep it simple: if it's in scans, it's in invoice.
+                form.invoice_items.push({
+                    _key: scan.key,
+                    case_report_item_id: scan.case_report_item_id,
+                    scan_id: scan.scan_id,
+                    description: scan.description,
+                    scan_type_name: scan.scan_type_name,
+                    amount: scan.amount,
+                });
+            } else {
+                // Update amount if changed in Scan Items
+                const invItem = form.invoice_items[index];
+                if (invItem.amount !== scan.amount) {
+                    invItem.amount = scan.amount;
+                }
+            }
+        });
+
+        // 2. Remove scans from invoice that are no longer in form.items
+        for (let i = form.invoice_items.length - 1; i >= 0; i--) {
+            const invItem = form.invoice_items[i];
+            // Only auto-remove if it came from a scan (has scan_id)
+            if (invItem.scan_id) {
+                const stillExists = currentScans.some(scan =>
+                    scan.key === invItem._key ||
+                    (scan.case_report_item_id && String(scan.case_report_item_id) === String(invItem.case_report_item_id) && String(scan.scan_id) === String(invItem.scan_id))
+                );
+
+                if (!stillExists) {
+                    // Use index directly to avoid issues with splice while iterating
+                    removeInvoiceItem(i);
+                }
+            }
+        }
+    }, { deep: true });
+
     watch(() => form.referer_id, (newVal) => {
         if (!newVal || fetching.value) return;
         const list = referers.value;
@@ -463,10 +591,9 @@ export function useCaseReportForm(isEdit = false) {
                 hospital_id: form.hospital_id,
                 description: form.description || "",
                 branch_id: form.branch_id || "",
-                rct_date: form.rct_date || null,
-                rct_hour: form.rct_hour || "",
-                is_stat: form.is_stat ?? false,
-                patient_type: form.patient_type || "out_patient",
+                scanning_date: form.scanning_date || null,
+                check_in: form.check_in || "",
+                is_stat_case: form.is_stat_case ?? false,
                 send_whatsapp_patient: form.send_whatsapp_patient ?? true,
                 send_whatsapp_referer: form.send_whatsapp_referer ?? true,
                 documents: (form.documents || []).map((d) => d.path || d),
@@ -642,6 +769,7 @@ export function useCaseReportForm(isEdit = false) {
         handleGeneralFiles, removeGeneralDoc, handleDrop, handleFiles,
         startBatchedUpload, removeFolder, removeDoc, handleSubmit,
         handleSendWhatsApp, handleModalClose, addInvoiceItem, removeInvoiceItem,
-        getUniqueFolders,
+        getUniqueFolders, fetchNextInvoiceNo, fetchNextPaymentId,
+        addPaymentRow, removePaymentRow, totalPaid,
     };
 }

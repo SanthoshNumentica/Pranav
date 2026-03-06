@@ -23,7 +23,7 @@
                                         </DialogTitle>
                                         <p class="text-sm text-slate-500 mt-1">
                                             Case ID: <span class="font-semibold text-primary">#{{ report?.case_id
-                                                }}</span>
+                                            }}</span>
                                         </p>
                                     </div>
                                     <button @click="$emit('close')"
@@ -44,8 +44,8 @@
                                             <input v-model="form.check_out" type="time"
                                                 class="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-sm font-medium focus:ring-2 focus:ring-primary/20 transition-all" />
                                         </div>
-                                        <p v-if="report?.rct_hour" class="text-[10px] text-slate-400 font-medium px-1">
-                                            Check-in time was: {{ report.rct_hour }}
+                                        <p v-if="report?.check_in" class="text-[10px] text-slate-400 font-medium px-1">
+                                            Check-in time was: {{ report.check_in }}
                                         </p>
                                     </div>
                                 </div>

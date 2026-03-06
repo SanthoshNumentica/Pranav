@@ -6,10 +6,6 @@
           <div class="h-1 w-1 rounded-full bg-primary"></div>
           {{ showUpload ? "Scan Items & DICOM" : "Scan Items" }}
         </h4>
-        <span v-if="totalCost > 0"
-          class="ml-3 px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-bold text-xs border border-slate-200">
-          Total: ₹{{ totalCost.toFixed(2) }}
-        </span>
       </div>
       <button v-if="canEdit" type="button" @click="addItem"
         class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-slate-900/10">
@@ -35,7 +31,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
           <!-- Scan Type -->
-          <div class="space-y-2 md:col-span-3">
+          <div class="space-y-2 md:col-span-4">
             <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
               Scan Type <span class="text-rose-500">*</span>
             </label>
@@ -58,7 +54,7 @@
           </div>
 
           <!-- Item Reference -->
-          <div class="space-y-2 md:col-span-2">
+          <div class="space-y-2 md:col-span-3">
             <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
               Item Reference
             </label>
@@ -71,7 +67,7 @@
           </div>
 
           <!-- Specific Scan -->
-          <div class="space-y-2 md:col-span-4">
+          <div class="space-y-2 md:col-span-5">
             <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
               Specific Scan <span class="text-rose-500">*</span>
             </label>
@@ -91,21 +87,6 @@
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-
-          <!-- Amount -->
-          <div class="space-y-2 md:col-span-3">
-            <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
-              Amount
-            </label>
-            <div class="relative group/input">
-              <div
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-primary transition-colors font-bold text-xs">
-                ₹
-              </div>
-              <input :value="calculateItemTotal(item).toFixed(2)" type="text" placeholder="0.00" :disabled="true"
-                class="w-full h-12 rounded-2xl py-3 pl-8 pr-4 text-sm border border-slate-200 bg-slate-50/50 transition-all outline-none font-bold opacity-70 cursor-not-allowed" />
             </div>
           </div>
         </div>
@@ -141,7 +122,7 @@
                   </td>
                   <td v-if="canEdit" class="py-3 px-4 text-center">
                     <button type="button" @click="removeScan(item, sIdx)"
-                      class="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/row:opacity-100">
+                      class="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all">
                       <Trash2Icon class="h-4 w-4" />
                     </button>
                   </td>
@@ -151,7 +132,7 @@
                 <tr class="bg-slate-50/30 font-bold">
                   <td colspan="2"
                     class="py-3 px-4 text-right text-[10px] font-bold uppercase tracking-wider text-slate-400">Total
-                    Scans Cost</td>
+                    {{ item.scan_type_name || "Scans" }} Cost</td>
                   <td class="py-3 px-4 text-right text-sm text-primary">₹{{ calculateItemTotal(item).toFixed(2) }}</td>
                   <td v-if="canEdit"></td>
                 </tr>

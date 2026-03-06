@@ -124,15 +124,15 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 text-xs text-slate-400 text-right">
-                    {{ report.rct_date ? new Date(report.rct_date).toLocaleDateString('en-GB', {
+                    {{ report.scanning_date ? new Date(report.scanning_date).toLocaleDateString('en-GB', {
                       day: '2-digit', month: 'short', year: 'numeric'
                     }) : 'N/A' }}
                   </td>
                   <td class="px-6 py-4 text-xs text-slate-400 text-right font-medium">
-                    {{ report.rct_hour || '—' }}
+                    {{ report.check_in || '—' }}
                   </td>
                   <td class="px-6 py-4 text-right">
-                    <button @click="confirmCheckOut(report)" :disabled="!report.rct_hour"
+                    <button @click="confirmCheckOut(report)" :disabled="!report.check_in"
                       class="px-2 py-1 rounded text-[10px] font-bold transition-all"
                       :class="report.check_out ? 'text-primary bg-primary/5' : 'text-slate-300 bg-slate-50'">
                       {{ report.check_out || "Set" }}

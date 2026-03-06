@@ -20,6 +20,28 @@ export function useCaseMasters() {
         }
     };
 
+    const fetchNextInvoiceNo = async (form) => {
+        try {
+            const response = await axios.get("/api/v1/invoices/next-no");
+            if (response.data.invoice_no) {
+                form.invoice_no = response.data.invoice_no;
+            }
+        } catch (err) {
+            console.error("Failed to fetch next invoice NO", err);
+        }
+    };
+
+    const fetchNextPaymentId = async (form) => {
+        try {
+            const response = await axios.get("/api/v1/payments/next-id");
+            if (response.data.success) {
+                form.payment_id = response.data.next_payment_id;
+            }
+        } catch (err) {
+            console.error("Failed to fetch next payment ID", err);
+        }
+    };
+
     const fetchMasters = async () => {
         try {
             const [sRes, bRes, pmRes, dRes] = await Promise.all([
@@ -55,6 +77,8 @@ export function useCaseMasters() {
         paymentMethods,
         discounts,
         fetchMasters,
-        fetchNextCaseId
+        fetchNextCaseId,
+        fetchNextInvoiceNo,
+        fetchNextPaymentId
     };
 }

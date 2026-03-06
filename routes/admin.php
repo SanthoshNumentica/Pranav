@@ -139,6 +139,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('invoices', InvoiceController::class);
 
         // Payments
+        Route::get('payments/next-id', [PaymentController::class, 'getNextPaymentId']);
         Route::apiResource('payments', PaymentController::class)->only(['index', 'store']);
 
         // Master Data for Invoices

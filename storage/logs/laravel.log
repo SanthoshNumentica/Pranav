@@ -23493,3 +23493,434 @@ Did you mean one of these?
 "} 
 [2026-03-06 10:18:40] local.INFO: Fetching next Case ID  
 [2026-03-06 10:18:40] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 10:51:39] local.INFO: Fetching next Case ID  
+[2026-03-06 10:51:39] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:13:19] local.INFO: Fetching next Case ID  
+[2026-03-06 12:13:19] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:20:36] local.INFO: Fetching next Case ID  
+[2026-03-06 12:20:37] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:23:32] local.INFO: Fetching next Case ID  
+[2026-03-06 12:23:32] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:27:57] local.INFO: Fetching next Case ID  
+[2026-03-06 12:27:57] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:31:25] local.INFO: Fetching next Case ID  
+[2026-03-06 12:31:25] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:37:02] local.INFO: Fetching next Case ID  
+[2026-03-06 12:37:02] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:54:33] local.INFO: Fetching next Case ID  
+[2026-03-06 12:54:33] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 12:59:09] local.INFO: Fetching next Case ID  
+[2026-03-06 12:59:09] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 13:07:38] local.INFO: Fetching next Case ID  
+[2026-03-06 13:07:38] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 13:10:31] local.INFO: Fetching next Case ID  
+[2026-03-06 13:10:31] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 14:58:22] local.INFO: Fetching next Case ID  
+[2026-03-06 14:58:22] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 15:15:18] local.ERROR: PHP Parse error: Syntax error, unexpected ')' on line 1 {"exception":"[object] (Psy\\Exception\\ParseErrorException(code: 0): PHP Parse error: Syntax error, unexpected ')' on line 1 at C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Exception/ParseErrorException.php:44)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/CodeCleaner.php(488): Psy/Exception/ParseErrorException::fromParseError(Object(PhpParser/Error))
+#1 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/CodeCleaner.php(269): Psy/CodeCleaner->parse('<?php foreach(S...', false)
+#2 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(985): Psy/CodeCleaner->clean(Array, false)
+#3 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(1018): Psy/Shell->addCode('foreach(Schema:...', true)
+#4 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(1562): Psy/Shell->setCode('foreach(Schema:...', true)
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/tinker/src/Console/TinkerCommand.php(76): Psy/Shell->execute('foreach(Schema:...')
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Laravel/Tinker/Console/TinkerCommand->handle()
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#12 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#14 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#15 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Laravel/Tinker/Console/TinkerCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#16 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#18 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#19 {main}
+"} 
+[2026-03-06 15:21:09] local.ERROR: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'payment_methods' already exists (Connection: mysql, SQL: create table `payment_methods` (`id` bigint unsigned not null auto_increment primary key, `name` varchar(191) not null, `status` enum('active', 'inactive') not null default 'active', `added_by` bigint unsigned null, `modified_by` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null, `deleted_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci') {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S01): SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'payment_methods' already exists (Connection: mysql, SQL: create table `payment_methods` (`id` bigint unsigned not null auto_increment primary key, `name` varchar(191) not null, `status` enum('active', 'inactive') not null default 'active', `added_by` bigint unsigned null, `modified_by` bigint unsigned null, `created_at` timestamp null, `updated_at` timestamp null, `deleted_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci') at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('create table `p...', Array, Object(Closure))
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('create table `p...', Array, Object(Closure))
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('create table `p...')
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(456): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->create('payment_methods', Object(Closure))
+#6 C:/xampp/htdocs/Pranav/database/migrations/2026_02_20_102401_create_payment_methods_table.php(14): Illuminate/Support/Facades/Facade::__callStatic('create', Array)
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_02_20_1024...', Object(Closure))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_02_20_1024...', Object(Closure))
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#25 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#28 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S01): SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'payment_methods' already exists at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:587)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(587): PDOStatement->execute()
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(816): Illuminate/Database/Connection->Illuminate/Database/{closure}('create table `p...', Array)
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('create table `p...', Array, Object(Closure))
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('create table `p...', Array, Object(Closure))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('create table `p...')
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(456): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->create('payment_methods', Object(Closure))
+#8 C:/xampp/htdocs/Pranav/database/migrations/2026_02_20_102401_create_payment_methods_table.php(14): Illuminate/Support/Facades/Facade::__callStatic('create', Array)
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_02_20_1024...', Object(Closure))
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_02_20_1024...', Object(Closure))
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 {main}
+"} 
+[2026-03-06 15:21:33] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'check_in' in 'case_reports' (Connection: mysql, SQL: alter table `case_reports` add `is_stat_case` tinyint(1) not null default '0' after `check_in`) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'check_in' in 'case_reports' (Connection: mysql, SQL: alter table `case_reports` add `is_stat_case` tinyint(1) not null default '0' after `check_in`) at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('alter table `ca...', Array, Object(Closure))
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('alter table `ca...', Array, Object(Closure))
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('alter table `ca...')
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(444): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->table('case_reports', Object(Closure))
+#6 C:/xampp/htdocs/Pranav/database/migrations/2026_03_06_151431_simplify_case_reports_table.php(14): Illuminate/Support/Facades/Facade::__callStatic('table', Array)
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_03_06_1514...', Object(Closure))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_03_06_1514...', Object(Closure))
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#25 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#28 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'check_in' in 'case_reports' at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:587)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(587): PDOStatement->execute()
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(816): Illuminate/Database/Connection->Illuminate/Database/{closure}('alter table `ca...', Array)
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('alter table `ca...', Array, Object(Closure))
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('alter table `ca...', Array, Object(Closure))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('alter table `ca...')
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(444): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->table('case_reports', Object(Closure))
+#8 C:/xampp/htdocs/Pranav/database/migrations/2026_03_06_151431_simplify_case_reports_table.php(14): Illuminate/Support/Facades/Facade::__callStatic('table', Array)
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_03_06_1514...', Object(Closure))
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_03_06_1514...', Object(Closure))
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 {main}
+"} 
+[2026-03-06 15:22:03] local.ERROR: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'column `rct_date` to `scanning_date`' at line 1 (Connection: mysql, SQL: alter table `case_reports` rename column `rct_date` to `scanning_date`) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42000): SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'column `rct_date` to `scanning_date`' at line 1 (Connection: mysql, SQL: alter table `case_reports` rename column `rct_date` to `scanning_date`) at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('alter table `ca...', Array, Object(Closure))
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('alter table `ca...', Array, Object(Closure))
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('alter table `ca...')
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(444): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->table('case_reports', Object(Closure))
+#6 C:/xampp/htdocs/Pranav/database/migrations/2026_03_06_151431_simplify_case_reports_table.php(14): Illuminate/Support/Facades/Facade::__callStatic('table', Array)
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_03_06_1514...', Object(Closure))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_03_06_1514...', Object(Closure))
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#25 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#28 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42000): SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'column `rct_date` to `scanning_date`' at line 1 at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:581)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(581): PDO->prepare('alter table `ca...')
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(816): Illuminate/Database/Connection->Illuminate/Database/{closure}('alter table `ca...', Array)
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('alter table `ca...', Array, Object(Closure))
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('alter table `ca...', Array, Object(Closure))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('alter table `ca...')
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(444): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->table('case_reports', Object(Closure))
+#8 C:/xampp/htdocs/Pranav/database/migrations/2026_03_06_151431_simplify_case_reports_table.php(14): Illuminate/Support/Facades/Facade::__callStatic('table', Array)
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_03_06_1514...', Object(Closure))
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_03_06_1514...', Object(Closure))
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 {main}
+"} 
+[2026-03-06 15:24:45] local.ERROR: PHP Parse error: Syntax error, unexpected ')' on line 1 {"exception":"[object] (Psy\\Exception\\ParseErrorException(code: 0): PHP Parse error: Syntax error, unexpected ')' on line 1 at C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Exception/ParseErrorException.php:44)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/CodeCleaner.php(488): Psy/Exception/ParseErrorException::fromParseError(Object(PhpParser/Error))
+#1 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/CodeCleaner.php(269): Psy/CodeCleaner->parse('<?php foreach(D...', false)
+#2 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(985): Psy/CodeCleaner->clean(Array, false)
+#3 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(1018): Psy/Shell->addCode('foreach(DB::sel...', true)
+#4 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(1562): Psy/Shell->setCode('foreach(DB::sel...', true)
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/tinker/src/Console/TinkerCommand.php(76): Psy/Shell->execute('foreach(DB::sel...')
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Laravel/Tinker/Console/TinkerCommand->handle()
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#12 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#14 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#15 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Laravel/Tinker/Console/TinkerCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#16 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#18 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#19 {main}
+"} 
+[2026-03-06 15:25:01] local.ERROR: PHP Parse error: Syntax error, unexpected ')' on line 1 {"exception":"[object] (Psy\\Exception\\ParseErrorException(code: 0): PHP Parse error: Syntax error, unexpected ')' on line 1 at C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Exception/ParseErrorException.php:44)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/CodeCleaner.php(488): Psy/Exception/ParseErrorException::fromParseError(Object(PhpParser/Error))
+#1 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/CodeCleaner.php(269): Psy/CodeCleaner->parse('<?php foreach(D...', false)
+#2 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(985): Psy/CodeCleaner->clean(Array, false)
+#3 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(1018): Psy/Shell->addCode('foreach(DB::sel...', true)
+#4 C:/xampp/htdocs/Pranav/vendor/psy/psysh/src/Shell.php(1562): Psy/Shell->setCode('foreach(DB::sel...', true)
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/tinker/src/Console/TinkerCommand.php(76): Psy/Shell->execute('foreach(DB::sel...')
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Laravel/Tinker/Console/TinkerCommand->handle()
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#12 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#14 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#15 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Laravel/Tinker/Console/TinkerCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#16 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#18 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#19 {main}
+"} 
+[2026-03-06 15:26:13] local.ERROR: SQLSTATE[42000]: Syntax error or access violation: 1091 Can't DROP COLUMN `in_patient`; check that it exists (Connection: mysql, SQL: alter table `case_reports` drop `patient_type`, drop `in_patient`, drop `out_patient`, drop `is_stat`) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42000): SQLSTATE[42000]: Syntax error or access violation: 1091 Can't DROP COLUMN `in_patient`; check that it exists (Connection: mysql, SQL: alter table `case_reports` drop `patient_type`, drop `in_patient`, drop `out_patient`, drop `is_stat`) at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('alter table `ca...', Array, Object(Closure))
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('alter table `ca...', Array, Object(Closure))
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('alter table `ca...')
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(444): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->table('case_reports', Object(Closure))
+#6 C:/xampp/htdocs/Pranav/database/migrations/2026_03_06_151431_simplify_case_reports_table.php(19): Illuminate/Support/Facades/Facade::__callStatic('table', Array)
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#8 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_03_06_1514...', Object(Closure))
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_03_06_1514...', Object(Closure))
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#25 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#28 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42000): SQLSTATE[42000]: Syntax error or access violation: 1091 Can't DROP COLUMN `in_patient`; check that it exists at C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php:587)
+[stacktrace]
+#0 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(587): PDOStatement->execute()
+#1 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(816): Illuminate/Database/Connection->Illuminate/Database/{closure}('alter table `ca...', Array)
+#2 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate/Database/Connection->runQueryCallback('alter table `ca...', Array, Object(Closure))
+#3 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Connection.php(576): Illuminate/Database/Connection->run('alter table `ca...', Array, Object(Closure))
+#4 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Blueprint.php(110): Illuminate/Database/Connection->statement('alter table `ca...')
+#5 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(602): Illuminate/Database/Schema/Blueprint->build(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Schema/Grammars/MySqlGrammar))
+#6 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Schema/Builder.php(444): Illuminate/Database/Schema/Builder->build(Object(Illuminate/Database/Schema/Blueprint))
+#7 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate/Database/Schema/Builder->table('case_reports', Object(Closure))
+#8 C:/xampp/htdocs/Pranav/database/migrations/2026_03_06_151431_simplify_case_reports_table.php(19): Illuminate/Support/Facades/Facade::__callStatic('table', Array)
+#9 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(501): Illuminate/Database/Migrations/Migration@anonymous->up()
+#10 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(418): Illuminate/Database/Migrations/Migrator->runMethod(Object(Illuminate/Database/MySqlConnection), Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#11 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(427): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#12 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->runMigration(Object(Illuminate/Database/Migrations/Migration@anonymous), 'up')
+#13 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/View/Components/Task.php(37): Illuminate/Database/Migrations/Migrator->Illuminate/Database/Migrations/{closure}()
+#14 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(783): Illuminate/Console/View/Components/Task->render('2026_03_06_1514...', Object(Closure))
+#15 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(224): Illuminate/Database/Migrations/Migrator->write('Illuminate//Cons...', '2026_03_06_1514...', Object(Closure))
+#16 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(189): Illuminate/Database/Migrations/Migrator->runUp('C://xampp//htdocs...', 57, false)
+#17 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(132): Illuminate/Database/Migrations/Migrator->runPending(Array, Array)
+#18 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(90): Illuminate/Database/Migrations/Migrator->run(Array, Array)
+#19 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Migrations/Migrator.php(641): Illuminate/Database/Console/Migrations/MigrateCommand->Illuminate/Database/Console/Migrations/{closure}()
+#20 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Database/Console/Migrations/MigrateCommand.php(83): Illuminate/Database/Migrations/Migrator->usingConnection(NULL, Object(Closure))
+#21 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Database/Console/Migrations/MigrateCommand->handle()
+#22 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 C:/xampp/htdocs/Pranav/vendor/symfony/console/Command/Command.php(326): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(1121): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(324): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Database/Console/Migrations/MigrateCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 C:/xampp/htdocs/Pranav/vendor/symfony/console/Application.php(175): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 C:/xampp/htdocs/Pranav/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 C:/xampp/htdocs/Pranav/artisan(39): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 {main}
+"} 
+[2026-03-06 15:30:55] local.INFO: Fetching next Case ID  
+[2026-03-06 15:30:55] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 16:21:37] local.INFO: Fetching next Case ID  
+[2026-03-06 16:21:37] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 16:21:51] local.INFO: Fetching next Case ID  
+[2026-03-06 16:21:51] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:26:40] local.INFO: Fetching next Case ID  
+[2026-03-06 17:26:40] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:29:32] local.INFO: Fetching next Case ID  
+[2026-03-06 17:29:32] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:34:53] local.INFO: Fetching next Case ID  
+[2026-03-06 17:34:53] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:35:07] local.INFO: Fetching next Case ID  
+[2026-03-06 17:35:07] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:35:27] local.INFO: Fetching next Case ID  
+[2026-03-06 17:35:27] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:35:53] local.INFO: Fetching next Case ID  
+[2026-03-06 17:35:53] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:54:25] local.INFO: Fetching next Case ID  
+[2026-03-06 17:54:25] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:56:41] local.INFO: Fetching next Case ID  
+[2026-03-06 17:56:42] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:56:45] local.INFO: Fetching next Case ID  
+[2026-03-06 17:56:45] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 17:56:46] local.INFO: Fetching next Case ID  
+[2026-03-06 17:56:46] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:04:52] local.INFO: Fetching next Case ID  
+[2026-03-06 18:04:52] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:07:36] local.INFO: Fetching next Case ID  
+[2026-03-06 18:07:36] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:13:59] local.INFO: Fetching next Case ID  
+[2026-03-06 18:13:59] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:14:11] local.INFO: Fetching next Case ID  
+[2026-03-06 18:14:11] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:27:14] local.INFO: Fetching next Case ID  
+[2026-03-06 18:27:14] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:36:24] local.INFO: Fetching next Case ID  
+[2026-03-06 18:36:24] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:36:37] local.INFO: Fetching next Case ID  
+[2026-03-06 18:36:37] local.INFO: Next Case ID generated: CAS0335  
+[2026-03-06 18:40:14] local.INFO: Fetching next Case ID  
+[2026-03-06 18:40:14] local.INFO: Next Case ID generated: CAS0335  

@@ -62,8 +62,8 @@ class CaseReportService
 
         $this->applyBasicFilters($query, $filters);
 
-        return $query->orderBy('rct_date', 'desc')
-            ->orderBy('rct_hour', 'desc')
+        return $query->orderBy('scanning_date', 'desc')
+            ->orderBy('check_in', 'desc')
             ->paginate($perPage);
     }
 
@@ -75,9 +75,9 @@ class CaseReportService
         $query = CaseReport::query();
 
         if (isset($filters['filter_option']) && $filters['filter_option'] === 'today') {
-            $query->whereDate('rct_date', \Carbon\Carbon::today());
+            $query->whereDate('scanning_date', \Carbon\Carbon::today());
         } elseif (isset($filters['from_date']) && isset($filters['to_date'])) {
-            $query->whereBetween('rct_date', [$filters['from_date'], $filters['to_date']]);
+            $query->whereBetween('scanning_date', [$filters['from_date'], $filters['to_date']]);
         }
 
         if (isset($filters['branch_id']) && $filters['branch_id'] !== 'all') {
@@ -97,9 +97,9 @@ class CaseReportService
     private function applyBasicFilters(Builder $query, array $filters): void
     {
         if (isset($filters['filter_option']) && $filters['filter_option'] === 'today') {
-            $query->whereDate('rct_date', \Carbon\Carbon::today());
+            $query->whereDate('scanning_date', \Carbon\Carbon::today());
         } elseif (isset($filters['from_date']) && isset($filters['to_date'])) {
-            $query->whereBetween('rct_date', [$filters['from_date'], $filters['to_date']]);
+            $query->whereBetween('scanning_date', [$filters['from_date'], $filters['to_date']]);
         }
     }
 
@@ -203,10 +203,9 @@ class CaseReportService
                 'status' => 'pending',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
                 'branch_id' => $data['branch_id'] ?? null,
-                'rct_date' => $data['rct_date'] ?? null,
-                'rct_hour' => $data['rct_hour'] ?? null,
-                'is_stat' => $data['is_stat'] ?? false,
-                'patient_type' => $data['patient_type'] ?? 'out_patient',
+                'scanning_date' => $data['scanning_date'] ?? null,
+                'check_in' => $data['check_in'] ?? null,
+                'is_stat_case' => $data['is_stat_case'] ?? false,
             ]);
 
             // 2. Sync Related Data
@@ -239,10 +238,9 @@ class CaseReportService
                 'referer_id' => $data['referer_id'],
                 'description' => $data['description'] ?? null,
                 'documents' => $generalDocPaths,
-                'rct_date' => $data['rct_date'] ?? null,
-                'rct_hour' => $data['rct_hour'] ?? null,
-                'is_stat' => $data['is_stat'] ?? false,
-                'patient_type' => $data['patient_type'] ?? 'out_patient',
+                'scanning_date' => $data['scanning_date'] ?? null,
+                'check_in' => $data['check_in'] ?? null,
+                'is_stat_case' => $data['is_stat_case'] ?? false,
                 'branch_id' => $data['branch_id'] ?? $caseReport->branch_id,
             ]);
 

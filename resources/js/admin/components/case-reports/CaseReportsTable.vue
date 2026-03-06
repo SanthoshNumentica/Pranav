@@ -25,7 +25,7 @@
             Scanning Date
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Check-in
+            Check In
           </th>
           <th class="px-3 py-4 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Check-out
@@ -112,16 +112,16 @@
               <span v-else class="text-slate-400 text-xs">—</span>
             </td>
             <td class="px-3 py-3 text-xs text-slate-600">
-              {{ report.rct_date ? formatDate(report.rct_date) : "—" }}
+              {{ report.scanning_date ? formatDate(report.scanning_date) : "—" }}
             </td>
             <td class="px-3 py-3 text-[11px] text-slate-500 font-medium">
-              {{ report.rct_hour || "—" }}
+              {{ report.check_in || "—" }}
             </td>
             <td class="px-3 py-3">
               <button @click="$emit('open-check-out', report)"
                 class="px-2 py-1 rounded text-[11px] font-bold transition-all"
                 :class="report.check_out ? 'text-primary bg-primary/5 hover:bg-primary/10' : 'text-slate-400 bg-slate-50 hover:bg-slate-100/80'"
-                :disabled="!report.rct_hour">
+                :disabled="!report.check_in">
                 {{ report.check_out || "Set Time" }}
               </button>
             </td>

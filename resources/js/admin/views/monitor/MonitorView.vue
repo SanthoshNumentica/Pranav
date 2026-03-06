@@ -48,7 +48,7 @@
                                 <div
                                     class="flex items-center gap-3 text-emerald-600 bg-emerald-50 px-5 py-2 rounded-2xl border border-emerald-100">
                                     <ClockIcon class="h-5 w-5" />
-                                    <span class="text-xl font-black tabular-nums">{{ item.rct_hour }}</span>
+                                    <span class="text-xl font-black tabular-nums">{{ item.check_in }}</span>
                                 </div>
                             </div>
 
@@ -161,7 +161,7 @@ const fetchActiveCheckIns = async () => {
         const response = await axios.get('/api/v1/case-reports', { params });
         if (response.data.success) {
             // Strictly filter today's cases where check_out is NULL
-            reports.value = response.data.data.data.filter(r => r.rct_hour && !r.check_out);
+            reports.value = response.data.data.data.filter(r => r.check_in && !r.check_out);
         }
     } catch (error) {
         console.error('Monitor fetch error:', error);

@@ -45,38 +45,19 @@
         </TabList>
 
         <TabPanels>
-          <!-- Patient Details Tab -->
-          <TabPanel v-if="categories.some((c) => c.name === 'Patient Details')"
+          <!-- Case Info Wrapper Tab (Patient + Referer + Case Info + Invoice) -->
+          <TabPanel v-if="categories.some((c) => c.name === 'Case Info')"
             class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl">
-            <PatientDetailsTab :form="form" :patients="patients"
-              :can-edit="hasPermission('case-report-patient-details', 'edit')" @new-patient="isPatientDialogOpen = true"
-              @next="nextTab" />
-          </TabPanel>
-
-          <!-- Referer Details Tab -->
-          <TabPanel v-if="categories.some((c) => c.name === 'Referer Details')"
-            class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl">
-            <RefererDetailsTab :form="form" :referers="referers"
-              :can-edit="hasPermission('case-report-referer-details', 'edit')" @new-referer="isRefererDialogOpen = true"
-              @next="nextTab" />
-          </TabPanel>
-
-          <!-- Case Info Details Tab -->
-          <TabPanel v-if="categories.some((c) => c.name === 'Case Info Details')"
-            class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl">
-            <CaseInfoTab :form="form" :logged-in-user-is-super-admin="loggedInUserIsSuperAdmin"
-              :filtered-branches="filteredBranches" :scan-types="scanTypes" :get-scans="getScans" :add-item="addItem"
+            <CaseInfoWrapper :form="form" :patients="patients" :referers="referers" :fetching="fetching"
+              :logged-in-user-is-super-admin="loggedInUserIsSuperAdmin" :filtered-branches="filteredBranches"
+              :scan-types="scanTypes" :payment-methods="paymentMethods" :get-scans="getScans" :add-item="addItem"
               :remove-item="removeItem" :handle-drop="handleDrop" :handle-files="handleFiles"
               :remove-folder="removeFolder" :remove-doc="removeDoc" :get-unique-folders="getUniqueFolders"
-              :processing="loading" :can-edit="hasPermission('case-report-case-info', 'edit')" :is-last-tab="false"
-              @next="nextTab" @back="prevTab" />
-          </TabPanel>
-
-          <TabPanel v-if="categories.some((c) => c.name === 'Invoice Details')"
-            class="focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-400 rounded-xl">
-            <InvoiceDetailsTab :form="form" :processing="loading" :sub-total="subTotal" :total-amount="totalAmount"
-              :discounts="discounts" :add-invoice-item="addInvoiceItem" :remove-invoice-item="removeInvoiceItem"
-              :can-edit="hasPermission('case-report-invoice', 'edit')" @next="nextTab" @back="prevTab"
+              :processing="loading" :can-edit="hasPermission('case-report-case-info', 'edit')" :sub-total="subTotal"
+              :total-amount="totalAmount" :total-paid="totalPaid" :discounts="discounts"
+              :add-invoice-item="addInvoiceItem" :remove-invoice-item="removeInvoiceItem"
+              :add-payment-row="addPaymentRow" :remove-payment-row="removePaymentRow"
+              @new-patient="isPatientDialogOpen = true" @new-referer="isRefererDialogOpen = true"
               @submit="handleSubmit" />
           </TabPanel>
 
@@ -97,6 +78,20 @@
       <div v-if="error" class="mt-4 text-xs text-rose-500 font-bold px-4 flex items-center gap-2 animate-in fade-in">
         <AlertCircleIcon class="h-3.5 w-3.5" />
         {{ error }}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-4 pt-8 border-t border-slate-100">
+        <button type="button" @click="$router.push('/case-reports')"
+          class="px-8 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95">
+          Cancel
+        </button>
+        <button type="submit" :disabled="loading"
+          class="group flex items-center gap-2 px-10 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          <Loader2Icon v-if="loading" class="h-4 w-4 animate-spin" />
+          <SaveIcon v-else class="h-4 w-4" />
+          Update Case Report
+        </button>
       </div>
     </form>
 
@@ -131,15 +126,13 @@ import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecip
 import DicomUploadModal from "../../components/dicom/DicomUploadModal.vue";
 import PatientFormDialog from "../../components/patients/PatientFormDialog.vue";
 import RefererFormDialog from "../../components/referers/RefererFormDialog.vue";
-import PatientDetailsTab from "../../components/case-reports/tabs/PatientDetailsTab.vue";
-import RefererDetailsTab from "../../components/case-reports/tabs/RefererDetailsTab.vue";
-import CaseInfoTab from "../../components/case-reports/tabs/CaseInfoTab.vue";
-import InvoiceDetailsTab from "../../components/case-reports/tabs/InvoiceDetailsTab.vue";
+import CaseInfoWrapper from "../../components/case-reports/tabs/CaseInfoWrapper.vue";
 import FileUploadsTab from "../../components/case-reports/tabs/FileUploadsTab.vue";
 
 import {
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
+  Save as SaveIcon,
 } from "lucide-vue-next";
 
 import SkeletonCaseReportLoader from "../../components/loaders/SkeletonCaseReportLoader.vue";
@@ -150,10 +143,7 @@ const selectedTab = ref(0);
 const { hasPermission } = usePermissions();
 
 const allCategories = [
-  { name: "Patient Details", module: "case-report-patient-details" },
-  { name: "Referer Details", module: "case-report-referer-details" },
-  { name: "Case Info Details", module: "case-report-case-info" },
-  { name: "Invoice Details", module: "case-report-invoice" },
+  { name: "Case Info", module: "case-report-case-info" },
   { name: "Files Upload Option", module: "case-report-files" },
 ];
 
@@ -236,6 +226,10 @@ const {
   totalAmount,
   addInvoiceItem,
   removeInvoiceItem,
+  paymentMethods,
+  addPaymentRow,
+  removePaymentRow,
+  totalPaid,
 } = useCaseReportForm(true);
 
 const isInitialLoading = ref(true);

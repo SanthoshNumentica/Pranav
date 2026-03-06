@@ -165,8 +165,9 @@
                 <td class="px-4 py-4">
                   <div class="flex items-center gap-1.5 text-xs text-slate-600 font-bold">
                     <CalendarIcon class="h-3 w-3 text-slate-400" />
-                    {{ report.rct_date ? new Date(report.rct_date).toLocaleDateString('en-GB').replace(/\//g, '-') :
-                      'N/A' }}
+                    {{ report.scanning_date ? new Date(report.scanning_date).toLocaleDateString('en-GB').replace(/\//g,
+                      '-') :
+                    'N/A' }}
                   </div>
                 </td>
               </tr>

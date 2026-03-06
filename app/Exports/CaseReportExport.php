@@ -52,8 +52,8 @@ class CaseReportExport implements FromCollection, WithHeadings, WithMapping, Wit
             $caseReport->patient->whatsapp_no ?? ($caseReport->patient->mobile_no ?? 'N/A'),
             $caseReport->referer->name ?? 'N/A',
             $caseReport->referer->mobile_no ?? 'N/A',
-            $caseReport->rct_date ? \Carbon\Carbon::parse($caseReport->rct_date)->format('d-m-Y') : 'N/A',
-            $caseReport->rct_hour ?? '—',
+            $caseReport->scanning_date ? \Carbon\Carbon::parse($caseReport->scanning_date)->format('d-m-Y') : 'N/A',
+            $caseReport->check_in ?? '—',
             $caseReport->check_out ?? '—',
         ];
     }

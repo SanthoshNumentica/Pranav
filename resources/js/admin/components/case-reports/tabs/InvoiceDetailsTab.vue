@@ -1,90 +1,22 @@
 <template>
   <div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left Column: Case Scans List -->
-      <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white rounded-[32px] border border-slate-200 p-6 shadow-soft-xl">
-          <div class="flex items-center gap-2 mb-2">
-            <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-              <div class="h-1 w-1 rounded-full bg-primary"></div>
-              Case Scans
-            </h4>
-          </div>
-
-          <div class="space-y-4">
-            <div v-for="(scan, sIdx) in flattenedScans" :key="sIdx"
-              class="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 space-y-3">
-              <div class="flex justify-between items-start">
-                <div>
-                  <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                    Scan Item #{{ sIdx + 1 }}
-                  </p>
-                  <p class="font-bold text-slate-700">
-                    {{ scan.scan_name }}
-                  </p>
-                  <p class="text-[10px] font-medium text-slate-400">
-                    {{ scan.scan_type_name }}
-                  </p>
-                </div>
-                <p class="font-black text-primary">
-                  ₹{{ parseFloat(scan.amount || 0).toFixed(2) }}
-                </p>
-              </div>
-
-              <div v-if="isAddedToInvoice(scan)"
-                class="w-full py-2 bg-slate-100 border border-slate-200 text-slate-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-default">
-                <CheckCircleIcon class="h-3.5 w-3.5 text-emerald-500" />
-                Added to Invoice
-              </div>
-              <button v-else-if="canEdit" type="button" @click="addInvoiceItem(scan)"
-                class="w-full py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-primary hover:text-white hover:border-primary transition-all flex items-center justify-center gap-2 group">
-                <PlusIcon class="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
-                Add to Invoice
-              </button>
-            </div>
-
-            <div v-if="form.items.length === 0" class="text-center py-8">
-              <p class="text-slate-400 text-sm font-medium">
-                No scans added to this case yet.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Invoice Details & Preview -->
-      <div class="lg:col-span-2 space-y-6">
+    <div class="block">
+      <!-- Full Width Invoice Details & Preview -->
+      <div class="w-full space-y-6">
         <div class="bg-white rounded-[32px] border border-slate-200 p-8 shadow-soft-xl space-y-8">
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
+          <div class="flex items-center justify-between gap-4 pb-2">
+            <div class="flex items-center gap-3">
               <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
                 <div class="h-1 w-1 rounded-full bg-primary"></div>
                 Invoice Details
               </h4>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-bold tracking-wider">
+                Invoice ID: {{ form.invoice_no || '--' }}
+              </span>
             </div>
 
-            <div class="flex items-center gap-3">
-              <button v-if="canEdit" type="button" @click="addInvoiceItem()"
-                class="px-3 py-1.5 rounded-lg bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center gap-2 shadow-sm border border-primary/10">
-                <PlusIcon class="h-3 w-3" />
-                Add Manual Item
-              </button>
-
-              <div class="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 shadow-sm"
-                v-if="form.invoice_id">
-                <div class="flex flex-col">
-                  <span
-                    class="text-[9px] font-black uppercase tracking-wider text-slate-400 leading-none mb-0.5">Invoice
-                    No</span>
-                  <span class="text-xs font-bold text-slate-700 leading-none">{{
-                    form.invoice_no
-                  }}</span>
-                </div>
-                <div class="w-px h-6 bg-slate-200"></div>
-                <div class="flex items-center gap-2 px-1">
-                  <StatusBadge :status="form.status || ''" type="invoice" />
-                </div>
-              </div>
+            <div class="flex items-center gap-3" v-if="form.invoice_id">
+              <StatusBadge :status="form.status || ''" type="invoice" />
             </div>
           </div>
 
@@ -146,7 +78,7 @@
                         No items added to invoice.
                       </p>
                       <p class="text-[10px] text-slate-400 uppercase tracking-wider">
-                        Click "Add to Invoice" from the scans list
+                        Select scans from the Scan Items tab
                       </p>
                     </div>
                   </td>
@@ -155,25 +87,20 @@
             </table>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Invoice Date -->
-            <div class="space-y-2">
-              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Invoice Date</label>
-              <div class="relative group">
-                <div
-                  class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">
-                  <CalendarIcon class="h-4 w-4" />
-                </div>
-                <input v-model="form.invoice_date" type="date" :disabled="!canEdit"
-                  class="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed" />
-              </div>
-            </div>
+          <div class="flex justify-start">
+            <button v-if="canEdit" type="button" @click="addInvoiceItem()"
+              class="px-3 py-1.5 rounded-lg bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all active:scale-95 flex items-center gap-2 shadow-sm border border-primary/10">
+              <PlusIcon class="h-3 w-3" />
+              Add Manual Item
+            </button>
+          </div>
 
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Notes -->
-            <div class="space-y-2">
+            <div class="space-y-2 md:col-span-2">
               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Notes</label>
-              <input v-model="form.notes" placeholder="Internal notes..." :disabled="!canEdit"
-                class="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 placeholder:text-slate-400 text-sm disabled:opacity-70 disabled:cursor-not-allowed" />
+              <textarea v-model="form.notes" rows="3" placeholder="Internal notes..." :disabled="!canEdit"
+                class="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all font-bold text-slate-900 placeholder:text-slate-400 text-sm disabled:opacity-70 disabled:cursor-not-allowed resize-none"></textarea>
             </div>
 
             <!-- Discount & Tax in a smaller grid -->
@@ -250,26 +177,124 @@
             </div>
           </div>
 
-          <div class="flex justify-between gap-4 pt-4 border-t border-slate-50">
-            <button type="button" @click="$emit('back')"
-              class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95">
-              Back
-            </button>
-            <div class="flex items-center gap-3">
-              <button v-if="form.invoice_id" type="button" @click="handlePrint"
-                class="px-6 py-2.5 rounded-xl border border-primary/20 text-primary font-bold text-sm hover:bg-primary/5 transition-all active:scale-95 flex items-center gap-2">
-                <PrinterIcon class="h-4 w-4" />
-                Print Invoice
-              </button>
+        </div>
 
-              <button type="button" @click="$emit('submit', { generateInvoice: true })"
-                :disabled="processing || !canEdit"
-                class="group flex items-center gap-2 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                <Loader2Icon v-if="processing" class="h-4 w-4 animate-spin" />
-                {{ form.invoice_id ? "Update Invoice" : "Generate Invoice" }}
-                <ArrowRightIcon v-if="!processing" class="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </button>
+        <!-- Payment Details Section -->
+        <div class="bg-white rounded-[32px] border border-slate-200 p-8 shadow-soft-xl space-y-8">
+          <div class="flex items-center justify-between gap-4 pb-2">
+            <div class="flex items-center gap-3">
+              <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                <div class="h-1 w-1 rounded-full bg-primary"></div>
+                Payment Details
+              </h4>
+              <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-bold tracking-wider">
+                Payment ID: {{ form.payment_id || '--' }}
+              </span>
             </div>
+          </div>
+
+          <!-- Multi-Row Payment Table -->
+          <div class="overflow-hidden border border-slate-100 rounded-2xl">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12 text-center">
+                    #
+                  </th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Payment Method
+                  </th>
+                  <th
+                    class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-32 border-l border-slate-100">
+                    Amount
+                  </th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Payment Date
+                  </th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    Notes
+                  </th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider w-12 text-center">
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50">
+                <tr v-for="(payment, idx) in form.payments" :key="idx" class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-4 py-4 text-sm font-bold text-slate-400 text-center">
+                    {{ idx + 1 }}
+                  </td>
+                  <td class="px-4 py-2">
+                    <Select v-model="payment.payment_method_id" :disabled="!canEdit">
+                      <SelectTrigger class="h-9 rounded-lg bg-slate-50 border-none font-bold text-slate-900 text-xs">
+                        <SelectValue placeholder="Select Method" />
+                      </SelectTrigger>
+                      <SelectContent class="rounded-xl border-slate-100">
+                        <SelectItem v-for="method in paymentMethods" :key="method.id" :value="method.id.toString()">
+                          {{ method.name }}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </td>
+                  <td class="px-4 py-2 border-l border-slate-50">
+                    <div class="flex items-center gap-1">
+                      <span class="text-slate-400 font-bold text-sm">₹</span>
+                      <input v-model.number="payment.amount" type="number" step="0.01" :disabled="!canEdit"
+                        class="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed" />
+                    </div>
+                  </td>
+                  <td class="px-4 py-2">
+                    <input v-model="payment.payment_date" type="date" :disabled="!canEdit"
+                      class="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-900 text-sm disabled:opacity-70 disabled:cursor-not-allowed" />
+                  </td>
+                  <td class="px-4 py-2">
+                    <input v-model="payment.notes" placeholder="Notes" :disabled="!canEdit"
+                      class="w-full bg-transparent border-none p-0 focus:ring-0 font-medium text-slate-700 text-sm placeholder:text-slate-300 disabled:opacity-70 disabled:cursor-not-allowed" />
+                  </td>
+                  <td class="px-4 py-4 text-center">
+                    <button v-if="canEdit && form.payments.length > 1" type="button" @click="removePaymentRow(idx)"
+                      class="p-1.5 hover:bg-rose-50 text-slate-300 hover:text-rose-500 rounded-lg transition-all">
+                      <TrashIcon class="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Add Payment Button & Total Paid Display -->
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-50">
+            <button type="button" @click="addPaymentRow" :disabled="!canEdit"
+              class="px-5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-100 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <PlusIcon class="h-3.5 w-3.5" />
+              Add Payment
+            </button>
+
+            <div class="flex items-center gap-8 px-6 py-4 rounded-2xl bg-primary/5 border border-primary/10">
+              <div class="flex flex-col items-end">
+                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60 leading-none mb-1">Total
+                  Paid</span>
+                <span class="text-xl font-black text-primary leading-none tabular-nums">₹{{
+                  totalPaid.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2, maximumFractionDigits: 2
+                  })
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div class="flex items-center justify-between gap-4 pt-4">
+          <div class="flex items-center gap-3">
+            <button v-if="form.invoice_id" type="button" @click="handlePrint"
+              class="px-6 py-2.5 rounded-xl border border-primary/20 text-primary font-bold text-sm hover:bg-primary/5 transition-all active:scale-95 flex items-center gap-2">
+              <PrinterIcon class="h-4 w-4" />
+              Print Invoice
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <!-- Submit button could go here or is handled by parent -->
           </div>
         </div>
       </div>
@@ -282,16 +307,12 @@ import { computed } from "vue";
 import StatusBadge from "../../ui/StatusBadge.vue";
 import {
   Receipt as ReceiptIcon,
-  Calendar as CalendarIcon,
   Tag as TagIcon,
-  Percent as PercentIcon,
-  Plus as PlusIcon,
   Trash2 as TrashIcon,
-  Info as InfoIcon,
-  ArrowRight as ArrowRightIcon,
-  Loader2 as Loader2Icon,
   Printer as PrinterIcon,
-  CheckCircle2 as CheckCircleIcon,
+  Plus as PlusIcon,
+  CreditCard as CreditCardIcon,
+  Calendar as CalendarIcon,
 } from "lucide-vue-next";
 import {
   Select,
@@ -330,62 +351,29 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  paymentMethods: {
+    type: Array,
+    default: () => [],
+  },
   canEdit: {
     type: Boolean,
     default: true,
   },
+  totalPaid: {
+    type: Number,
+    default: 0,
+  },
+  addPaymentRow: {
+    type: Function,
+    required: true,
+  },
+  removePaymentRow: {
+    type: Function,
+    required: true,
+  },
 });
 
-const flattenedScans = computed(() => {
-  const scans = [];
-  (props.form.items || []).forEach((item) => {
-    if (item.selected_scans && item.selected_scans.length > 0) {
-      item.selected_scans.forEach((s) => {
-        scans.push({
-          scan_id: s.scan_id,
-          scan_name: s.scan_name || s.description || "Scan",
-          amount: s.amount,
-          scan_type_id: item.scan_type_id,
-          scan_type_name: item.scan_type_name,
-          id: item.id, // Ensure primary CaseReportItem ID is carried over
-        });
-      });
-    } else if (item.scan_id) {
-      scans.push({
-        id: item.id,
-        scan_id: item.scan_id,
-        scan_name: item.scan_name || "Scan",
-        amount: item.amount,
-        scan_type_id: item.scan_type_id,
-        scan_type_name: item.scan_type_name,
-      });
-    }
-  });
-  return scans;
-});
-
-defineEmits(["next", "back", "submit"]);
-
-const isAddedToInvoice = (scan) => {
-  // 1. Try matching by key
-  const key = scan.id
-    ? `${String(scan.id)}-${String(scan.scan_type_id)}-${String(scan.scan_id)}`
-    : `${String(scan.scan_type_id)}-${String(scan.scan_id)}`;
-
-  const existsByKey = (props.form.invoice_items || []).some(inv => String(inv._key) === key);
-  if (existsByKey) return true;
-
-  // 2. Fallback: Match by CaseReportItemID + scan_id (for precise matching on direct DB loads)
-  if (scan.id) {
-    const existsByData = (props.form.invoice_items || []).some(inv =>
-      String(inv.case_report_item_id) === String(scan.id) &&
-      String(inv.scan_id) === String(scan.scan_id)
-    );
-    if (existsByData) return true;
-  }
-
-  return false;
-};
+defineEmits(["submit"]);
 
 const handlePrint = () => {
   if (props.form.invoice_id) {

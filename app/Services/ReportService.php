@@ -29,7 +29,7 @@ class ReportService
         $this->applyBranchFilter($query, $filters['branch_id'] ?? 'all');
 
         // Applying Date Filters
-        $this->applyDateFilters($query, $filters, 'rct_date');
+        $this->applyDateFilters($query, $filters, 'scanning_date');
 
         // Get unfiltered stats (before scan_type_id filter)
         $unfilteredCaseIds = (clone $query)->pluck('id');
@@ -37,7 +37,7 @@ class ReportService
         // Apply Scan Type Filter for the final listing
         $this->applyScanTypeFilter($query, $filters['scan_type_id'] ?? 'all');
 
-        $query->orderBy('rct_date', 'desc');
+        $query->orderBy('scanning_date', 'desc');
 
         if ($perPage == -1) {
             $data = $query->get();
@@ -225,7 +225,7 @@ class ReportService
             ->whereNull('cr.deleted_at')
             ->whereNull('r.deleted_at');
 
-        $this->applyDateFilters($baseQuery, $filters, 'cr.rct_date');
+        $this->applyDateFilters($baseQuery, $filters, 'cr.scanning_date');
         $this->applyBranchFilter($baseQuery, $filters['branch_id'] ?? 'all', 'cr.branch_id');
 
         if (!empty($search)) {
@@ -459,7 +459,7 @@ class ReportService
             'total_patients' => \App\Models\Patient::query(),
             'total_referers' => \App\Models\Referer::query(),
             'total_case_reports' => \App\Models\CaseReport::query(),
-            'today_case_reports' => \App\Models\CaseReport::whereDate('rct_date', $today),
+            'today_case_reports' => \App\Models\CaseReport::whereDate('scanning_date', $today),
         ];
 
         if ($branchId) {
@@ -479,9 +479,9 @@ class ReportService
         ];
 
         $recentReportsQuery = CaseReport::with(['patient', 'referer', 'branch'])
-            ->whereDate('rct_date', $today)
+            ->whereDate('scanning_date', $today)
             ->orderByRaw('check_out IS NULL DESC')
-            ->orderBy('rct_hour', 'desc');
+            ->orderBy('check_in', 'desc');
 
         if ($branchId) {
             $recentReportsQuery->where('branch_id', $branchId);
@@ -526,18 +526,18 @@ class ReportService
                 'st.name as scan_type_name',
                 DB::raw('COUNT(cri.id) as total_scans'),
                 DB::raw('SUM(cri.total_amount) as total_amount'),
-                'cr.rct_date as date'
+                'cr.scanning_date as date'
             );
 
-        $this->applyDateFilters($query, $filters, 'cr.rct_date');
+        $this->applyDateFilters($query, $filters, 'cr.scanning_date');
         $this->applyBranchFilter($query, $filters['branch_id'] ?? 'all', 'cr.branch_id');
 
         if (!empty($filters['search'])) {
             $query->where('r.name', 'like', "%{$filters['search']}%");
         }
 
-        return $query->groupBy('r.name', 'st.name', 'cr.rct_date')
-            ->orderBy('cr.rct_date', 'desc')
+        return $query->groupBy('r.name', 'st.name', 'cr.scanning_date')
+            ->orderBy('cr.scanning_date', 'desc')
             ->get()
             ->toArray();
     }

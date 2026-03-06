@@ -29,10 +29,9 @@ class CaseReport extends BaseModel
         'expires_at',
         'sharing_token',
         'branch_id',
-        'rct_date',
-        'rct_hour',
-        'is_stat',
-        'patient_type',
+        'scanning_date',
+        'check_in',
+        'is_stat_case',
         'check_out',
         'added_by',
         'modified_by'
@@ -40,8 +39,8 @@ class CaseReport extends BaseModel
 
     protected $casts = [
         'documents' => 'array',
-        'is_stat' => 'boolean',
-        'rct_date' => 'date',
+        'is_stat_case' => 'boolean',
+        'scanning_date' => 'date',
         'check_out' => 'datetime',
         'expires_at' => 'datetime',
         'created_at' => 'datetime',
@@ -77,6 +76,13 @@ class CaseReport extends BaseModel
      * Get the check_out time in HH:MM format.
      */
     protected function checkOut(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? Carbon::parse($value)->format('H:i') : null,
+        );
+    }
+
+    public function checkIn(): Attribute
     {
         return Attribute::make(
             get: fn ($value) => $value ? Carbon::parse($value)->format('H:i') : null,

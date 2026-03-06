@@ -85,10 +85,9 @@ class CaseReportController extends Controller
             'case_report_items.*.amount' => ['nullable', 'numeric', 'min:0'],
             'case_report_items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
             'branch_id' => ['nullable', 'exists:branches,id'],
-            'rct_date' => ['nullable', 'date'],
-            'rct_hour' => ['nullable', 'string'],
-            'is_stat' => ['nullable', 'boolean'],
-            'patient_type' => ['nullable', 'in:in_patient,out_patient'],
+            'scanning_date' => ['nullable', 'date'],
+            'check_in' => ['nullable', 'string'],
+            'is_stat_case' => ['nullable', 'boolean'],
             // Invoice Fields
             'invoice_date' => ['nullable', 'date'],
             'discount_id' => ['nullable'],
@@ -102,7 +101,7 @@ class CaseReportController extends Controller
             'invoice_items.*.scan_id' => ['nullable', 'exists:scans,id'],
             'invoice_items.*.action' => ['nullable', 'integer', 'in:1,2,3'],
             'invoice_items.*.description' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'string'],
-                        'invoice_items.*.amount' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'numeric', 'min:0'],
+            'invoice_items.*.amount' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'numeric', 'min:0'],
         ]);
 
         if (auth()->user()->branch_id) {
@@ -154,10 +153,9 @@ class CaseReportController extends Controller
             'case_report_items.*.remarks' => ['nullable', 'string'],
             'case_report_items.*.amount' => ['nullable', 'numeric', 'min:0'],
             'case_report_items.*.total_amount' => ['nullable', 'numeric', 'min:0'],
-            'rct_date' => ['nullable', 'date'],
-            'rct_hour' => ['nullable', 'string'],
-            'is_stat' => ['nullable', 'boolean'],
-            'patient_type' => ['nullable', 'in:in_patient,out_patient'],
+            'scanning_date' => ['nullable', 'date'],
+            'check_in' => ['nullable', 'string'],
+            'is_stat_case' => ['nullable', 'boolean'],
             'branch_id' => ['nullable', 'exists:branches,id'],
             // Invoice Fields
             'invoice_date' => ['nullable', 'date'],
@@ -172,7 +170,7 @@ class CaseReportController extends Controller
             'invoice_items.*.scan_id' => ['nullable', 'exists:scans,id'],
             'invoice_items.*.action' => ['nullable', 'integer', 'in:1,2,3'],
             'invoice_items.*.description' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'string'],
-                        'invoice_items.*.amount' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'numeric', 'min:0'],
+            'invoice_items.*.amount' => ['sometimes', 'required_unless:invoice_items.*.action,3', 'nullable', 'numeric', 'min:0'],
         ]);
 
         $data['discount_id'] = $this->resolveDiscountId($data['discount_id'] ?? null);
@@ -217,7 +215,7 @@ class CaseReportController extends Controller
 
         $caseReport = CaseReport::findOrFail($id);
         
-        if (!$caseReport->rct_hour) {
+        if (!$caseReport->check_in) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cannot check-out without a check-in time.',

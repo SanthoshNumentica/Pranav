@@ -83,6 +83,17 @@ class PaymentController extends Controller
     }
 
     /**
+     * Get the next sequential payment_id.
+     */
+    public function getNextPaymentId()
+    {
+        return response()->json([
+            'success' => true,
+            'next_payment_id' => $this->generatePaymentId()
+        ]);
+    }
+
+    /**
      * Generate a sequential payment_id in the format PAY0001.
      */
     private function generatePaymentId(): string
