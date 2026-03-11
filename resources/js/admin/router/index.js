@@ -131,6 +131,12 @@ const routes = [
                 meta: { module: 'payment-methods' }
             },
             {
+                path: 'masters/cities',
+                name: 'Cities',
+                component: () => import('../views/masters/CityList.vue'),
+                meta: { module: 'cities' }
+            },
+            {
                 path: 'reports',
                 name: 'ReportsOverview',
                 component: () => import('../views/reports/ReportsOverview.vue'),

@@ -150,6 +150,7 @@ import {
   CreditCard as CreditCardIcon,
   Wallet as WalletIcon,
   Monitor as MonitorIcon,
+  MapPin as MapPinIcon,
 } from "lucide-vue-next";
 import SidebarNavItem from "../ui/SidebarNavItem.vue";
 import ConfirmationModal from "../ui/ConfirmationModal.vue";
@@ -253,6 +254,12 @@ const navMaster = computed(() => {
       url: "/masters/payment-methods",
       icon: WalletIcon,
       module: "payment-methods",
+    },
+    {
+      title: "Cities",
+      url: "/masters/cities",
+      icon: MapPinIcon,
+      module: "cities",
     },
   ];
   return items.filter((item) => !item.module || hasPermission(item.module));

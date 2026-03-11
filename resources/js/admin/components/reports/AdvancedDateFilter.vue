@@ -1,125 +1,107 @@
 <template>
-    <div class="space-y-4">
-        <div class="flex flex-wrap items-center gap-4">
-            <!-- Period Type -->
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Filter
-                    By Period</label>
-                <Select v-model="localFilters.filter_type" @update:modelValue="onPeriodTypeChange">
-                    <SelectTrigger class="w-full bg-slate-50">
-                        <SelectValue placeholder="Select Period" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="day">Day</SelectItem>
-                        <SelectItem value="week">Week</SelectItem>
-                        <SelectItem value="month">Month</SelectItem>
-                        <SelectItem value="year">Year</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <!-- Period Option -->
-            <div class="flex-1 min-w-[200px]">
-                <label
-                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Options</label>
-                <Select v-model="localFilters.filter_option" @update:modelValue="emitChange">
-                    <SelectTrigger class="w-full bg-slate-50">
-                        <SelectValue placeholder="Select Option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="opt in currentSubOptions" :key="opt.value" :value="opt.value">
-                            {{ opt.label }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <!-- Custom Date/Month/Year Pickers -->
-            <template v-if="localFilters.filter_option === 'custom'">
-                <div v-if="localFilters.filter_type === 'day'" class="flex-1 min-w-[200px]">
-                    <label
-                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Select
-                        Date</label>
-                    <input v-model="localFilters.from_date" type="date" :max="todayDate" @change="emitChange"
-                        class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-                </div>
-
-                <div v-if="localFilters.filter_type === 'week'" class="flex gap-4 flex-1 min-w-[400px]">
-                    <div class="flex-1">
-                        <label
-                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Start
-                            Date</label>
-                        <input v-model="localFilters.from_date" type="date" :max="todayDate" @change="emitChange"
-                            class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-                    </div>
-                    <div class="flex-1">
-                        <label
-                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">End
-                            Date</label>
-                        <input v-model="localFilters.to_date" type="date" :max="todayDate" :min="localFilters.from_date"
-                            @change="emitChange"
-                            class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-                    </div>
-                </div>
-
-                <div v-if="localFilters.filter_type === 'month'" class="flex gap-4 flex-1 min-w-[400px]">
-                    <div class="flex-1">
-                        <label
-                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Start
-                            Month</label>
-                        <input v-model="localFilters.from_date" type="month" :max="todayMonth" @change="emitChange"
-                            class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-                    </div>
-                    <div class="flex-1">
-                        <label
-                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">End
-                            Month</label>
-                        <input v-model="localFilters.to_date" type="month" :max="todayMonth"
-                            :min="localFilters.from_date" @change="emitChange"
-                            class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-                    </div>
-                </div>
-
-                <div v-if="localFilters.filter_type === 'year'" class="flex gap-1 flex-1 min-w-[400px]">
-                    <div class="flex-1">
-                        <label
-                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Start
-                            Year</label>
-                        <Select v-model="localFilters.from_date" @update:modelValue="emitChange">
-                            <SelectTrigger class="w-full bg-slate-50">
-                                <SelectValue placeholder="Start Year" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="year in yearOptions" :key="year" :value="year">
-                                    {{ year }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div class="flex-1">
-                        <label
-                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">End
-                            Year</label>
-                        <Select v-model="localFilters.to_date" @update:modelValue="emitChange">
-                            <SelectTrigger class="w-full bg-slate-50">
-                                <SelectValue placeholder="End Year" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="year in yearOptions.filter(y => y >= localFilters.from_date)"
-                                    :key="year" :value="year">
-                                    {{ year }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </template>
+    <div class="flex flex-wrap items-center gap-3">
+        <!-- Period Type -->
+        <div class="w-full sm:w-40 lg:w-44">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">Period</span>
+            <Select v-model="localFilters.filter_type" @update:modelValue="onPeriodTypeChange">
+                <SelectTrigger class="h-9 bg-slate-50/50">
+                    <SelectValue placeholder="Period" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="day">Day</SelectItem>
+                    <SelectItem value="week">Week</SelectItem>
+                    <SelectItem value="month">Month</SelectItem>
+                    <SelectItem value="year">Year</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
 
-        <!-- Active Range Display -->
+        <!-- Period Option -->
+        <div class="w-full sm:w-40 lg:w-44">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">Option</span>
+            <Select v-model="localFilters.filter_option" @update:modelValue="emitChange">
+                <SelectTrigger class="h-9 bg-slate-50/50">
+                    <SelectValue placeholder="Option" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem v-for="opt in currentSubOptions" :key="opt.value" :value="opt.value">
+                        {{ opt.label }}
+                    </SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+
+        <!-- Custom Date/Month/Year Pickers -->
+        <template v-if="localFilters.filter_option === 'custom'">
+            <div v-if="localFilters.filter_type === 'day'" class="w-full sm:w-40">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">Date</span>
+                <input v-model="localFilters.from_date" type="date" :max="todayDate" @change="emitChange"
+                    class="h-9 w-full px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+            </div>
+
+            <div v-if="localFilters.filter_type === 'week'" class="flex gap-2 w-full sm:w-auto">
+                <div class="w-32">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">Start</span>
+                    <input v-model="localFilters.from_date" type="date" :max="todayDate" @change="emitChange"
+                        class="h-9 w-full px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+                <div class="w-32">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">End</span>
+                    <input v-model="localFilters.to_date" type="date" :max="todayDate" :min="localFilters.from_date"
+                        @change="emitChange"
+                        class="h-9 w-full px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+            </div>
+
+            <div v-if="localFilters.filter_type === 'month'" class="flex gap-2 w-full sm:w-auto">
+                <div class="w-32">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">Start</span>
+                    <input v-model="localFilters.from_date" type="month" :max="todayMonth" @change="emitChange"
+                        class="h-9 w-full px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+                <div class="w-32">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">End</span>
+                    <input v-model="localFilters.to_date" type="month" :max="todayMonth"
+                        :min="localFilters.from_date" @change="emitChange"
+                        class="h-9 w-full px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
+                </div>
+            </div>
+
+            <div v-if="localFilters.filter_type === 'year'" class="flex gap-2 w-full sm:w-auto">
+                <div class="w-28">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">Start</span>
+                    <Select v-model="localFilters.from_date" @update:modelValue="emitChange">
+                        <SelectTrigger class="h-9 bg-slate-50">
+                            <SelectValue placeholder="Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="year in yearOptions" :key="year" :value="year">
+                                {{ year }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div class="w-28">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1 block">End</span>
+                    <Select v-model="localFilters.to_date" @update:modelValue="emitChange">
+                        <SelectTrigger class="h-9 bg-slate-50">
+                            <SelectValue placeholder="Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="year in yearOptions.filter(y => y >= localFilters.from_date)"
+                                :key="year" :value="year">
+                                {{ year }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+        </template>
+
+        <!-- Active Range Display (Minimal) -->
         <div v-if="activeRangeLabel"
-            class="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 px-3 py-2 rounded-lg w-fit">
-            <CalendarIcon class="h-3.5 w-3.5 text-slate-400" />
+            class="flex items-center gap-1.5 text-[10px] font-bold text-primary bg-primary/5 px-2.5 py-1.5 rounded-lg h-9 self-end mb-[1px]">
+            <CalendarIcon class="h-3 w-3" />
             {{ activeRangeLabel }}
         </div>
     </div>

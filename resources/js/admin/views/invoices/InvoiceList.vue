@@ -14,22 +14,27 @@
     </div>
 
     <!-- Filters & Search -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-in fade-in duration-700 delay-100 space-y-4">
-      <AdvancedDateFilter v-model="filters" @change="() => fetchInvoices(1)" />
+    <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm animate-in fade-in duration-700 delay-100">
+      <div class="flex flex-wrap items-end gap-x-6 gap-y-4">
+        <!-- Date Filter -->
+        <AdvancedDateFilter v-model="filters" @change="() => fetchInvoices(1)" />
 
-      <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Vertical Divider (Hidden on mobile) -->
+        <div class="hidden lg:block w-px h-10 bg-slate-100 self-end mb-0.5"></div>
+
+        <!-- Search and Status -->
         <div class="flex flex-wrap items-center gap-3 flex-1">
-          <div class="relative w-full md:w-72 group">
+          <div class="relative w-full md:w-64 group">
             <SearchIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-            <input v-model="filters.search" type="text" placeholder="Search by invoice no or patient name..."
-              class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+              class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input v-model="filters.search" type="text" placeholder="Search invoices..."
+              class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-9"
               @input="debouncedFetch" />
           </div>
 
-          <div class="relative w-full md:w-48">
+          <div class="relative w-full md:w-44">
             <Select v-model="filters.status" @update:modelValue="() => fetchInvoices(1)">
-              <SelectTrigger class="w-full pl-10">
+              <SelectTrigger class="w-full pl-9 h-9 bg-slate-50/50">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -41,7 +46,7 @@
               </SelectContent>
             </Select>
             <FilterIcon
-              class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors" />
+              class="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none transition-colors" />
           </div>
         </div>
       </div>

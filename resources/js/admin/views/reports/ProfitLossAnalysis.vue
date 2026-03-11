@@ -19,7 +19,7 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 no-print">
+    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm no-print">
       <AdvancedDateFilter v-model="filters" @change="fetchMatrix" />
     </div>
 

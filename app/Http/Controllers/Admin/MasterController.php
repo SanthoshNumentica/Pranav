@@ -631,4 +631,104 @@ class MasterController extends Controller
             'data' => $paymentMethod
         ]);
     }
+
+    public function cities(Request $request): JsonResponse
+    {
+        abort_if(!auth()->user()->hasPermissionTo('cities-list'), 403);
+        $query = \App\Models\City::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
+
+        if ($request->has('status')) {
+            if ($request->status === 'inactive') {
+                $query->withTrashed()->where('status', 'inactive');
+            } elseif ($request->status !== 'all') {
+                $query->where('status', $request->status);
+            }
+        }
+
+        $data = $request->has('nopaginate') ? $query->get() : $query->paginate(10);
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+        ]);
+    }
+
+    public function storeCity(Request $request): JsonResponse
+    {
+        abort_if(!auth()->user()->hasPermissionTo('cities-create'), 403);
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('cities', 'name')->whereNull('deleted_at')
+            ]
+        ]);
+
+        $city = \App\Models\City::create([
+            'name' => $request->name,
+            'status' => 'active',
+            'added_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'City created successfully',
+            'data' => $city
+        ]);
+    }
+
+    public function updateCity(Request $request, $id): JsonResponse
+    {
+        abort_if(!auth()->user()->hasPermissionTo('cities-edit'), 403);
+        $city = \App\Models\City::findOrFail($id);
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('cities', 'name')->ignore($id)->whereNull('deleted_at')
+            ]
+        ]);
+
+        $city->update([
+            'name' => $request->name,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'City updated successfully',
+            'data' => $city
+        ]);
+    }
+
+    public function destroyCity($id): JsonResponse
+    {
+        abort_if(!auth()->user()->hasPermissionTo('cities-delete'), 403);
+        $city = \App\Models\City::findOrFail($id);
+        $city->update(['status' => 'inactive', 'modified_by' => auth()->id()]);
+        $city->delete(); // Soft delete
+
+        return response()->json([
+            'success' => true,
+            'message' => 'City deleted successfully'
+        ]);
+    }
+
+    public function updateCityStatus(Request $request, $id): JsonResponse
+    {
+        abort_if(!auth()->user()->hasPermissionTo('cities-edit'), 403);
+        $city = \App\Models\City::findOrFail($id);
+        $request->validate(['status' => 'required|in:active,inactive']);
+        $city->update([
+            'status' => $request->status,
+            'modified_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status updated successfully',
+            'data' => $city
+        ]);
+    }
 }
