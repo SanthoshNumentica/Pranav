@@ -64,6 +64,12 @@ class PatientService
                     'mobile_no' => $data['mobile_no'] ?? null,
                     'gender_fk_id' => $data['gender_fk_id'] ?? null,
                 ], fn($v) => !is_null($v));
+
+                if (isset($data['age']) && !empty($data['age'])) {
+                    $updateData['dob'] = now()->subYears($data['age'])->format('Y-m-d');
+                } else if (isset($data['dob'])) {
+                    $updateData['dob'] = $data['dob'];
+                }
                 
                 if (!empty($updateData)) {
                     $updateData['modified_by'] = auth()->id();
@@ -73,7 +79,7 @@ class PatientService
             }
         }
         
-        $newPatient = $this->createPatient([
+        $newPatientData = [
             'title_fk_id' => $data['title_fk_id'] ?? null,
             'name' => $data['name'],
             'place' => $data['place'] ?? null,
@@ -81,7 +87,15 @@ class PatientService
             'mobile_no' => $data['mobile_no'] ?? null,
             'gender_fk_id' => $data['gender_fk_id'] ?? null,
             'added_by' => auth()->id()
-        ]);
+        ];
+
+        if (isset($data['age']) && !empty($data['age'])) {
+            $newPatientData['dob'] = now()->subYears($data['age'])->format('Y-m-d');
+        } else if (isset($data['dob'])) {
+            $newPatientData['dob'] = $data['dob'];
+        }
+
+        $newPatient = $this->createPatient($newPatientData);
 
         return $newPatient->id;
     }
@@ -93,6 +107,11 @@ class PatientService
     {
         $data['patient_id'] = $this->generatePatientId();
         $data['status'] = 'active';
+
+        if (isset($data['age']) && !empty($data['age'])) {
+            $data['dob'] = now()->subYears($data['age'])->format('Y-m-d');
+        }
+
         return Patient::create($data);
     }
 
@@ -102,6 +121,11 @@ class PatientService
     public function updatePatient(int $id, array $data): Patient
     {
         $patient = Patient::findOrFail($id);
+
+        if (isset($data['age']) && !empty($data['age'])) {
+            $data['dob'] = now()->subYears($data['age'])->format('Y-m-d');
+        }
+
         $patient->update($data);
         return $patient;
     }

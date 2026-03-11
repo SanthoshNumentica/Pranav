@@ -8,7 +8,7 @@
             <div class="h-1 w-1 rounded-full bg-primary"></div>
             Case Information
           </h4>
-          <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-bold tracking-wider">
+          <span v-if="isEditMode" class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-bold tracking-wider">
             Case Id: {{ form.case_id || 'AUTO_GENERATED' }}
           </span>
         </div>

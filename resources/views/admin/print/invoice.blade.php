@@ -284,8 +284,8 @@
                         {{ str_replace('_', ' ', $invoice->status) }}
                     </span>
                 </div>
-                <div class="meta-text" style="margin-top: 8px;">Invoice: #{{ $invoice->invoice_no }}</div>
-                <div class="meta-text">Date: {{ $invoice->invoice_date->format('d M, Y') }}</div>
+                <div class="meta-text">Invoice: #{{ $invoice->invoice_no }}</div>
+                <div class="meta-text">Date: {{ $invoice->invoice_date->format('d M Y') }}</div>
             </div>
         </div>
 

@@ -61,7 +61,7 @@
             <div class="relative group/input">
               <HashIcon
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-primary transition-colors z-10" />
-              <input v-model="item.scan_type_id" type="text" placeholder="REF" :disabled="!canEdit"
+              <input v-model="item.scan_type_id" type="text" placeholder="REF" disabled
                 class="w-full h-12 rounded-2xl py-3 pl-11 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed uppercase" />
             </div>
           </div>
@@ -222,9 +222,9 @@
 
     <!-- Empty State -->
     <div v-if="form.items.length === 0"
-      class="py-12 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center gap-3">
-      <div class="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center">
-        <AlertCircleIcon class="h-6 w-6 text-slate-300" />
+      class="py-6 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center gap-2">
+      <div class="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center mb-1">
+        <AlertCircleIcon class="h-5 w-5 text-slate-300" />
       </div>
       <p class="text-sm font-medium text-slate-400 italic">
         No scan items added yet.

@@ -163,12 +163,21 @@
 
           <div class="space-y-3 pt-2 border-t border-slate-100">
             <div class="flex justify-between items-center text-sm">
-              <span class="text-slate-400 font-semibold">Total Due</span>
-              <span class="text-slate-900 font-bold">₹{{ totalDue.toFixed(2) }}</span>
+              <span class="text-slate-400 font-semibold">Total Amount</span>
+              <span class="text-slate-900 font-bold tabular-nums">₹{{ parseFloat(invoice?.total_amount ||
+                0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
             </div>
             <div class="flex justify-between items-center text-sm">
               <span class="text-slate-400 font-semibold">Total Paid</span>
-              <span class="text-emerald-50 font-bold">₹{{ totalPaid.toFixed(2) }}</span>
+              <span class="text-emerald-500 font-bold tabular-nums">₹{{ parseFloat(invoice?.paid_amount ||
+                totalPaid).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm pt-2 border-t border-slate-50">
+              <span class="text-slate-500 font-bold">Total Due</span>
+              <span class="text-rose-500 font-bold tabular-nums">₹{{ parseFloat(invoice?.due_amount !== undefined ?
+                invoice.due_amount : totalDue).toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                maximumFractionDigits: 2 }) }}</span>
             </div>
           </div>
         </div>
@@ -190,23 +199,35 @@
             No payments recorded yet.
           </div>
 
-          <div v-else class="space-y-4">
-            <div v-for="payment in invoice?.payments" :key="payment.id"
-              class="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 group hover:border-emerald-200 transition-all">
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-black text-slate-900">{{
-                  formatDate(payment.payment_date)
-                }}</span>
-                <span class="text-sm font-black text-emerald-600">₹{{ parseFloat(payment.amount).toFixed(2) }}</span>
-              </div>
-              <div
-                class="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                <span>{{ payment.payment_method?.name }}</span>
-                <span v-if="payment.notes" class="truncate max-w-[100px]">{{
-                  payment.notes
-                }}</span>
-              </div>
-            </div>
+          <div v-else class="overflow-hidden border border-slate-100 rounded-2xl">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50">
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Payment Date</th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Amount Paid</th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                    Method Name</th>
+                  <th class="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Notes</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-50">
+                <tr v-for="payment in invoice?.payments" :key="payment.id"
+                  class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-4 py-4 text-sm font-medium text-slate-700 whitespace-nowrap">{{
+                    formatDate(payment.payment_date) }}</td>
+                  <td class="px-4 py-4 text-sm font-bold text-emerald-600 whitespace-nowrap">₹{{
+                    parseFloat(payment.amount).toLocaleString('en-IN', {
+                      minimumFractionDigits: 2,
+                    maximumFractionDigits: 2 }) }}</td>
+                  <td class="px-4 py-4 text-sm font-medium text-slate-600 whitespace-nowrap">{{
+                    payment.payment_method?.name || 'Unknown' }}</td>
+                  <td class="px-4 py-4 text-sm font-medium text-slate-500 italic max-w-[150px] truncate"
+                    :title="payment.notes">{{ payment.notes || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -241,7 +262,7 @@
                       </div>
                       <div>
                         <DialogTitle as="h3" class="text-xl font-bold tracking-tight text-white">
-                          Record Payment
+                          New Payment
                         </DialogTitle>
                         <p class="text-sm font-medium mt-1 opacity-90">
                           Invoice #{{ invoice?.invoice_id }}
@@ -266,30 +287,42 @@
                     </div>
 
                     <div class="space-y-4">
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Payment
-                          Method</label>
-                        <Select v-model="paymentForm.payment_method_fk_id" required>
-                          <SelectTrigger class="h-12 rounded-2xl border-slate-200">
-                            <SelectValue placeholder="Select Method" />
-                          </SelectTrigger>
-                          <SelectContent class="rounded-2xl border-slate-100">
-                            <SelectItem v-for="method in paymentMethods" :key="method.id" :value="String(method.id)">
-                              {{ method.name }}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      <div class="space-y-4">
+                        <div v-for="(payment, index) in paymentForm.payments" :key="index" class="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 relative group">
+                          <button v-if="paymentForm.payments.length > 1" type="button" @click="removePaymentRow(index)" class="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 shadow-sm flex items-center justify-center transition-all opacity-0 group-hover:opacity-100">
+                            <XIcon class="h-3 w-3" />
+                          </button>
+                          
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Payment Method</label>
+                              <Select v-model="payment.payment_method_fk_id" required>
+                                <SelectTrigger class="h-10 rounded-xl border-slate-200 bg-white">
+                                  <SelectValue placeholder="Select Method" />
+                                </SelectTrigger>
+                                <SelectContent class="rounded-xl border-slate-100">
+                                  <SelectItem v-for="method in paymentMethods" :key="method.id" :value="String(method.id)">
+                                    {{ method.name }}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+      
+                            <div class="space-y-1.5">
+                              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Amount Paid</label>
+                              <input v-model="payment.amount" type="number" step="0.01" class="w-full bg-white border-slate-200 rounded-xl h-10 px-4 text-sm focus:ring-primary/20 focus:border-primary transition-all font-bold text-slate-900" required />
+                            </div>
+                          </div>
+                        </div>
 
-                      <div class="space-y-1.5">
-                        <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Amount
-                          Paid</label>
-                        <input v-model="paymentForm.amount" type="number" step="0.01"
-                          class="w-full bg-slate-50 border-slate-200 rounded-2xl px-4 py-3 text-sm focus:ring-primary/20 focus:border-primary transition-all duration-200 font-bold text-slate-900"
-                          required />
-                        <div class="flex justify-between px-1">
-                          <span class="text-[10px] text-slate-400 font-medium">Remaining Due: ₹{{ totalDue.toFixed(2)
-                          }}</span>
+                        <button type="button" @click="addPaymentRow" class="w-full py-3 flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-2xl text-sm font-bold text-slate-500 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all outline-none">
+                          <PlusCircleIcon class="h-4 w-4" />
+                          Add Split Payment
+                        </button>
+                        
+                        <div class="flex items-center justify-between px-2 pt-2">
+                          <span class="text-xs font-bold text-slate-500">Total Paying: <span class="text-primary ml-1">₹{{ currentTotalPaying.toFixed(2) }}</span></span>
+                          <span class="text-[10px] text-slate-400 font-medium">Remaining Due: ₹{{ Math.max(0, totalDue - currentTotalPaying).toFixed(2) }}</span>
                         </div>
                       </div>
 
@@ -355,6 +388,7 @@ import {
   AlertCircle as AlertCircleIcon,
 } from "lucide-vue-next";
 import { useToast } from "../../composables/useToast";
+import { formatDate } from "../../utils/format";
 import {
   Select,
   SelectContent,
@@ -375,17 +409,76 @@ const isSubmitting = ref(false);
 
 const paymentForm = ref({
   invoice_fk_id: route.params.id,
-  payment_method_fk_id: "",
-  amount: 0,
+  payments: [
+    { payment_method_fk_id: "", amount: 0 }
+  ],
   payment_date: new Date().toISOString().split("T")[0],
   notes: "",
 });
 
+const currentTotalPaying = computed(() => {
+  return paymentForm.value.payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+});
+
+const addPaymentRow = () => {
+  const remainingDue = totalDue.value - currentTotalPaying.value;
+  paymentForm.value.payments.push({
+    payment_method_fk_id: "",
+    amount: Math.max(0, remainingDue)
+  });
+};
+
+const removePaymentRow = (index) => {
+  paymentForm.value.payments.splice(index, 1);
+};
+
 const fetchInvoice = async () => {
   try {
     const response = await axios.get(`/api/v1/invoices/${route.params.id}`);
-    invoice.value = response.data;
-    paymentForm.value.amount = totalDue.value;
+    const data = response.data;
+
+    // Parse payment_details JSON and flatten payments
+    if (data.payments && data.payments.length > 0) {
+      let parsed = [];
+      data.payments.forEach(paymentRecord => {
+        try {
+          const details = typeof paymentRecord.payment_details === 'string'
+            ? JSON.parse(paymentRecord.payment_details)
+            : (paymentRecord.payment_details || {});
+
+          if (details && details.payments && Array.isArray(details.payments)) {
+            details.payments.forEach(p => {
+              parsed.push({
+                ...paymentRecord,
+                id: paymentRecord.id + '-' + Math.random(),
+                payment_method_fk_id: p.payment_method_fk_id,
+                amount: p.amount || 0,
+                payment_date: paymentRecord.payment_date ? paymentRecord.payment_date.split('T')[0] : p.payment_date,
+                notes: p.notes || details.notes || paymentRecord.notes || "",
+                payment_method: paymentMethods.value.find(m => String(m.id) === String(p.payment_method_fk_id))
+                  || paymentRecord.payment_method
+              });
+            });
+          } else {
+            parsed.push({
+              ...paymentRecord,
+              notes: paymentRecord.notes || details.notes || "",
+            });
+          }
+        } catch (e) {
+          console.error("Failed to parse payment details JSON", e);
+          parsed.push(paymentRecord);
+        }
+      });
+      // Sort parsed payments by date descending
+      parsed.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date));
+      data.payments = parsed;
+    }
+
+    invoice.value = data;
+    if (paymentForm.value.payments.length === 1) {
+      paymentForm.value.payments[0].amount = Math.max(0, totalDue.value);
+    }
   } catch (error) {
     console.error("Failed to fetch invoice", error);
   } finally {
@@ -417,10 +510,7 @@ const totalDue = computed(() => {
   return parseFloat(invoice.value.total_amount) - totalPaid.value;
 });
 
-const formatDate = (date) => {
-  if (!date) return "N/A";
-  return new Date(date).toLocaleDateString();
-};
+
 
 const printInvoice = () => {
   window.open(`/api/v1/print/invoice/${invoice.value.id}`, "_blank");
@@ -429,14 +519,42 @@ const printInvoice = () => {
 const recordPayment = async () => {
   isSubmitting.value = true;
   try {
-    const response = await axios.post("/api/v1/payments", paymentForm.value);
+    const validPayments = paymentForm.value.payments.filter(
+      p => p.payment_method_fk_id && parseFloat(p.amount) > 0
+    );
+
+    if (validPayments.length === 0) {
+      addToast({ title: "Validation Error", description: "You must add at least one valid payment amount.", variant: "danger" });
+      isSubmitting.value = false;
+      return;
+    }
+
+    const payload = {
+      invoice_fk_id: paymentForm.value.invoice_fk_id,
+      payment_date: paymentForm.value.payment_date,
+      notes: paymentForm.value.notes,
+      payment_details: JSON.stringify({
+        notes: paymentForm.value.notes,
+        payments: validPayments.map(p => ({
+          payment_method_fk_id: p.payment_method_fk_id,
+          amount: parseFloat(p.amount)
+        }))
+      })
+    };
+
+    const response = await axios.post("/api/v1/payments", payload);
     addToast({
       title: "Success",
       description: "Payment recorded successfully",
       variant: "success",
     });
     isPaymentDialogOpen.value = false;
-    fetchInvoice(); // Refresh data
+    
+    // Reset form dynamically based on new invoice data
+    fetchInvoice().then(() => {
+      paymentForm.value.payments = [{ payment_method_fk_id: "", amount: Math.max(0, totalDue.value) }];
+      paymentForm.value.notes = "";
+    });
   } catch (error) {
     addToast({
       title: "Error",
@@ -448,8 +566,8 @@ const recordPayment = async () => {
   }
 };
 
-onMounted(() => {
-  fetchInvoice();
-  fetchPaymentMethods();
+onMounted(async () => {
+  await fetchPaymentMethods();
+  await fetchInvoice();
 });
 </script>

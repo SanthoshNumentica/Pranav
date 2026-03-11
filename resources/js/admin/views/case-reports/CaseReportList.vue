@@ -21,8 +21,10 @@
     </div>
 
     <!-- Filters & Search -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-in fade-in duration-700 delay-100 space-y-4">
+      <AdvancedDateFilter v-model="filters" @change="() => fetchReports(1)" />
+
+      <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1">
           <!-- Search Inner -->
           <div class="relative w-full md:w-72 group">
@@ -97,6 +99,7 @@ import CheckOutModal from "../../components/case-reports/CheckOutModal.vue";
 import ConfirmationModal from "../../components/ui/ConfirmationModal.vue";
 import WhatsAppRecipientModal from "../../components/notifications/WhatsAppRecipientModal.vue";
 import Pagination from "../../components/ui/Pagination.vue";
+import AdvancedDateFilter from "../../components/reports/AdvancedDateFilter.vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../../composables/useToast";
 import { usePermissions } from "../../composables/usePermissions";
@@ -123,6 +126,10 @@ const filters = reactive({
   search: "",
   status: "all",
   branch_id: selectedBranchId.value,
+  filter_type: "day",
+  filter_option: "today",
+  from_date: new Date().toISOString().split("T")[0],
+  to_date: new Date().toISOString().split("T")[0],
 });
 
 const isWhatsappModalOpen = ref(false);

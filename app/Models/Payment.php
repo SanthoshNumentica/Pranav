@@ -15,8 +15,6 @@ class Payment extends BaseModel
     protected $fillable = [
         'payment_id',
         'invoice_fk_id',
-        'payment_method_fk_id',
-        'amount',
         'payment_date',
         'payment_details',
         'added_by',
@@ -25,7 +23,7 @@ class Payment extends BaseModel
 
     protected $casts = [
         'payment_date' => 'datetime',
-        'amount' => 'decimal:2',
+        'payment_details' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

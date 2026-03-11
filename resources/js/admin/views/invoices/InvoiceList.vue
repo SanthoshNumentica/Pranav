@@ -14,19 +14,21 @@
     </div>
 
     <!-- Filters & Search -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm animate-in fade-in duration-700 delay-100">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-in fade-in duration-700 delay-100 space-y-4">
+      <AdvancedDateFilter v-model="filters" @change="() => fetchInvoices(1)" />
+
+      <div class="border-t border-slate-100 pt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 flex-1">
           <div class="relative w-full md:w-72 group">
             <SearchIcon
               class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-            <input v-model="search" type="text" placeholder="Search by invoice no or patient name..."
+            <input v-model="filters.search" type="text" placeholder="Search by invoice no or patient name..."
               class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               @input="debouncedFetch" />
           </div>
 
           <div class="relative w-full md:w-48">
-            <Select v-model="statusFilter" @update:modelValue="() => fetchInvoices(1)">
+            <Select v-model="filters.status" @update:modelValue="() => fetchInvoices(1)">
               <SelectTrigger class="w-full pl-10">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -166,9 +168,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
+import AdvancedDateFilter from "../../components/reports/AdvancedDateFilter.vue";
 import { usePermissions } from "../../composables/usePermissions";
 import { useAuth } from "../../composables/useAuth";
 import { useBranchContext } from "../../composables/useBranchContext";
+import { formatDate } from "../../utils/format";
 import { debounce } from "lodash";
 
 const router = useRouter();
@@ -177,8 +181,15 @@ const { selectedBranchId } = useBranchContext();
 const modulePermissions = getModulePermissions("invoices");
 const invoices = ref([]);
 const loading = ref(true);
-const search = ref("");
-const statusFilter = ref("");
+const filters = ref({
+  search: "",
+  status: "all",
+  branch_id: selectedBranchId.value,
+  filter_type: "day",
+  filter_option: "today",
+  from_date: new Date().toISOString().split("T")[0],
+  to_date: new Date().toISOString().split("T")[0],
+});
 const pagination = ref({
   current_page: 1,
   last_page: 1,
@@ -192,9 +203,8 @@ const fetchInvoices = async (page = 1) => {
     const response = await axios.get("/api/v1/invoices", {
       params: {
         page,
-        search: search.value,
-        status: statusFilter.value === "all" ? "" : statusFilter.value,
-        branch_id: selectedBranchId.value,
+        ...filters.value,
+        status: filters.value.status === "all" ? "" : filters.value.status,
       },
     });
     if (response.data.success) {
@@ -218,10 +228,7 @@ const handlePageChange = (page) => {
   fetchInvoices(page);
 };
 
-const formatDate = (date) => {
-  if (!date) return "N/A";
-  return new Date(date).toLocaleDateString();
-};
+
 
 const viewInvoice = (id) => {
   router.push(`/invoices/${id}`);

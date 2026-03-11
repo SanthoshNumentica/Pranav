@@ -41,6 +41,16 @@ class Patient extends BaseModel
         'updated_at' => 'datetime',
     ];
 
+    protected $appends = ['age'];
+
+    public function getAgeAttribute()
+    {
+        if ($this->dob) {
+            return \Carbon\Carbon::parse($this->dob)->age;
+        }
+        return null;
+    }
+
     public function gender()
     {
         return $this->belongsTo(Gender::class, 'gender_fk_id');

@@ -341,6 +341,93 @@
                     </table>
                   </div>
                 </div>
+
+                <!-- Invoice & Payment Details -->
+                <div v-if="report?.invoice" class="space-y-4 pt-4 border-t border-slate-100">
+                  <div class="flex items-center gap-3 text-slate-900">
+                    <div class="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                      <ReceiptIcon class="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <h4 class="text-sm font-bold uppercase tracking-widest text-slate-400">
+                      Invoice & Payment
+                    </h4>
+                  </div>
+
+                  <!-- Invoice Summary Grid -->
+                  <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                      <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block mb-1">Total Amount</span>
+                      <span class="text-lg font-bold text-slate-700">₹{{ Number(report.invoice.total_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    </div>
+                    <div class="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-100/50">
+                      <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-500/80 block mb-1">Total Paid</span>
+                      <span class="text-lg font-bold text-emerald-600">₹{{ Number(report.invoice.paid_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    </div>
+                    <div class="bg-rose-50 p-4 rounded-3xl border border-rose-100/50">
+                      <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-rose-500/80 block mb-1">Due Amount</span>
+                      <span class="text-lg font-black text-rose-600">₹{{ Math.max(0, Number(report.invoice.total_amount || 0) - Number(report.invoice.paid_amount || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Payment History Table -->
+                  <div class="overflow-x-auto custom-scrollbar rounded-3xl border border-slate-200">
+                    <table class="w-full text-left">
+                      <thead class="bg-slate-50/50">
+                        <tr>
+                          <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Date</th>
+                          <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Method</th>
+                          <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Notes</th>
+                          <th class="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 text-right">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100">
+                        <template v-if="report.invoice.payments && report.invoice.payments.length > 0">
+                          <template v-for="payment in report.invoice.payments" :key="payment.id">
+                            <!-- Handle compound payments via payment_details JSON -->
+                            <template v-if="getParsedPaymentDetails(payment) && getParsedPaymentDetails(payment).payments">
+                              <tr v-for="(subPayment, idx) in getParsedPaymentDetails(payment).payments" :key="payment.id + '-' + idx">
+                                <td class="px-4 py-3 text-sm font-medium text-slate-700">
+                                  {{ formatDate(payment.payment_date || subPayment.payment_date) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-600 font-medium">
+                                  {{ subPayment.method_name || 'Payment' }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-500 italic max-w-[200px] truncate" :title="subPayment.notes || getParsedPaymentDetails(payment).notes">
+                                  {{ subPayment.notes || getParsedPaymentDetails(payment).notes || "---" }}
+                                </td>
+                                <td class="px-4 py-3 text-sm font-bold text-primary text-right">
+                                  ₹{{ Number(subPayment.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}
+                                </td>
+                              </tr>
+                            </template>
+                            <!-- Handle single payment legacy format -->
+                            <template v-else>
+                              <tr>
+                                <td class="px-4 py-3 text-sm font-medium text-slate-700">
+                                  {{ formatDate(payment.payment_date) }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-600 font-medium">
+                                  {{ payment.payment_method?.name || 'Payment' }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-slate-500 italic max-w-[200px] truncate" :title="payment.notes">
+                                  {{ payment.notes || "---" }}
+                                </td>
+                                <td class="px-4 py-3 text-sm font-bold text-primary text-right">
+                                  ₹{{ Number(payment.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }) }}
+                                </td>
+                              </tr>
+                            </template>
+                          </template>
+                        </template>
+                        <tr v-else>
+                          <td colspan="4" class="px-4 py-8 text-center text-sm text-slate-400">
+                            No payment history available.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
 
               <!-- Footer - Fixed -->
@@ -406,8 +493,8 @@ import {
   MapPin as MapPinIcon,
   Hash as HashIcon,
   Calendar as CalendarIcon,
-  Zap as ZapIcon,
   Building2 as HospitalIcon,
+  Receipt as ReceiptIcon,
 } from "lucide-vue-next";
 import { useRouter } from "vue-router";
 import { formatDate } from "../../utils/format";
@@ -492,5 +579,29 @@ const extractScanNames = (item) => {
       id: s.scan_fk_id || index,
       name: s.scan_name || 'Scan ' + s.scan_fk_id
     }));
+};
+const getParsedPaymentDetails = (payment) => {
+  if (!payment || !payment.payment_details) return null;
+  resetParsedMethodNames();
+  try {
+    const details = typeof payment.payment_details === "string" ? JSON.parse(payment.payment_details) : payment.payment_details;
+    // Map with payment method names if available via relations (since it's a JSON array it doesn't have the method object)
+    if (details.payments) {
+       details.payments = details.payments.map((p) => {
+           // Provide a fallback name from the JSON if available, otherwise "Payment"
+           return {
+               ...p,
+               method_name: p.method_name || 'Payment'
+           };
+       });
+    }
+    return details;
+  } catch (e) {
+    return null;
+  }
+};
+
+const resetParsedMethodNames = () => {
+    // A trick to make sure we don't leak anything, not needed mostly
 };
 </script>

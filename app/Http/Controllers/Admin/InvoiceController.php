@@ -9,8 +9,12 @@ use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Traits\AdvancedDateFilterTrait;
+
 class InvoiceController extends Controller
 {
+    use AdvancedDateFilterTrait;
+
     protected $invoiceService;
 
     public function __construct(InvoiceService $invoiceService)
@@ -36,17 +40,15 @@ class InvoiceController extends Controller
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('from_date') && $request->filled('to_date')) {
-            $query->whereBetween('invoice_date', [$request->from_date, $request->to_date]);
-        }
+        $filters = $request->only(['filter_type', 'filter_option', 'from_date', 'to_date', 'branch_id', 'search', 'status']);
+        
+        $this->applyDateFilters($query, $filters, 'invoice_date');
 
         if ($request->filled('branch_id') && $request->branch_id !== 'all') {
             $query->where('branch_fk_id', $request->branch_id);
         }
 
-        $stats = $this->invoiceService->getInvoiceStats(
-            $request->only(['from_date', 'to_date', 'branch_id'])
-        );
+        $stats = $this->invoiceService->getInvoiceStats($filters);
 
         return response()->json([
             'success' => true,

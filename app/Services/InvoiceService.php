@@ -6,9 +6,12 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
+use App\Traits\AdvancedDateFilterTrait;
 
 class InvoiceService
 {
+    use AdvancedDateFilterTrait;
+
     /**
      * Calculate and update invoice totals.
      */
@@ -76,13 +79,13 @@ class InvoiceService
      */
     public function getInvoiceStats(array $filters = []): array
     {
-        $query = Invoice::query()
-            ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function ($q) use ($filters) {
-                $q->where('branch_fk_id', $filters['branch_id']);
-            })
-            ->when(isset($filters['from_date']) && isset($filters['to_date']), function ($q) use ($filters) {
-                $q->whereBetween('invoice_date', [$filters['from_date'], $filters['to_date']]);
-            });
+        $query = Invoice::query();
+
+        if (isset($filters['branch_id']) && $filters['branch_id'] !== 'all') {
+            $query->where('branch_fk_id', $filters['branch_id']);
+        }
+
+        $this->applyDateFilters($query, $filters, 'invoice_date');
 
         return [
             'total_revenue' => (clone $query)->sum('total_amount'),

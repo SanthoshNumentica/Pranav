@@ -8,9 +8,12 @@ use App\Models\Patient;
 use App\Models\Referer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use App\Traits\AdvancedDateFilterTrait;
 
 class CaseReportService
 {
+    use AdvancedDateFilterTrait;
+
     /**
      * Get paginated case reports with filters.
      */
@@ -23,7 +26,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         $query = CaseReport::query()
-            ->with(['patient.gender', 'referer.refererType', 'branch', 'items.scanType', 'invoice', 'modifiedByUser'])
+            ->with(['patient.gender', 'referer.refererType', 'branch', 'items.scanType', 'invoice.payments', 'modifiedByUser'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -74,11 +77,7 @@ class CaseReportService
     {
         $query = CaseReport::query();
 
-        if (isset($filters['filter_option']) && $filters['filter_option'] === 'today') {
-            $query->whereDate('scanning_date', \Carbon\Carbon::today());
-        } elseif (isset($filters['from_date']) && isset($filters['to_date'])) {
-            $query->whereBetween('scanning_date', [$filters['from_date'], $filters['to_date']]);
-        }
+        $this->applyDateFilters($query, $filters, 'scanning_date');
 
         if (isset($filters['branch_id']) && $filters['branch_id'] !== 'all') {
             $query->where('branch_id', $filters['branch_id']);
@@ -96,11 +95,7 @@ class CaseReportService
      */
     private function applyBasicFilters(Builder $query, array $filters): void
     {
-        if (isset($filters['filter_option']) && $filters['filter_option'] === 'today') {
-            $query->whereDate('scanning_date', \Carbon\Carbon::today());
-        } elseif (isset($filters['from_date']) && isset($filters['to_date'])) {
-            $query->whereBetween('scanning_date', [$filters['from_date'], $filters['to_date']]);
-        }
+        $this->applyDateFilters($query, $filters, 'scanning_date');
     }
 
     /**
