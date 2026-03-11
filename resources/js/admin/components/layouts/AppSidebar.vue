@@ -142,7 +142,6 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Scan as ScanIcon,
   VenusAndMars as GenderIcon,
-  Droplets as BloodIcon,
   CaseSensitive as CaseSensitiveIcon,
   Shield as ShieldIcon,
   Building2 as BuildingsIcon,
@@ -230,12 +229,6 @@ const navMaster = computed(() => {
       url: "/masters/genders",
       icon: GenderIcon,
       module: "genders",
-    },
-    {
-      title: "Blood Groups",
-      url: "/masters/blood-groups",
-      icon: BloodIcon,
-      module: "blood-groups",
     },
     {
       title: "Titles",

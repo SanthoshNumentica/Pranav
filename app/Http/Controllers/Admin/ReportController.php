@@ -28,7 +28,7 @@ class ReportController extends Controller
             'end_date', 
             'search', 
             'branch_id', 
-            'scan_type_id',
+            'scan_types_fk_id',
             'limit'
         ]);
 
@@ -94,7 +94,7 @@ class ReportController extends Controller
             'end_date', 
             'search', 
             'branch_id', 
-            'scan_type_id'
+            'scan_types_fk_id'
         ]);
 
         $filters['limit'] = -1;

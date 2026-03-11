@@ -14,11 +14,11 @@ class Payment extends BaseModel
 
     protected $fillable = [
         'payment_id',
-        'invoice_id',
-        'payment_method_id',
+        'invoice_fk_id',
+        'payment_method_fk_id',
         'amount',
         'payment_date',
-        'notes',
+        'payment_details',
         'added_by',
         'modified_by',
     ];
@@ -32,11 +32,11 @@ class Payment extends BaseModel
 
     public function invoice(): BelongsTo
     {
-        return $this->belongsTo(Invoice::class);
+        return $this->belongsTo(Invoice::class, 'invoice_fk_id');
     }
 
     public function paymentMethod(): BelongsTo
     {
-        return $this->belongsTo(PaymentMethod::class);
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_fk_id');
     }
 }

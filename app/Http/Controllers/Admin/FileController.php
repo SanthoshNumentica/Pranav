@@ -18,10 +18,10 @@ class FileController extends Controller
             'file' => ['required', 'file', 'max:2097152'], // 2GB max
             'type' => ['required', 'in:document,dicom'],
             'relative_path' => ['nullable', 'string'],
-            'case_report_id' => ['nullable', 'exists:case_reports,id'],
+            'case_report_fk_id' => ['nullable', 'exists:case_reports,id'],
         ]);
 
-        $caseReportId = $request->input('case_report_id');
+        $caseReportId = $request->input('case_report_fk_id');
         if ($caseReportId) {
             $caseReport = \App\Models\CaseReport::with('invoice')->find($caseReportId);
             if ($caseReport && (!$caseReport->invoice || $caseReport->invoice->status !== 'fully_paid')) {

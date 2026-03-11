@@ -38,8 +38,8 @@
             <div class="relative group/select">
               <ActivityIcon
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-hover/select:text-primary transition-colors z-10" />
-              <Select :model-value="item.scan_type_id" @update:model-value="(val) => onTypeChange(val, item)" required
-                :disabled="!canEdit">
+              <Select :model-value="item.scan_types_fk_id" @update:model-value="(val) => onTypeChange(val, item)"
+                required :disabled="!canEdit">
                 <SelectTrigger
                   class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all disabled:opacity-70 disabled:cursor-not-allowed">
                   <SelectValue placeholder="Select Type" />
@@ -61,7 +61,7 @@
             <div class="relative group/input">
               <HashIcon
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-primary transition-colors z-10" />
-              <input v-model="item.item_reference" type="text" placeholder="REF" :disabled="!canEdit"
+              <input v-model="item.scan_type_id" type="text" placeholder="REF" :disabled="!canEdit"
                 class="w-full h-12 rounded-2xl py-3 pl-11 pr-4 text-sm border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all outline-none font-medium disabled:opacity-70 disabled:cursor-not-allowed uppercase" />
             </div>
           </div>
@@ -74,15 +74,16 @@
             <div class="relative group/select">
               <SearchIcon
                 class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-hover/select:text-primary transition-colors z-10" />
-              <Select v-model="item.scan_id" @update:model-value="(val) => onScanSelect(val, item)"
-                :disabled="!item.scan_type_id || !canEdit">
+              <Select v-model="item.scan_fk_id" @update:model-value="(val) => onScanSelect(val, item)"
+                :disabled="!item.scan_types_fk_id || !canEdit">
                 <SelectTrigger
                   class="pl-11 h-12 rounded-2xl border-slate-200 bg-slate-50/50 focus:bg-white transition-all disabled:opacity-70 disabled:cursor-not-allowed">
-                  <SelectValue :placeholder="item.scan_type_id ? 'Select Scan' : 'Select Type First'
+                  <SelectValue :placeholder="item.scan_types_fk_id ? 'Select Scan' : 'Select Type First'
                     " />
                 </SelectTrigger>
                 <SelectContent class="rounded-2xl border-slate-100 max-h-[300px]">
-                  <SelectItem v-for="scan in getScans(item.scan_type_id)" :key="scan.id" :value="scan.id.toString()">
+                  <SelectItem v-for="scan in getScans(item.scan_types_fk_id)" :key="scan.id"
+                    :value="scan.id.toString()">
                     {{ scan.name }}
                   </SelectItem>
                 </SelectContent>
@@ -274,9 +275,10 @@ const props = defineProps({
 
 const onTypeChange = async (typeId, item) => {
   const selectedType = props.scanTypes.find(t => t.id.toString() === typeId.toString());
-  item.scan_type_id = typeId;
+  item.scan_types_fk_id = typeId;
+  item.scan_type_id = item.scan_type_id || ""; // Keep the generated reference logic if needed
   item.scan_type_name = selectedType ? selectedType.name : "";
-  item.scan_id = ""; // Reset scan selection
+  item.scan_fk_id = ""; // Reset scan selection
   item.selected_scans = []; // Reset selected scans for new type
 
   if (typeId) {
@@ -296,15 +298,15 @@ const onTypeChange = async (typeId, item) => {
         const sameTypeItems = props.form.items.filter(
           (i) =>
             i !== item &&
-            i.scan_type_id === typeId &&
-            i.item_reference &&
-            i.item_reference.startsWith(prefix)
+            i.scan_types_fk_id === typeId &&
+            i.scan_type_id &&
+            i.scan_type_id.startsWith(prefix)
         );
 
         let finalNum = baseNum;
         if (sameTypeItems.length > 0) {
           const usedNums = sameTypeItems.map((i) =>
-            parseInt(i.item_reference.match(/\d+$/)[0])
+            parseInt(i.scan_type_id.match(/\d+$/)[0])
           );
           const maxUsed = Math.max(...usedNums);
           if (maxUsed >= finalNum) {
@@ -312,7 +314,7 @@ const onTypeChange = async (typeId, item) => {
           }
         }
 
-        item.item_reference = `${prefix}${String(finalNum).padStart(4, "0")}`;
+        item.scan_type_id = `${prefix}${String(finalNum).padStart(4, "0")}`;
       }
     } catch (err) {
       console.error("Failed to fetch next item reference", err);
@@ -326,9 +328,9 @@ const onTypeChange = async (typeId, item) => {
           .toUpperCase()
           .replace(/[^A-Z]/g, "IT");
         const count = props.form.items.filter(
-          (i) => i.scan_type_id === typeId
+          (i) => i.scan_types_fk_id === typeId
         ).length;
-        item.item_reference = `${prefix}${String(count).padStart(4, "0")}`;
+        item.scan_type_id = `${prefix}${String(count).padStart(4, "0")}`;
       }
     }
   }
@@ -337,7 +339,7 @@ const onTypeChange = async (typeId, item) => {
 const onScanSelect = (scanId, item) => {
   if (!scanId) return;
 
-  const scans = props.getScans(item.scan_type_id);
+  const scans = props.getScans(item.scan_types_fk_id);
   const scan = scans.find((s) => s.id.toString() === scanId.toString());
 
   if (scan) {
@@ -346,13 +348,13 @@ const onScanSelect = (scanId, item) => {
 
     // Check if duplicate in table
     const exists = (item.selected_scans || []).some(
-      (s) => s.scan_id.toString() === scanId.toString()
+      (s) => s.scan_fk_id.toString() === scanId.toString()
     );
 
     if (!exists) {
       if (!item.selected_scans) item.selected_scans = [];
       item.selected_scans.push({
-        scan_id: scanId,
+        scan_fk_id: scanId,
         scan_name: scan.name,
         amount:
           scan.amount !== null && scan.amount !== undefined ? scan.amount : "",

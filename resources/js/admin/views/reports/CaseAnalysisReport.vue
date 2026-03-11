@@ -167,7 +167,7 @@
                     <CalendarIcon class="h-3 w-3 text-slate-400" />
                     {{ report.scanning_date ? new Date(report.scanning_date).toLocaleDateString('en-GB').replace(/\//g,
                       '-') :
-                    'N/A' }}
+                      'N/A' }}
                   </div>
                 </td>
               </tr>
@@ -266,7 +266,7 @@ const fetchOrderStats = async (page = 1) => {
       start_date: filters.value.from_date,
       end_date: filters.value.to_date,
       search: filters.value.search,
-      scan_type_id: filters.value.scan_type_id,
+      scan_types_fk_id: filters.value.scan_type_id,
       branch_id: selectedBranchId.value,
     };
 

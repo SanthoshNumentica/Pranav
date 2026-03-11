@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
     <div class="bg-white rounded-[24px] border border-slate-200 p-6 shadow-soft-xl space-y-4">
-      <!-- Section Header with SRF No and Branch -->
+      <!-- Section Header with Case Id and Branch -->
       <div class="flex items-center justify-between gap-4 pb-2">
         <div class="flex items-center gap-3">
           <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
@@ -9,7 +9,7 @@
             Case Information
           </h4>
           <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-bold tracking-wider">
-            SRF NO: {{ form.case_id || 'AUTO_GENERATED' }}
+            Case Id: {{ form.case_id || 'AUTO_GENERATED' }}
           </span>
         </div>
 

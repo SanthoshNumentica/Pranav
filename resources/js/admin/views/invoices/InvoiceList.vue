@@ -100,14 +100,14 @@
               <span
                 class="text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors cursor-pointer"
                 @click="viewInvoice(invoice.id)">
-                {{ invoice.invoice_no }}
+                {{ invoice.invoice_id }}
               </span>
             </td>
             <td class="px-3 py-4">
               <div v-if="invoice.case_report?.case_id" class="flex flex-col">
                 <span
                   class="w-fit px-2 py-0.5 rounded-lg bg-primary/10 text-primary text-[11px] font-bold cursor-pointer hover:bg-primary/20 transition-colors mb-1"
-                  @click="$router.push(`/case-reports/${invoice.case_report_id}/edit`)">
+                  @click="$router.push(`/case-reports/${invoice.case_report_fk_id}/edit`)">
                   {{ invoice.case_report.case_id }}
                 </span>
                 <span class="text-[10px] text-slate-500 font-medium ml-1">
@@ -228,8 +228,8 @@ const viewInvoice = (id) => {
 };
 
 const editInvoice = (invoice) => {
-  if (invoice.case_report_id) {
-    router.push(`/invoices/${invoice.case_report_id}/edit`);
+  if (invoice.case_report_fk_id) {
+    router.push(`/invoices/${invoice.case_report_fk_id}/edit`);
   }
 };
 

@@ -23,7 +23,7 @@ class CaseReportService
             ->update(['status' => 'expired']);
 
         $query = CaseReport::query()
-            ->with(['patient', 'referer.refererType', 'branch', 'items.scanType'])
+            ->with(['patient.gender', 'referer.refererType', 'branch', 'items.scanType', 'invoice', 'modifiedByUser'])
             ->when(isset($filters['status']) && $filters['status'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('status', $filters['status']);
                 if ($filters['status'] === 'deleted') {
@@ -54,9 +54,9 @@ class CaseReportService
             ->when(isset($filters['branch_id']) && $filters['branch_id'] !== 'all', function (Builder $query) use ($filters) {
                 $query->where('branch_id', $filters['branch_id']);
             })
-            ->when(isset($filters['scan_type_id']) && $filters['scan_type_id'] !== 'all', function (Builder $query) use ($filters) {
+            ->when(isset($filters['scan_types_fk_id']) && $filters['scan_types_fk_id'] !== 'all', function (Builder $query) use ($filters) {
                 $query->whereHas('items', function ($q) use ($filters) {
-                    $q->where('scan_type_id', $filters['scan_type_id']);
+                    $q->where('scan_types_fk_id', $filters['scan_types_fk_id']);
                 });
             });
 
@@ -108,7 +108,7 @@ class CaseReportService
      */
     public function getCaseReport(int $id): CaseReport
     {
-        $caseReport = CaseReport::with(['patient.gender', 'referer.refererType', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items.caseReportItem.scanType'])->findOrFail($id);
+        $caseReport = CaseReport::with(['patient.gender', 'referer.refererType', 'branch', 'items.scanType', 'items.scan', 'addedByUser', 'modifiedByUser', 'invoice.items.caseReportItem.scanType', 'invoice.payments'])->findOrFail($id);
 
         // Auto-expire if needed before returning
         if ($caseReport->status === 'available' && $caseReport->expires_at && $caseReport->expires_at < now()) {
@@ -191,31 +191,41 @@ class CaseReportService
     public function createCaseReport(array $data): CaseReport
     {
         return \DB::transaction(function () use ($data) {
-            $generalDocPaths = $data['documents'] ?? [];
+            // 1 & 2. Ensure Patient and Referer exist via their respective services
+            $patientFkId = app(PatientService::class)->createOrUpdatePatient($data['patient_details']);
+            $refererFkId = app(RefererService::class)->createOrUpdateReferer($data['referer_details']);
 
-            // 1. Create the Case Report
+            $caseData = $data['case_reports'];
+            $generalDocPaths = $caseData['documents'] ?? [];
+
+            // 3. Create the Case Report
             $caseReport = CaseReport::create([
-                'case_id' => $data['case_id'],
-                'patient_fk_id' => $data['patient_fk_id'],
-                'referer_id' => $data['referer_id'],
-                'description' => $data['description'] ?? null,
+                'case_id' => $caseData['case_id'],
+                'patient_fk_id' => $patientFkId,
+                'referer_fk_id' => $refererFkId,
+                'description' => $caseData['description'] ?? null,
                 'documents' => $generalDocPaths,
                 'status' => 'pending',
                 'sharing_token' => \Illuminate\Support\Str::random(32),
-                'branch_id' => $data['branch_id'] ?? null,
-                'scanning_date' => $data['scanning_date'] ?? null,
-                'check_in' => $data['check_in'] ?? null,
-                'is_stat_case' => $data['is_stat_case'] ?? false,
+                'branch_id' => $caseData['branch_fk_id'] ?? null,
+                'scanning_date' => $caseData['scanning_date'] ?? null,
+                'check_in' => $caseData['check_in'] ?? null,
+                'is_stat_case' => $caseData['is_stat_case'] ?? false,
             ]);
 
-            // 2. Sync Related Data
-            $this->syncPatientDetails($caseReport, $data);
-            $this->syncRefererDetails($caseReport, $data);
-            $this->syncCaseReportItems($caseReport, $data['case_report_items'] ?? []);
-            $this->syncInvoice($caseReport, $data);
+            // 4. Sync Items
+            $this->syncCaseReportItems($caseReport, $caseData['case_report_items'] ?? []);
+            
+            // 5. Sync Invoice
+            if (isset($data['invoice_details'])) {
+                $invoice = app(InvoiceService::class)->createInvoice($caseReport, $data['invoice_details']);
+                
+                // 6. Sync Payment
+                if (isset($data['payment_details'])) {
+                    app(PaymentService::class)->createOrUpdatePayment($invoice, $data['payment_details']);
+                }
+            }
 
-            // 3. Status/Expiry Handled by updateCaseReport specifically when docs change, 
-            // but for create, we just trigger Orthanc sync
             $this->triggerOrthancSync($caseReport->id);
 
             return $caseReport->load(['patient', 'referer', 'items', 'invoice.items.caseReportItem.scanType']);
@@ -230,74 +240,53 @@ class CaseReportService
         return \DB::transaction(function () use ($id, $data) {
             $caseReport = CaseReport::with('items')->findOrFail($id);
             $oldItemDocs = collect($caseReport->items)->pluck('documents')->flatten()->toArray();
-            $generalDocPaths = $data['documents'] ?? [];
+            
+            $caseData = $data['case_reports'];
+            $generalDocPaths = $caseData['documents'] ?? [];
 
-            // 1. Update main Case Report fields
+            // 1 & 2. Sync Patient and Referer via their services
+            $patientFkId = app(PatientService::class)->createOrUpdatePatient($data['patient_details']);
+            $refererFkId = app(RefererService::class)->createOrUpdateReferer($data['referer_details']);
+
+            // 3. Update main Case Report fields
             $caseReport->update([
-                'patient_fk_id' => $data['patient_fk_id'],
-                'referer_id' => $data['referer_id'],
-                'description' => $data['description'] ?? null,
+                'patient_fk_id' => $patientFkId,
+                'referer_fk_id' => $refererFkId,
+                'description' => $caseData['description'] ?? null,
                 'documents' => $generalDocPaths,
-                'scanning_date' => $data['scanning_date'] ?? null,
-                'check_in' => $data['check_in'] ?? null,
-                'is_stat_case' => $data['is_stat_case'] ?? false,
-                'branch_id' => $data['branch_id'] ?? $caseReport->branch_id,
+                'scanning_date' => $caseData['scanning_date'] ?? null,
+                'check_in' => $caseData['check_in'] ?? null,
+                'is_stat_case' => $caseData['is_stat_case'] ?? false,
+                'branch_id' => $caseData['branch_fk_id'] ?? $caseReport->branch_id,
             ]);
 
-            // 2. Sync Related Data
-            $this->syncPatientDetails($caseReport, $data);
-            $this->syncRefererDetails($caseReport, $data);
-            
             // Collect new docs before updating items for status/expiry logic
             $newItemDocs = [];
-            foreach ($data['case_report_items'] ?? [] as $itemData) {
+            foreach ($caseData['case_report_items'] ?? [] as $itemData) {
                 $newItemDocs = array_merge($newItemDocs, $itemData['documents'] ?? []);
             }
 
-            $this->syncCaseReportItems($caseReport, $data['case_report_items'] ?? []);
+            // 4. Sync Items
+            $this->syncCaseReportItems($caseReport, $caseData['case_report_items'] ?? []);
             
-            // 3. Update Status and Expiry Logic (DICOM only)
+            // 5. Update Status and Expiry Logic (DICOM only)
             $this->updateStatusAndExpiry($caseReport, $newItemDocs, $oldItemDocs);
 
-            // 4. Update Invoice
-            $this->syncInvoice($caseReport, $data);
+            // 6. Update Invoice
+            if (isset($data['invoice_details'])) {
+                $invoice = app(InvoiceService::class)->updateInvoice($caseReport, $data['invoice_details']);
+                
+                // 7. Update Payment
+                if (isset($data['payment_details'])) {
+                    app(PaymentService::class)->createOrUpdatePayment($invoice, $data['payment_details']);
+                }
+            }
 
-            // 5. Post-save Hook: Orthanc Sync
+            // 8. Post-save Hook: Orthanc Sync
             $this->triggerOrthancSync($caseReport->id);
 
             return $caseReport->load(['patient', 'referer', 'items', 'invoice.items.caseReportItem.scanType']);
         });
-    }
-
-    /**
-     * Helper to sync patient details.
-     */
-    private function syncPatientDetails(CaseReport $caseReport, array $data): void
-    {
-        $patient = Patient::find($data['patient_fk_id']);
-        if ($patient) {
-            $patient->update(array_filter([
-                'name' => $data['patient_name'] ?? null,
-                'place' => $data['patient_place'] ?? null,
-                'whatsapp_no' => $data['whatsapp_no_patient'] ?? null,
-            ]));
-        }
-    }
-
-    /**
-     * Helper to sync referer details.
-     */
-    private function syncRefererDetails(CaseReport $caseReport, array $data): void
-    {
-        $referer = Referer::find($data['referer_id']);
-        if ($referer) {
-            $referer->update(array_filter([
-                'name' => $data['referer_name'] ?? null,
-                'mobile_no' => $data['whatsapp_no_referer'] ?? null,
-                'hospital_name' => $data['hospital_name'] ?? null,
-                'hospital_id' => $data['hospital_id'] ?? null,
-            ]));
-        }
     }
 
     /**
@@ -307,7 +296,7 @@ class CaseReportService
     {
         foreach ($itemsData as $itemData) {
             $action = (int) ($itemData['action'] ?? 0);
-            $itemId = $itemData['case_report_item_id'] ?? $itemData['id'] ?? null;
+            $itemId = $itemData['case_report_item_fk_id'] ?? $itemData['id'] ?? null;
 
             // Validate essential fields for creation/update
             if ($action === 1 || $action === 2) {
@@ -319,8 +308,8 @@ class CaseReportService
             switch ($action) {
                 case 1: // Add new item
                     $caseReport->items()->create([
+                        'scan_types_fk_id' => $itemData['scan_types_fk_id'] ?? null,
                         'scan_type_id' => $itemData['scan_type_id'] ?? null,
-                        'item_reference' => $itemData['item_reference'] ?? null,
                         'scan_details' => $itemData['scans'],
                         'documents' => $itemData['documents'] ?? [],
                         'remarks' => $itemData['remarks'] ?? null,
@@ -333,8 +322,8 @@ class CaseReportService
                         $existingItem = $caseReport->items()->find($itemId);
                         if ($existingItem) {
                             $existingItem->update([
+                                'scan_types_fk_id' => $itemData['scan_types_fk_id'] ?? null,
                                 'scan_type_id' => $itemData['scan_type_id'] ?? null,
-                                'item_reference' => $itemData['item_reference'] ?? null,
                                 'scan_details' => $itemData['scans'],
                                 'documents' => $itemData['documents'] ?? [],
                                 'remarks' => $itemData['remarks'] ?? null,
@@ -354,71 +343,6 @@ class CaseReportService
                     break;
             }
         }
-    }
-
-    /**
-     * Helper to sync invoice and its items.
-     */
-    private function syncInvoice(CaseReport $caseReport, array $data): void
-    {
-        if (!isset($data['invoice_date'])) return;
-
-        $invoice = $caseReport->invoice()->firstOrNew(['case_report_id' => $caseReport->id]);
-        if (!$invoice->exists) {
-            $invoice->invoice_no = app(InvoiceService::class)->generateInvoiceNo();
-            $invoice->status = 'unpaid';
-        }
-
-        $invoice->fill([
-            'patient_id' => $caseReport->patient_fk_id,
-            'branch_id' => $data['branch_id'] ?? $caseReport->branch_id,
-            'sub_total' => $invoice->sub_total ?? 0,
-            'discount_id' => $data['discount_id'] ?? null,
-            'discount_amount' => $data['discount_amount'] ?? 0,
-            'tax_amount' => $data['tax_amount'] ?? 0,
-            'total_amount' => $invoice->total_amount ?? 0,
-            'invoice_date' => $data['invoice_date'],
-            'notes' => $data['notes'] ?? null,
-        ]);
-        $invoice->save();
-
-        // 6.2 Handle invoice items based on action codes
-        if (isset($data['invoice_items']) && count($data['invoice_items']) > 0) {
-            foreach ($data['invoice_items'] as $itemData) {
-                $action = (int) ($itemData['action'] ?? 0);
-                $itemId = $itemData['invoice_item_id'] ?? $itemData['id'] ?? null;
-
-                switch ($action) {
-                    case 1: // Add new item
-                        $invoice->items()->create([
-                            'case_report_item_id' => $itemData['case_report_item_id'] ?? null,
-                            'scan_id' => $itemData['scan_id'] ?? null,
-                            'description' => $itemData['description'] ?? 'Scan',
-                            'amount' => $itemData['amount'] ?? 0,
-                        ]);
-                        break;
-
-                    case 2: // Update existing item
-                        if ($itemId) {
-                            $invoice->items()->where('id', $itemId)->update([
-                                'case_report_item_id' => $itemData['case_report_item_id'] ?? null,
-                                'scan_id' => $itemData['scan_id'] ?? null,
-                                'description' => $itemData['description'] ?? 'Scan',
-                                'amount' => $itemData['amount'] ?? 0,
-                            ]);
-                        }
-                        break;
-
-                    case 3: // Soft delete
-                        if ($itemId) {
-                            $invoice->items()->where('id', $itemId)->delete();
-                        }
-                        break;
-                }
-            }
-        }
-
-        app(InvoiceService::class)->updateTotals($invoice);
     }
 
     /**

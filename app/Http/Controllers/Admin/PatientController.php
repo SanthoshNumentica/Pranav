@@ -35,7 +35,7 @@ class PatientController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $data = $request->validate([
             'patient_id' => 'nullable|string',
             'mrn_id' => 'nullable|string',
             'title_fk_id' => 'nullable|exists:titles,id',
@@ -45,16 +45,12 @@ class PatientController extends Controller
             'mobile_no' => ['required', 'digits:10', 'regex:/^[6-9][0-9]{9}$/'],
             'gender_fk_id' => 'required|exists:genders,id',
             'place' => 'nullable|string',
-            'dob' => 'required|date',
+            'dob' => 'nullable|date',
             'whatsapp_no' => ['nullable', 'digits:10', 'regex:/^[6-9][0-9]{9}$/'],
-            'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
             'remarks' => 'nullable|string',
-
-            'doctor_id' => 'nullable|exists:doctors,id',
         ]);
 
-        $data = $request->all();
-
+        $data['added_by'] = auth()->id();
 
         $patient = $this->patientService->createPatient($data);
 
@@ -70,7 +66,7 @@ class PatientController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $patient = $this->patientService->updatePatient($id, []); // Just finding it
+        $patient = \App\Models\Patient::findOrFail($id);
         return response()->json([
             'success' => true,
             'data' => $patient->load(['caseReports', 'gender']),
@@ -93,7 +89,7 @@ class PatientController extends Controller
             'place' => 'sometimes|nullable|string',
             'dob' => 'nullable|date',
             'whatsapp_no' => ['nullable', 'digits:10', 'regex:/^[6-9][0-9]{9}$/'],
-            'blood_group_fk_id' => 'nullable|exists:blood_groups,id',
+
             'remarks' => 'nullable|string',
             'doctor_id' => 'nullable|exists:doctors,id',
         ]);

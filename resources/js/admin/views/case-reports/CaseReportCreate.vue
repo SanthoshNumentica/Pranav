@@ -224,7 +224,7 @@ const handlePatientSaved = async (patient) => {
 const handleRefererSaved = async (referer) => {
   await fetchMasters();
   if (referer && referer.id) {
-    form.referer_id = referer.id.toString();
+    form.referer_fk_id = referer.id.toString();
   }
   isRefererDialogOpen.value = false;
 };

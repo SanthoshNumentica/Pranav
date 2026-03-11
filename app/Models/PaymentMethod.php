@@ -27,6 +27,6 @@ class PaymentMethod extends BaseModel
 
     public function payments()
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Payment::class, 'payment_method_fk_id');
     }
 }

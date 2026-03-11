@@ -110,11 +110,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('masters/genders/{id}', [MasterController::class, 'destroyGender']);
         Route::post('masters/genders/{id}/status', [MasterController::class, 'updateGenderStatus']);
 
-        Route::get('masters/blood-groups', [MasterController::class, 'bloodGroups']);
-        Route::post('masters/blood-groups', [MasterController::class, 'storeBloodGroup']);
-        Route::put('masters/blood-groups/{id}', [MasterController::class, 'updateBloodGroup']);
-        Route::delete('masters/blood-groups/{id}', [MasterController::class, 'destroyBloodGroup']);
-        Route::post('masters/blood-groups/{id}/status', [MasterController::class, 'updateBloodGroupStatus']);
+
 
         Route::get('masters/titles', [MasterController::class, 'titles']);
         Route::post('masters/titles', [MasterController::class, 'storeTitle']);

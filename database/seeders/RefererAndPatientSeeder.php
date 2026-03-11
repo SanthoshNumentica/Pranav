@@ -8,7 +8,7 @@ use App\Models\Patient;
 use App\Models\RefererType;
 use App\Models\Title;
 use App\Models\Gender;
-use App\Models\BloodGroup;
+
 use App\Models\User;
 
 class RefererAndPatientSeeder extends Seeder
@@ -33,9 +33,7 @@ class RefererAndPatientSeeder extends Seeder
         if (Gender::count() === 0) {
             $this->call(GenderSeeder::class);
         }
-        if (BloodGroup::count() === 0) {
-            $this->call(BloodGroupSeeder::class);
-        }
+
 
         // Create 20 Referers
         Referer::factory()->count(20)->create();

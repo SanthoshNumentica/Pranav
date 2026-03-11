@@ -14,7 +14,7 @@ class PatientService
     public function listPatients(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         return Patient::query()
-            ->with(['gender', 'bloodGroup', 'addedByUser', 'modifiedByUser'])
+            ->with(['gender', 'addedByUser', 'modifiedByUser'])
             ->when(isset($filters['search']), function (Builder $query) use ($filters) {
                 $query->where(function ($q) use ($filters) {
                     $q->where('name', 'like', "%{$filters['search']}%")
@@ -46,6 +46,44 @@ class PatientService
         $lastPatient = Patient::withTrashed()->orderBy('id', 'desc')->first();
         $nextId = $lastPatient ? $lastPatient->id + 1 : 1;
         return 'PAT' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Create or update a patient based on details array (orchestration helper).
+     */
+    public function createOrUpdatePatient(array $data): int
+    {
+        if (!empty($data['patient_fk_id'])) {
+            $patient = Patient::find($data['patient_fk_id']);
+            if ($patient) {
+                $updateData = array_filter([
+                    'title_fk_id' => $data['title_fk_id'] ?? null,
+                    'name' => $data['name'] ?? null,
+                    'place' => $data['place'] ?? null,
+                    'whatsapp_no' => $data['whatsapp_no'] ?? null,
+                    'mobile_no' => $data['mobile_no'] ?? null,
+                    'gender_fk_id' => $data['gender_fk_id'] ?? null,
+                ], fn($v) => !is_null($v));
+                
+                if (!empty($updateData)) {
+                    $updateData['modified_by'] = auth()->id();
+                    $patient->update($updateData);
+                }
+                return $patient->id;
+            }
+        }
+        
+        $newPatient = $this->createPatient([
+            'title_fk_id' => $data['title_fk_id'] ?? null,
+            'name' => $data['name'],
+            'place' => $data['place'] ?? null,
+            'whatsapp_no' => $data['whatsapp_no'] ?? null,
+            'mobile_no' => $data['mobile_no'] ?? null,
+            'gender_fk_id' => $data['gender_fk_id'] ?? null,
+            'added_by' => auth()->id()
+        ]);
+
+        return $newPatient->id;
     }
 
     /**

@@ -460,67 +460,7 @@ class MasterController extends Controller
         return response()->json(['success' => true, 'message' => 'Status updated', 'data' => $gender]);
     }
 
-    public function bloodGroups(Request $request): JsonResponse
-    {
-        $query = \App\Models\BloodGroup::with(['addedByUser', 'modifiedByUser'])->orderBy('name');
-        if ($request->has('status')) {
-            if ($request->status === 'inactive') {
-                $query->withTrashed()->where('status', 'inactive');
-            } elseif ($request->status !== 'all') {
-                $query->where('status', $request->status);
-            }
-        }
-        $data = $request->has('nopaginate') ? $query->get() : $query->paginate(10);
-        return response()->json([
-            'success' => true,
-            'data' => $data,
-        ]);
-    }
 
-    public function storeBloodGroup(Request $request): JsonResponse
-    {
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                \Illuminate\Validation\Rule::unique('blood_groups', 'name')->whereNull('deleted_at')
-            ]
-        ]);
-        $bg = \App\Models\BloodGroup::create($request->all());
-        return response()->json(['success' => true, 'message' => 'Blood group created', 'data' => $bg]);
-    }
-
-    public function updateBloodGroup(Request $request, $id): JsonResponse
-    {
-        $bg = \App\Models\BloodGroup::findOrFail($id);
-        $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                \Illuminate\Validation\Rule::unique('blood_groups', 'name')->ignore($id)->whereNull('deleted_at')
-            ]
-        ]);
-        $bg->update($request->all());
-        return response()->json(['success' => true, 'message' => 'Blood group updated', 'data' => $bg]);
-    }
-
-    public function destroyBloodGroup($id): JsonResponse
-    {
-        $bg = \App\Models\BloodGroup::findOrFail($id);
-        $bg->update(['status' => 'inactive']);
-        $bg->delete();
-        return response()->json(['success' => true, 'message' => 'Blood group deleted']);
-    }
-
-    public function updateBloodGroupStatus(Request $request, $id): JsonResponse
-    {
-        $bg = \App\Models\BloodGroup::findOrFail($id);
-        $request->validate(['status' => 'required|in:active,inactive']);
-        $bg->update(['status' => $request->status]);
-        return response()->json(['success' => true, 'message' => 'Status updated', 'data' => $bg]);
-    }
 
     public function titles(Request $request): JsonResponse
     {

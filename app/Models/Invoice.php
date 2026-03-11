@@ -14,11 +14,12 @@ class Invoice extends BaseModel
     use HasFactory, SoftDeletes, HasAudit;
 
     protected $fillable = [
-        'invoice_no',
-        'case_report_id',
-        'patient_id',
-        'branch_id',
-        'discount_id',
+        'invoice_id',
+        'case_report_fk_id',
+        'patient_fk_id',
+        'branch_fk_id',
+        'discount_fk_id',
+        'referer_fk_id',
         'sub_total',
         'discount_amount',
         'tax_amount',
@@ -44,26 +45,26 @@ class Invoice extends BaseModel
 
     public function caseReport(): BelongsTo
     {
-        return $this->belongsTo(CaseReport::class);
+        return $this->belongsTo(CaseReport::class, 'case_report_fk_id');
     }
 
     public function patient(): BelongsTo
     {
-        return $this->belongsTo(Patient::class);
+        return $this->belongsTo(Patient::class, 'patient_fk_id');
     }
 
     public function branch(): BelongsTo
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Branch::class, 'branch_fk_id');
     }
 
     public function items(): HasMany
     {
-        return $this->hasMany(InvoiceItem::class);
+        return $this->hasMany(InvoiceItem::class, 'invoice_fk_id');
     }
 
     public function payments(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(Payment::class, 'invoice_fk_id');
     }
 }

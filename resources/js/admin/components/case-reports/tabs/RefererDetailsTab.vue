@@ -233,7 +233,7 @@ const selectedReferer = ref(null);
 
 // Initialize selectedReferer if form has value
 watch(
-  () => props.form.referer_id,
+  () => props.form.referer_fk_id,
   (newVal) => {
     if (newVal && props.referers.length > 0) {
       const referer = props.referers.find(
@@ -251,9 +251,9 @@ watch(
 watch(
   () => props.referers,
   (newVal) => {
-    if (props.form.referer_id && newVal.length > 0) {
+    if (props.form.referer_fk_id && newVal.length > 0) {
       const referer = newVal.find(
-        (d) => String(d.id) === String(props.form.referer_id),
+        (d) => String(d.id) === String(props.form.referer_fk_id),
       );
       if (referer) {
         selectedReferer.value = referer;
@@ -341,7 +341,7 @@ const fetchMasters = async () => {
 onMounted(fetchMasters);
 
 const clearRefererData = () => {
-  props.form.referer_id = "";
+  props.form.referer_fk_id = "";
   props.form.title_id = "";
   props.form.referer_type_id = "";
   props.form.referer_name = "";
@@ -354,7 +354,7 @@ const clearRefererData = () => {
 
 const handleRefererSelect = (referer) => {
   if (referer) {
-    props.form.referer_id = referer.id.toString();
+    props.form.referer_fk_id = referer.id.toString();
     props.form.title_id = referer.title_id ? String(referer.title_id) : "";
     props.form.referer_type_id = referer.referer_type_id ? String(referer.referer_type_id) : "";
     props.form.referer_name = referer.name || "";

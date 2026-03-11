@@ -7,9 +7,17 @@ use App\Models\Referer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Services\RefererService;
 
 class RefererController extends Controller
 {
+    protected $refererService;
+
+    public function __construct(RefererService $refererService)
+    {
+        $this->refererService = $refererService;
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Referer::with(['refererType', 'title', 'addedByUser', 'modifiedByUser'])->orderBy('name');
@@ -41,7 +49,7 @@ class RefererController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
+        $data = $request->validate([
             'referer_type_id' => 'required|exists:referer_types,id',
             'title_id' => 'nullable|exists:titles,id',
             'name' => 'required|string|max:255',
@@ -49,22 +57,10 @@ class RefererController extends Controller
             'email_id' => 'nullable|email|max:255',
             'place' => 'nullable|string|max:255',
             'hospital_name' => 'nullable|string|max:255',
-            'hospital_id' => 'nullable|string|max:100', // Adjusted max length
+            'hospital_id' => 'nullable|string|max:100',
         ]);
 
-        $referer = Referer::create([
-            'referer_id' => $this->generateRefererId(),
-            'referer_type_id' => $request->referer_type_id,
-            'title_id' => $request->title_id,
-            'name' => $request->name,
-            'mobile_no' => $request->mobile_no,
-            'email_id' => $request->email_id,
-            'place' => $request->place,
-            'hospital_name' => $request->hospital_name,
-            'hospital_id' => $request->hospital_id,
-            'status' => 'active',
-            'added_by' => auth()->id()
-        ]);
+        $referer = $this->refererService->createReferer($data);
 
         return response()->json([
             'success' => true,
@@ -75,8 +71,6 @@ class RefererController extends Controller
 
     public function update(Request $request, $id): JsonResponse
     {
-        $referer = Referer::findOrFail($id);
-
         $request->validate([
             'referer_type_id' => 'sometimes|nullable|exists:referer_types,id',
             'title_id' => 'sometimes|nullable|exists:titles,id',
@@ -88,28 +82,7 @@ class RefererController extends Controller
             'hospital_id' => 'sometimes|nullable|string|max:100',
         ]);
 
-        $updateData = array_filter([
-            'modified_by' => auth()->id(),
-        ], fn($v) => $v !== null);
-
-        if ($request->has('referer_type_id'))
-            $updateData['referer_type_id'] = $request->referer_type_id;
-        if ($request->has('title_id'))
-            $updateData['title_id'] = $request->title_id;
-        if ($request->has('name'))
-            $updateData['name'] = $request->name;
-        if ($request->has('mobile_no'))
-            $updateData['mobile_no'] = $request->mobile_no;
-        if ($request->has('email_id'))
-            $updateData['email_id'] = $request->email_id;
-        if ($request->has('place'))
-            $updateData['place'] = $request->place;
-        if ($request->has('hospital_name'))
-            $updateData['hospital_name'] = $request->hospital_name;
-        if ($request->has('hospital_id'))
-            $updateData['hospital_id'] = $request->hospital_id;
-
-        $referer->update($updateData);
+        $referer = $this->refererService->updateReferer($id, $request->all());
 
         return response()->json([
             'success' => true,
@@ -145,14 +118,5 @@ class RefererController extends Controller
             'message' => 'Status updated successfully',
             'data' => $referer
         ]);
-    }
-    /**
-     * Generate a sequential referer_id in the format REF0001.
-     */
-    private function generateRefererId(): string
-    {
-        $last = Referer::withTrashed()->whereNotNull('referer_id')->orderBy('id', 'desc')->first();
-        $nextId = $last ? ((int) substr($last->referer_id, 3)) + 1 : 1;
-        return 'REF' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
     }
 }

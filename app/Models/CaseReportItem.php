@@ -14,9 +14,9 @@ class CaseReportItem extends BaseModel
     protected $table = 'case_report_items';
 
     protected $fillable = [
-        'case_report_id',
+        'case_report_fk_id',
+        'scan_types_fk_id',
         'scan_type_id',
-        'item_reference',
         'scan_details',
         'documents',
         'remarks',
@@ -34,12 +34,12 @@ class CaseReportItem extends BaseModel
 
     public function caseReport(): BelongsTo
     {
-        return $this->belongsTo(CaseReport::class);
+        return $this->belongsTo(CaseReport::class, 'case_report_fk_id');
     }
 
     public function scanType(): BelongsTo
     {
-        return $this->belongsTo(ScanType::class);
+        return $this->belongsTo(ScanType::class, 'scan_types_fk_id');
     }
 
     public function scan(): BelongsTo

@@ -6,285 +6,153 @@
         <!-- ID Display (ReadOnly) -->
         <div v-if="patient" class="grid grid-cols-1 gap-6 pb-4">
           <div class="space-y-2">
-            <label
-              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Patient ID</label
-            >
-            <input
-              :value="patient.patient_id"
-              readonly
-              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-100 bg-slate-50 text-slate-500 font-bold outline-none cursor-not-allowed"
-            />
+            <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Patient ID</label>
+            <input :value="patient.patient_id" readonly
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-100 bg-slate-50 text-slate-500 font-bold outline-none cursor-not-allowed" />
           </div>
 
           <div class="space-y-2">
-            <label
-              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >MRN ID</label
-            >
-            <input
-              v-model="form.mrn_id"
-              type="text"
-              placeholder="MRN Number"
-              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-            />
+            <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">MRN ID</label>
+            <input v-model="form.mrn_id" type="text" placeholder="MRN Number"
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
           </div>
         </div>
 
         <!-- Personal Info -->
         <div class="space-y-6">
-          <h4
-            class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
-          >
+          <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
             <div class="h-1 w-1 rounded-full bg-primary"></div>
             Personal Information
           </h4>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2 space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Title & Name <span class="text-rose-500">*</span></label
-              >
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Title & Name <span
+                  class="text-rose-500">*</span></label>
               <div class="flex gap-2">
                 <Select v-model="form.title_fk_id" v-model:open="isTitleOpen">
                   <SelectTrigger class="w-24">
                     <SelectValue placeholder="Title" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem
-                      v-for="t in titles"
-                      :key="t.id"
-                      :value="t.id.toString()"
-                    >
+                    <SelectItem v-for="t in titles" :key="t.id" :value="t.id.toString()">
                       {{ t.title_name }}
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <input
-                  v-model="form.name"
-                  type="text"
-                  required
-                  placeholder="Full Name"
-                  class="flex-1 rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-                />
+                <input v-model="form.name" type="text" required placeholder="Full Name"
+                  class="flex-1 rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
               </div>
             </div>
 
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Guardian / Father Name</label
-              >
-              <input
-                v-model="form.father_name"
-                type="text"
-                placeholder="Guardian Name"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Guardian / Father
+                Name</label>
+              <input v-model="form.father_name" type="text" placeholder="Guardian Name"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
 
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Age <span class="text-rose-500">*</span></label
-              >
-              <input
-                v-model="age"
-                type="number"
-                placeholder="Age"
-                min="0"
-                max="120"
-                required
-                @input="handleAgeInput"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Age <span
+                  class="text-rose-500">*</span></label>
+              <input v-model="age" type="number" placeholder="Age" min="0" max="120" required @input="handleAgeInput"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
 
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Date of Birth <span class="text-rose-500">*</span></label
-              >
-              <input
-                v-model="form.dob"
-                type="date"
-                required
-                @change="handleDobChange"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Date of Birth <span
+                  class="text-rose-500">*</span></label>
+              <input v-model="form.dob" type="date" required @change="handleDobChange"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
 
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Gender <span class="text-rose-500">*</span></label
-              >
-              <Select
-                v-model="form.gender_fk_id"
-                v-model:open="isGenderOpen"
-                required
-              >
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Gender <span
+                  class="text-rose-500">*</span></label>
+              <Select v-model="form.gender_fk_id" v-model:open="isGenderOpen" required>
                 <SelectTrigger>
                   <SelectValue placeholder="Select Gender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem
-                    v-for="g in genders"
-                    :key="g.id"
-                    :value="g.id.toString()"
-                  >
+                  <SelectItem v-for="g in genders" :key="g.id" :value="g.id.toString()">
                     {{ g.gender_name }}
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Blood Group</label
-              >
-              <Select
-                v-model="form.blood_group_fk_id"
-                v-model:open="isBloodGroupOpen"
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Blood Group" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="bg in bloodGroups"
-                    :key="bg.id"
-                    :value="bg.id.toString()"
-                  >
-                    {{ bg.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </div>
 
         <!-- Contact Info -->
         <div class="space-y-6 pt-4">
-          <h4
-            class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
-          >
+          <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
             <div class="h-1 w-1 rounded-full bg-primary"></div>
             Contact Information
           </h4>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Mobile No <span class="text-rose-500">*</span></label
-              >
-              <input
-                v-model="form.mobile_no"
-                type="tel"
-                required
-                placeholder="Mobile Number"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Mobile No <span
+                  class="text-rose-500">*</span></label>
+              <input v-model="form.mobile_no" type="tel" required placeholder="Mobile Number"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
 
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >WhatsApp No</label
-              >
-              <input
-                v-model="form.whatsapp_no"
-                type="tel"
-                placeholder="WhatsApp (Optional)"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">WhatsApp No</label>
+              <input v-model="form.whatsapp_no" type="tel" placeholder="WhatsApp (Optional)"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
 
             <div class="md:col-span-2 space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Email Address</label
-              >
-              <input
-                v-model="form.email_id"
-                type="email"
-                placeholder="email@example.com"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Email Address</label>
+              <input v-model="form.email_id" type="email" placeholder="email@example.com"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
           </div>
         </div>
 
         <!-- Address Info -->
         <div class="space-y-6 pt-4">
-          <h4
-            class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
-          >
+          <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
             <div class="h-1 w-1 rounded-full bg-primary"></div>
             Address Details
           </h4>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-              <label
-                class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-                >Place <span class="text-rose-500">*</span></label
-              >
-              <input
-                v-model="form.place"
-                type="text"
-                required
-                placeholder="City / Place"
-                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium"
-              />
+              <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Place <span
+                  class="text-rose-500">*</span></label>
+              <input v-model="form.place" type="text" required placeholder="City / Place"
+                class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium" />
             </div>
           </div>
         </div>
 
         <div class="space-y-6 pt-4">
-          <h4
-            class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2"
-          >
+          <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
             <div class="h-1 w-1 rounded-full bg-primary"></div>
             Additional Info
           </h4>
 
           <div class="space-y-2">
-            <label
-              class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1"
-              >Remarks</label
-            >
-            <textarea
-              v-model="form.remarks"
-              rows="2"
-              placeholder="Any additional notes..."
-              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none font-medium"
-            ></textarea>
+            <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Remarks</label>
+            <textarea v-model="form.remarks" rows="2" placeholder="Any additional notes..."
+              class="w-full rounded-2xl py-3 px-4 text-sm border border-slate-200 bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none font-medium"></textarea>
           </div>
         </div>
       </form>
     </div>
 
     <!-- Footer Actions -->
-    <div
-      class="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0"
-    >
-      <button
-        @click="cancel"
-        type="button"
-        class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-95"
-      >
+    <div class="p-6 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0">
+      <button @click="cancel" type="button"
+        class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 transition-all active:scale-95">
         Cancel
       </button>
-      <button
-        form="patientForm"
-        type="submit"
-        :disabled="loading"
-        class="px-8 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2"
-      >
+      <button form="patientForm" type="submit" :disabled="loading"
+        class="px-8 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2">
         <Loader2Icon v-if="loading" class="h-4 w-4 animate-spin" />
         {{ patient ? "Update Patient" : "Create Patient" }}
       </button>
@@ -322,7 +190,7 @@ const emit = defineEmits(["submit", "cancel"]);
 
 const titles = ref([]);
 const genders = ref([]);
-const bloodGroups = ref([]);
+
 const referers = ref([]);
 
 const initialForm = {
@@ -335,7 +203,7 @@ const initialForm = {
   mobile_no: "",
   whatsapp_no: "",
 
-  blood_group_fk_id: "",
+
   gender_fk_id: "",
   place: "",
   remarks: "",
@@ -345,7 +213,7 @@ const form = reactive({ ...initialForm });
 
 const isTitleOpen = ref(false);
 const isGenderOpen = ref(false);
-const isBloodGroupOpen = ref(false);
+
 const isRefererOpen = ref(false);
 
 const loggedInUserIsSuperAdmin = computed(
@@ -354,14 +222,12 @@ const loggedInUserIsSuperAdmin = computed(
 
 const fetchMasters = async () => {
   try {
-    const [tRes, gRes, bRes] = await Promise.all([
+    const [tRes, gRes] = await Promise.all([
       axios.get("/api/v1/masters/titles?status=active&nopaginate=1"),
       axios.get("/api/v1/masters/genders?status=active&nopaginate=1"),
-      axios.get("/api/v1/masters/blood-groups?status=active&nopaginate=1"),
     ]);
     titles.value = tRes.data.data;
     genders.value = gRes.data.data;
-    bloodGroups.value = bRes.data.data;
 
     const dRes = await axios.get(
       "/api/v1/masters/referers?status=active&nopaginate=1",

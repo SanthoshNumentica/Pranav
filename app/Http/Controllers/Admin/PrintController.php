@@ -33,9 +33,9 @@ class PrintController extends Controller
 
         $pdf = Pdf::loadView('admin.print.invoice', [
             'invoice' => $invoice,
-            'title' => 'Invoice #' . $invoice->invoice_no
+            'title' => 'Invoice #' . $invoice->invoice_id
         ]);
 
-        return $pdf->stream('Invoice-' . $invoice->invoice_no . '.pdf');
+        return $pdf->stream('Invoice-' . $invoice->invoice_id . '.pdf');
     }
 }

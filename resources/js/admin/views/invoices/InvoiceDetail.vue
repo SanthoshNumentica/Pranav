@@ -10,7 +10,7 @@
         </button>
         <div>
           <h1 class="text-2xl font-bold text-slate-900 tracking-tight">
-            Invoice #{{ invoice?.invoice_no }}
+            Invoice #{{ invoice?.invoice_id }}
           </h1>
           <p class="text-sm text-slate-500 mt-1">
             Recorded on {{ formatDate(invoice?.invoice_date) }}
@@ -244,7 +244,7 @@
                           Record Payment
                         </DialogTitle>
                         <p class="text-sm font-medium mt-1 opacity-90">
-                          Invoice #{{ invoice?.invoice_no }}
+                          Invoice #{{ invoice?.invoice_id }}
                         </p>
                       </div>
                     </div>
@@ -269,7 +269,7 @@
                       <div class="space-y-1.5">
                         <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">Payment
                           Method</label>
-                        <Select v-model="paymentForm.payment_method_id" required>
+                        <Select v-model="paymentForm.payment_method_fk_id" required>
                           <SelectTrigger class="h-12 rounded-2xl border-slate-200">
                             <SelectValue placeholder="Select Method" />
                           </SelectTrigger>
@@ -374,8 +374,8 @@ const isPaymentDialogOpen = ref(false);
 const isSubmitting = ref(false);
 
 const paymentForm = ref({
-  invoice_id: route.params.id,
-  payment_method_id: "",
+  invoice_fk_id: route.params.id,
+  payment_method_fk_id: "",
   amount: 0,
   payment_date: new Date().toISOString().split("T")[0],
   notes: "",

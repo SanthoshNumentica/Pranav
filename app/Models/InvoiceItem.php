@@ -12,9 +12,9 @@ class InvoiceItem extends BaseModel
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'invoice_id',
-        'case_report_item_id',
-        'scan_id',
+        'invoice_fk_id',
+        'case_report_item_fk_id',
+        'scan_fk_id',
         'description',
         'amount',
     ];
@@ -29,7 +29,7 @@ class InvoiceItem extends BaseModel
 
     public function invoice(): BelongsTo
     {
-        return $this->belongsTo(Invoice::class);
+        return $this->belongsTo(Invoice::class, 'invoice_fk_id');
     }
 
     public function getScanTypeNameAttribute(): ?string
@@ -39,11 +39,11 @@ class InvoiceItem extends BaseModel
 
     public function caseReportItem(): BelongsTo
     {
-        return $this->belongsTo(CaseReportItem::class)->withTrashed();
+        return $this->belongsTo(CaseReportItem::class, 'case_report_item_fk_id')->withTrashed();
     }
 
     public function scan(): BelongsTo
     {
-        return $this->belongsTo(Scan::class)->withTrashed();
+        return $this->belongsTo(Scan::class, 'scan_fk_id')->withTrashed();
     }
 }

@@ -20,12 +20,12 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
-        $query = Invoice::with(['patient', 'branch', 'caseReport'])->withSum('payments', 'amount');
+        $query = Invoice::with(['patient', 'branch', 'caseReport']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('invoice_no', 'like', "%$search%")
+                $q->where('invoice_id', 'like', "%$search%")
                     ->orWhereHas('patient', function ($pq) use ($search) {
                         $pq->where('name', 'like', "%$search%");
                     });
@@ -41,7 +41,7 @@ class InvoiceController extends Controller
         }
 
         if ($request->filled('branch_id') && $request->branch_id !== 'all') {
-            $query->where('branch_id', $request->branch_id);
+            $query->where('branch_fk_id', $request->branch_id);
         }
 
         $stats = $this->invoiceService->getInvoiceStats(
@@ -63,47 +63,30 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'case_report_id' => 'required|exists:case_reports,id',
-            'discount_id' => 'nullable',
+        $data = $request->validate([
+            'case_report_fk_id' => 'required|exists:case_reports,id',
+            'discount_fk_id' => 'nullable',
             'discount_amount' => 'nullable|numeric',
             'tax_amount' => 'nullable|numeric',
             'invoice_date' => 'required|date',
-            'items' => 'required|array',
-            'items.*.description' => 'required|string',
-            'items.*.amount' => 'required|numeric',
+            'invoice_items' => 'required|array',
+            'invoice_items.*.description' => 'required|string',
+            'invoice_items.*.amount' => 'required|numeric',
+            'notes' => 'nullable|string',
         ]);
 
-        $caseReport = CaseReport::findOrFail($request->case_report_id);
+        $caseReport = CaseReport::findOrFail($request->case_report_fk_id);
 
         try {
             DB::beginTransaction();
 
-            $invoice = Invoice::create([
-                'invoice_no' => $this->invoiceService->generateInvoiceNo(),
-                'case_report_id' => $caseReport->id,
-                'patient_id' => $caseReport->patient_fk_id,
-                'branch_id' => $caseReport->branch_id,
-                'discount_id' => $this->resolveDiscountId($request->discount_id),
-                'discount_amount' => $request->discount_amount ?? 0,
-                'tax_amount' => $request->tax_amount ?? 0,
-                'sub_total' => 0, // Will be updated
-                'total_amount' => 0, // Will be updated
-                'status' => 'unpaid',
-                'invoice_date' => $request->invoice_date,
-                'notes' => $request->notes,
-            ]);
+            // Structure data for service (adding action:1 for new items)
+            $data['invoice_items'] = array_map(function($item) {
+                $item['action'] = 1;
+                return $item;
+            }, $data['invoice_items']);
 
-            foreach ($request->items as $item) {
-                $invoice->items()->create([
-                    'case_report_item_id' => $item['case_report_item_id'] ?? null,
-                    'scan_id' => $item['scan_id'] ?? null,
-                    'description' => $item['description'],
-                    'amount' => $item['amount'],
-                ]);
-            }
-
-            $this->invoiceService->updateTotals($invoice);
+            $invoice = $this->invoiceService->createInvoice($caseReport, $data);
 
             DB::commit();
 
@@ -124,23 +107,5 @@ class InvoiceController extends Controller
     public function getNextInvoiceNo()
     {
         return response()->json(['invoice_no' => $this->invoiceService->generateInvoiceNo()]);
-    }
-
-    /**
-     * Resolve discount_id if it's a name or "custom".
-     */
-    private function resolveDiscountId($discountId): ?int
-    {
-        if (empty($discountId) || $discountId === 'custom') {
-            return null;
-        }
-
-        if (is_numeric($discountId)) {
-            return (int) $discountId;
-        }
-
-        // If it's a string name, try to find the ID
-        $discount = \App\Models\Discount::where('name', $discountId)->first();
-        return $discount ? $discount->id : null;
     }
 }

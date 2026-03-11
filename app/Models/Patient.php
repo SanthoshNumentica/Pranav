@@ -26,7 +26,6 @@ class Patient extends BaseModel
         'dob',
         'mobile_no',
         'whatsapp_no',
-        'blood_group_fk_id',
         'gender_fk_id',
         'place',
         'remarks',
@@ -47,10 +46,7 @@ class Patient extends BaseModel
         return $this->belongsTo(Gender::class, 'gender_fk_id');
     }
 
-    public function bloodGroup()
-    {
-        return $this->belongsTo(BloodGroup::class, 'blood_group_fk_id');
-    }
+
 
     public function caseReports()
     {

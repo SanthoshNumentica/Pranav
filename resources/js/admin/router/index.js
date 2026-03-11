@@ -107,12 +107,6 @@ const routes = [
                 meta: { module: 'genders' }
             },
             {
-                path: 'masters/blood-groups',
-                name: 'BloodGroups',
-                component: () => import('../views/masters/BloodGroupList.vue'),
-                meta: { module: 'blood-groups' }
-            },
-            {
                 path: 'masters/titles',
                 name: 'Titles',
                 component: () => import('../views/masters/TitleList.vue'),

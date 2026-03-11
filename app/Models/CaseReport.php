@@ -22,7 +22,7 @@ class CaseReport extends BaseModel
     protected $fillable = [
         'case_id',
         'patient_fk_id',
-        'referer_id',
+        'referer_fk_id',
         'description',
         'documents',
         'status',
@@ -54,17 +54,17 @@ class CaseReport extends BaseModel
 
     public function referer(): BelongsTo
     {
-        return $this->belongsTo(Referer::class, 'referer_id');
+        return $this->belongsTo(Referer::class, 'referer_fk_id');
     }
 
     public function items(): HasMany
     {
-        return $this->hasMany(CaseReportItem::class, 'case_report_id');
+        return $this->hasMany(CaseReportItem::class, 'case_report_fk_id');
     }
 
     public function invoice(): HasOne
     {
-        return $this->hasOne(Invoice::class);
+        return $this->hasOne(Invoice::class, 'case_report_fk_id');
     }
 
     public function branch(): BelongsTo
@@ -89,4 +89,15 @@ class CaseReport extends BaseModel
         );
     }
 
+    /**
+     * Prepare a date for array / JSON serialization.
+     * Prevents BaseModel from stripping the time component.
+     *
+     * @param  \DateTimeInterface  $date
+     * @return string
+     */
+    protected function serializeDate(\DateTimeInterface $date)
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
 }

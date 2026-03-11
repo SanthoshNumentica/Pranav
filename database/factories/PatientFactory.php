@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Patient;
 use App\Models\Title;
-use App\Models\BloodGroup;
+
 use App\Models\Gender;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -31,7 +31,7 @@ class PatientFactory extends Factory
             'dob' => $this->faker->date('Y-m-d', '-18 years'),
             'mobile_no' => $this->faker->phoneNumber(),
             'whatsapp_no' => $this->faker->phoneNumber(),
-            'blood_group_fk_id' => BloodGroup::inRandomOrder()->first()?->id ?? BloodGroup::factory(),
+
             'gender_fk_id' => Gender::inRandomOrder()->first()?->id ?? Gender::factory(),
             'place' => $this->faker->city(),
             'remarks' => $this->faker->sentence(),

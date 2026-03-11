@@ -67,7 +67,7 @@ export function useCaseReportForm(isEdit = false) {
         documents: [], // General documents
         items: [],
         branch_id: "",
-        referer_id: "",
+        referer_fk_id: "",
         title_id: "",
         referer_type_id: "",
         referer_name: "",
@@ -86,7 +86,7 @@ export function useCaseReportForm(isEdit = false) {
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         })() : null,
         discount_amount: 0,
-        discount_id: "custom",
+        discount_fk_id: "custom",
         tax_amount: 0,
         notes: "",
         invoice_id: null,
@@ -96,9 +96,14 @@ export function useCaseReportForm(isEdit = false) {
 
         // Multi-Row Payment Details
         payment_id: "", // Auto-generated ID for the payment section
+        invoice_total_amount: 0,
+        invoice_paid_amount: 0,
+        // List of previously saved (read-only) payments
+        payment_history: [],
         payments: [
             {
-                payment_method_id: "",
+                payment_id: "",
+                payment_method_fk_id: "",
                 amount: 0,
                 payment_date: (() => {
                     const d = new Date();
@@ -124,14 +129,14 @@ export function useCaseReportForm(isEdit = false) {
     });
 
     const calculateDiscount = () => {
-        if (!form.discount_id || form.discount_id === "custom" || !discounts.value.length) return;
-        const d = discounts.value.find((item) => String(item.id) === String(form.discount_id));
+        if (!form.discount_fk_id || form.discount_fk_id === "custom" || !discounts.value.length) return;
+        const d = discounts.value.find((item) => String(item.id) === String(form.discount_fk_id));
         if (d && d.percentage > 0) {
             form.discount_amount = (subTotal.value * parseFloat(d.percentage)) / 100;
         }
     };
 
-    watch(() => form.discount_id, calculateDiscount);
+    watch(() => form.discount_fk_id, calculateDiscount);
     watch(subTotal, calculateDiscount);
 
     // Sync first payment amount with grand total
@@ -142,7 +147,9 @@ export function useCaseReportForm(isEdit = false) {
     }, { immediate: true });
 
     const totalPaid = computed(() => {
-        return (form.payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        const historyTotal = (form.payment_history || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        const newTotal = (form.payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+        return historyTotal + newTotal;
     });
 
     // Wrapper methods to pass 'form' context
@@ -162,7 +169,8 @@ export function useCaseReportForm(isEdit = false) {
         const d = new Date();
         const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
         form.payments.push({
-            payment_method_id: "",
+            payment_id: "",
+            payment_method_fk_id: "",
             amount: 0,
             payment_date: today,
             notes: ""
@@ -177,11 +185,11 @@ export function useCaseReportForm(isEdit = false) {
 
     // Default item structure
     const createNewItem = () => ({
-        item_reference: "",
         scan_type_id: "",
+        scan_types_fk_id: "",
         scan_type_name: "",
-        scan_id: "", // This will be the "temp" selector value in the UI
-        selected_scans: [], // { scan_id, scan_name, amount }
+        scan_fk_id: "", // This will be the "temp" selector value in the UI
+        selected_scans: [], // { scan_fk_id, scan_name, amount }
         documents: [],
         folderName: "",
         remarks: "",
@@ -199,15 +207,15 @@ export function useCaseReportForm(isEdit = false) {
      * This links an invoice item back to a specific scan in the items list.
      */
     const resolveItemKey = (invoiceItem, caseReportItems) => {
-        if (!invoiceItem || !invoiceItem.case_report_item_id) return null;
+        if (!invoiceItem || !invoiceItem.case_report_item_fk_id) return null;
 
-        const crId = String(invoiceItem.case_report_item_id);
+        const crId = String(invoiceItem.case_report_item_fk_id);
         const crItem = (caseReportItems || []).find(cri => String(cri.id) === crId);
         if (!crItem) return null;
 
-        // NEW: If invoice item has scan_id, use it for direct matching
-        if (invoiceItem.scan_id) {
-            return `${String(crItem.id)}-${String(crItem.scan_type_id)}-${String(invoiceItem.scan_id)}`;
+        // NEW: If invoice item has scan_fk_id, use it for direct matching
+        if (invoiceItem.scan_fk_id) {
+            return `${String(crItem.id)}-${String(crItem.scan_types_fk_id)}-${String(invoiceItem.scan_fk_id)}`;
         }
 
         // Fallback: The item might have scan_details (raw) or scans_with_names (enriched)
@@ -224,7 +232,7 @@ export function useCaseReportForm(isEdit = false) {
         });
 
         if (match) {
-            return `${String(crItem.id)}-${String(crItem.scan_type_id)}-${String(match.scan_id || match.id)}`;
+            return `${String(crItem.id)}-${String(crItem.scan_types_fk_id)}-${String(match.scan_fk_id || match.id)}`;
         }
         return null;
     };
@@ -232,6 +240,9 @@ export function useCaseReportForm(isEdit = false) {
     const fetchMasters = async () => {
         try {
             await fetchMastersBase();
+            if (!form.payment_id) {
+                await fetchNextPaymentId();
+            }
             if (!isEdit) {
                 if (authUser.value?.branch_id) {
                     form.branch_id = authUser.value.branch_id.toString();
@@ -241,9 +252,6 @@ export function useCaseReportForm(isEdit = false) {
                 }
                 if (!form.invoice_no) {
                     await fetchNextInvoiceNo();
-                }
-                if (!form.payment_id) {
-                    await fetchNextPaymentId();
                 }
             }
         } catch (err) {
@@ -279,7 +287,7 @@ export function useCaseReportForm(isEdit = false) {
                 referers.value.push(data.referer);
             }
 
-            form.referer_id = data.referer_id?.toString() || "";
+            form.referer_fk_id = data.referer_fk_id?.toString() || "";
             form.title_id = data.referer?.title_id?.toString() || "";
             form.referer_type_id = data.referer?.referer_type_id?.toString() || "";
             form.referer_name = data.referer?.name || "";
@@ -311,17 +319,17 @@ export function useCaseReportForm(isEdit = false) {
 
                 const selectedScans = scans.map(s => ({
                     id: item.id, // For tracking
-                    scan_id: s.scan_id?.toString() || "",
+                    scan_fk_id: s.scan_fk_id?.toString() || s.scan_id?.toString() || "",
                     scan_name: s.scan_name || (item.scan?.name && scans.length === 1 ? item.scan.name : "Scan"),
                     amount: s.amount || 0,
                 }));
 
                 groupedItems.push({
                     id: item.id,
-                    item_reference: item.item_reference || "",
-                    scan_type_id: item.scan_type_id?.toString() || "",
-                    scan_type_name: item.scan_type?.name || "",
-                    scan_id: "", // Reset to empty for the selector
+                    scan_type_id: item.scan_type_id || "",
+                    scan_types_fk_id: item.scan_types_fk_id?.toString() || item.scan_type_id?.toString() || "",
+                    scan_type_name: item.scan_type_name || item.scan_type?.name || "",
+                    scan_fk_id: "", // Reset to empty for the selector
                     selected_scans: selectedScans,
                     documents: (item.documents || []).map((path) => ({
                         name: typeof path === 'string' ? path.split("/").pop() : path.name,
@@ -337,10 +345,13 @@ export function useCaseReportForm(isEdit = false) {
             // Sync invoice items initially - only if invoice exists
             if (data.invoice) {
                 form.invoice_id = data.invoice.id;
-                form.invoice_no = data.invoice.invoice_no || "";
+                form.invoice_no = data.invoice.invoice_id || "";
                 form.status = data.invoice.status || "pending";
+                form.discount_fk_id = data.invoice.discount_fk_id ? data.invoice.discount_fk_id.toString() : "custom";
                 form.discount_amount = data.invoice.discount_amount || 0;
                 form.tax_amount = data.invoice.tax_amount || 0;
+                form.invoice_total_amount = data.invoice.total_amount || 0;
+                form.invoice_paid_amount = data.invoice.paid_amount || 0;
                 form.invoice_date = data.invoice.invoice_date ? data.invoice.invoice_date.split('T')[0] : "";
                 form.notes = data.invoice.notes || "";
 
@@ -350,15 +361,15 @@ export function useCaseReportForm(isEdit = false) {
                     console.log("[Diagnostic] Total Invoice Items:", data.invoice.items.length);
                     // If invoice exists with items, use those
                     form.invoice_items = (data.invoice.items || []).map(item => {
-                        console.log("[Diagnostic] Processing Invoice Item:", item.description, "CRI ID:", item.case_report_item_id);
+                        console.log("[Diagnostic] Processing Invoice Item:", item.description, "CRI ID:", item.case_report_item_fk_id);
                         let key = resolveItemKey(item, data.items);
                         console.log("[Diagnostic] resolveItemKey result:", key);
 
                         // Fallback: If we can't resolve by name/details, but we have a cri match, try to guess
-                        if (!key && item.case_report_item_id) {
-                            const cri = (data.items || []).find(i => String(i.id) === String(item.case_report_item_id));
+                        if (!key && item.case_report_item_fk_id) {
+                            const cri = (data.items || []).find(i => String(i.id) === String(item.case_report_item_fk_id));
                             if (cri) {
-                                console.log("[Diagnostic] Found CRI for fallback:", cri.id, "Scan Type:", cri.scan_type_id);
+                                console.log("[Diagnostic] Found CRI for fallback:", cri.id, "Scan Type:", cri.scan_types_fk_id);
                                 const scans = cri.scans_with_names && cri.scans_with_names.length > 0
                                     ? cri.scans_with_names
                                     : (Array.isArray(cri.scan_details) ? cri.scan_details : (cri.scan_details ? [cri.scan_details] : []));
@@ -366,18 +377,18 @@ export function useCaseReportForm(isEdit = false) {
                                 console.log("[Diagnostic] CRI Scans:", scans);
                                 const firstScan = scans[0];
                                 if (firstScan) {
-                                    key = `${String(cri.scan_type_id)}-${String(firstScan.scan_id || firstScan.id)}`;
+                                    key = `${String(cri.scan_types_fk_id)}-${String(firstScan.scan_fk_id || firstScan.id)}`;
                                     console.log("[Diagnostic] Fallback Key Generated:", key);
                                 }
                             } else {
-                                console.log("[Diagnostic] CRI NOT FOUND in data.items for ID:", item.case_report_item_id);
+                                console.log("[Diagnostic] CRI NOT FOUND in data.items for ID:", item.case_report_item_fk_id);
                             }
                         }
 
                         return {
                             id: item.id,
-                            case_report_item_id: item.case_report_item_id,
-                            scan_id: item.scan_id,
+                            case_report_item_fk_id: item.case_report_item_fk_id,
+                            scan_fk_id: item.scan_fk_id,
                             description: item.description,
                             scan_type_name: item.scan_type_name || null,
                             amount: item.amount,
@@ -386,6 +397,53 @@ export function useCaseReportForm(isEdit = false) {
                     });
                     console.log("[Diagnostic] Final Form Invoice Items Keys:", form.invoice_items.map(i => i._key));
                 }
+
+                // Populate history from multiple records
+                if (data.invoice.payments && data.invoice.payments.length > 0) {
+                    form.payment_history = [];
+                    data.invoice.payments.forEach(paymentRecord => {
+                        try {
+                            const details = typeof paymentRecord.payment_details === 'string'
+                                ? JSON.parse(paymentRecord.payment_details)
+                                : paymentRecord.payment_details;
+
+                            if (details && details.payments && Array.isArray(details.payments)) {
+                                details.payments.forEach(p => {
+                                    form.payment_history.push({
+                                        payment_id: paymentRecord.payment_id, // Use the DB record's master ID
+                                        payment_method_fk_id: p.payment_method_fk_id?.toString() || "",
+                                        amount: p.amount || 0,
+                                        payment_date: paymentRecord.payment_date ? paymentRecord.payment_date.split('T')[0].split(' ')[0] : p.payment_date,
+                                        notes: p.notes || details.notes || ""
+                                    });
+                                });
+                            } else {
+                                form.payment_history.push({
+                                    payment_id: paymentRecord.payment_id,
+                                    payment_method_fk_id: paymentRecord.payment_method_fk_id?.toString() || "",
+                                    amount: paymentRecord.amount || 0,
+                                    payment_date: paymentRecord.payment_date ? paymentRecord.payment_date.split('T')[0].split(' ')[0] : "",
+                                    notes: ""
+                                });
+                            }
+                        } catch (e) {
+                            console.error("Failed to parse payment details JSON", e);
+                        }
+                    });
+
+                    // Reset the new form row since history loaded
+                    form.payments = [{
+                        payment_id: "",
+                        payment_method_fk_id: "",
+                        amount: 0,
+                        payment_date: (() => {
+                            const d = new Date();
+                            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                        })(),
+                        notes: ""
+                    }];
+                }
+
             } else {
                 form.invoice_id = null;
                 form.invoice_no = "";
@@ -421,13 +479,13 @@ export function useCaseReportForm(isEdit = false) {
         newItems.forEach(item => {
             (item.selected_scans || []).forEach(scan => {
                 const key = item.id
-                    ? `${String(item.id)}-${String(item.scan_type_id)}-${String(scan.scan_id)}`
-                    : `${String(item.scan_type_id)}-${String(scan.scan_id)}`;
+                    ? `${String(item.id)}-${String(item.scan_types_fk_id)}-${String(scan.scan_fk_id)}`
+                    : `${String(item.scan_types_fk_id)}-${String(scan.scan_fk_id)}`;
 
                 currentScans.push({
                     key,
-                    case_report_item_id: item.id || null,
-                    scan_id: scan.scan_id,
+                    case_report_item_fk_id: item.id || null,
+                    scan_fk_id: scan.scan_fk_id,
                     description: `${scan.scan_name} (${item.scan_type_name || 'Scan'})`,
                     amount: scan.amount,
                     scan_type_name: item.scan_type_name
@@ -439,7 +497,7 @@ export function useCaseReportForm(isEdit = false) {
         currentScans.forEach(scan => {
             const index = form.invoice_items.findIndex(inv =>
                 inv._key === scan.key ||
-                (inv.case_report_item_id && String(inv.case_report_item_id) === String(scan.case_report_item_id) && String(inv.scan_id) === String(scan.scan_id))
+                (inv.case_report_item_fk_id && String(inv.case_report_item_fk_id) === String(scan.case_report_item_fk_id) && String(inv.scan_fk_id) === String(scan.scan_fk_id))
             );
 
             if (index === -1) {
@@ -447,8 +505,8 @@ export function useCaseReportForm(isEdit = false) {
                 // For now, let's keep it simple: if it's in scans, it's in invoice.
                 form.invoice_items.push({
                     _key: scan.key,
-                    case_report_item_id: scan.case_report_item_id,
-                    scan_id: scan.scan_id,
+                    case_report_item_fk_id: scan.case_report_item_fk_id,
+                    scan_fk_id: scan.scan_fk_id,
                     description: scan.description,
                     scan_type_name: scan.scan_type_name,
                     amount: scan.amount,
@@ -465,11 +523,11 @@ export function useCaseReportForm(isEdit = false) {
         // 2. Remove scans from invoice that are no longer in form.items
         for (let i = form.invoice_items.length - 1; i >= 0; i--) {
             const invItem = form.invoice_items[i];
-            // Only auto-remove if it came from a scan (has scan_id)
-            if (invItem.scan_id) {
+            // Only auto-remove if it came from a scan (has scan_fk_id)
+            if (invItem.scan_fk_id) {
                 const stillExists = currentScans.some(scan =>
                     scan.key === invItem._key ||
-                    (scan.case_report_item_id && String(scan.case_report_item_id) === String(invItem.case_report_item_id) && String(scan.scan_id) === String(invItem.scan_id))
+                    (scan.case_report_item_fk_id && String(scan.case_report_item_fk_id) === String(invItem.case_report_item_fk_id) && String(scan.scan_fk_id) === String(invItem.scan_fk_id))
                 );
 
                 if (!stillExists) {
@@ -480,7 +538,7 @@ export function useCaseReportForm(isEdit = false) {
         }
     }, { deep: true });
 
-    watch(() => form.referer_id, (newVal) => {
+    watch(() => form.referer_fk_id, (newVal) => {
         if (!newVal || fetching.value) return;
         const list = referers.value;
         const r = list.find((d) => String(d.id) === String(newVal));
@@ -512,8 +570,8 @@ export function useCaseReportForm(isEdit = false) {
         if (!scan) {
             // Manual addition of an empty row
             form.invoice_items.push({
-                case_report_item_id: null,
-                scan_id: null,
+                case_report_item_fk_id: null,
+                scan_fk_id: null,
                 description: "",
                 amount: 0,
             });
@@ -522,20 +580,20 @@ export function useCaseReportForm(isEdit = false) {
 
         // Check if this scan is already in the invoice
         const key = scan.id
-            ? `${String(scan.id)}-${String(scan.scan_type_id)}-${String(scan.scan_id)}`
-            : `${String(scan.scan_type_id)}-${String(scan.scan_id)}`;
+            ? `${String(scan.id)}-${String(scan.scan_types_fk_id)}-${String(scan.scan_fk_id)}`
+            : `${String(scan.scan_types_fk_id)}-${String(scan.scan_fk_id)}`;
 
         const exists = form.invoice_items.some(inv => {
             if (inv._key && String(inv._key) === key) return true;
-            if (scan.id && String(inv.case_report_item_id) === String(scan.id) && String(inv.scan_id) === String(scan.scan_id)) return true;
+            if (scan.id && String(inv.case_report_item_fk_id) === String(scan.id) && String(inv.scan_fk_id) === String(scan.scan_fk_id)) return true;
             return false;
         });
 
         if (!exists) {
             form.invoice_items.push({
                 _key: key,
-                case_report_item_id: scan.id || null,
-                scan_id: scan.scan_id || null,
+                case_report_item_fk_id: scan.id || null,
+                scan_fk_id: scan.scan_fk_id || null,
                 description: scan.scan_name || "Scan",
                 scan_type_name: scan.scan_type_name || "",
                 amount: scan.amount || 0,
@@ -556,11 +614,22 @@ export function useCaseReportForm(isEdit = false) {
         error.value = null;
 
         const validationErrors = [];
-        if (!form.patient_fk_id) validationErrors.push("Patient selection is required.");
-        if (!form.referer_id) validationErrors.push("Referer selection is required.");
+        const hasPatient = form.patient_fk_id || form.patient_name;
+        if (!hasPatient) validationErrors.push("Patient details are required");
+
+        const hasReferer = form.referer_fk_id || form.referer_name;
+        if (!hasReferer) validationErrors.push("Referer details are required");
+
+        if (!form.branch_id && !authUser.value?.branch_id) {
+            validationErrors.push("Case information is required");
+        }
+
+        if (form.items.length === 0) {
+            validationErrors.push("Please add at least one scan item");
+        }
 
         form.items.forEach((item, idx) => {
-            if (!item.scan_type_id) validationErrors.push(`Scan Item #${idx + 1}: Scan Type is required.`);
+            if (!item.scan_types_fk_id) validationErrors.push(`Scan Item #${idx + 1}: Scan Type is required.`);
             if (!item.selected_scans || item.selected_scans.length === 0) {
                 validationErrors.push(`Scan Item #${idx + 1}: At least one specific scan must be added.`);
             }
@@ -568,7 +637,7 @@ export function useCaseReportForm(isEdit = false) {
 
         if (!isEdit && !form.case_id) {
             await fetchNextCaseId();
-            if (!form.case_id) validationErrors.push("System failed to generate SRF No.");
+            if (!form.case_id) validationErrors.push("System failed to generate Case Id.");
         }
 
         if (validationErrors.length > 0) {
@@ -578,104 +647,128 @@ export function useCaseReportForm(isEdit = false) {
         }
 
         try {
+            const caseBranchId = form.branch_id || authUser.value?.branch_id || "";
+
+            // Construct base payload
             const payload = {
-                case_id: form.case_id,
-                patient_fk_id: form.patient_fk_id,
-                patient_name: form.patient_name,
-                patient_place: form.patient_place,
-                whatsapp_no_patient: form.whatsapp_no_patient,
-                referer_id: form.referer_id,
-                referer_name: form.referer_name,
-                whatsapp_no_referer: form.whatsapp_no_referer,
-                hospital_name: form.hospital_name,
-                hospital_id: form.hospital_id,
-                description: form.description || "",
-                branch_id: form.branch_id || "",
-                scanning_date: form.scanning_date || null,
-                check_in: form.check_in || "",
-                is_stat_case: form.is_stat_case ?? false,
-                send_whatsapp_patient: form.send_whatsapp_patient ?? true,
-                send_whatsapp_referer: form.send_whatsapp_referer ?? true,
-                documents: (form.documents || []).map((d) => d.path || d),
-                case_report_items: (() => {
-                    const items = (form.items || []).map((itemBlock) => {
-                        // Calculate total for this block
-                        const blockTotal = (itemBlock.selected_scans || []).reduce((sum, s) => {
-                            return sum + (parseFloat(s.amount) || 0);
-                        }, 0);
+                patient_details: {
+                    patient_fk_id: form.patient_fk_id || null,
+                    title_fk_id: form.title_fk_id || null,
+                    name: form.patient_name || "",
+                    mobile_no: form.whatsapp_no_patient || "",
+                    whatsapp_no: form.send_whatsapp_patient ? form.whatsapp_no_patient : null,
+                    gender_fk_id: form.gender_fk_id || null,
+                    place: form.patient_place || ""
+                },
+                referer_details: {
+                    referer_fk_id: form.referer_fk_id || null,
+                    title_fk_id: form.title_id || null, // Assuming title_id holds title for referer
+                    name: form.referer_name || "",
+                    mobile_no: form.whatsapp_no_referer || "",
+                    referer_type_id: form.referer_type_id || null,
+                    hospital_name: form.hospital_name || ""
+                },
+                case_reports: {
+                    case_id: form.case_id,
+                    branch_fk_id: caseBranchId,
+                    scanning_date: form.scanning_date || null,
+                    check_in: form.check_in || "",
+                    is_stat_case: form.is_stat_case ?? false,
+                    patient_fk_id: form.patient_fk_id || null,
+                    referer_fk_id: form.referer_fk_id || null,
+                    description: form.description || "",
+                    documents: (form.documents || []).map((d) => d.path || d),
+                    case_report_items: (() => {
+                        const items = (form.items || []).map((itemBlock) => {
+                            const blockTotal = (itemBlock.selected_scans || []).reduce((sum, s) => {
+                                return sum + (parseFloat(s.amount) || 0);
+                            }, 0);
 
-                        // Send one CaseReportItem per block with all scans nested
-                        return {
-                            id: itemBlock.id || null,
-                            case_report_item_id: itemBlock.id || null, // Shared naming convention
-                            item_reference: itemBlock.item_reference,
-                            scan_type_id: itemBlock.scan_type_id,
-                            scans: (itemBlock.selected_scans || []).map(scan => ({
-                                scan_id: scan.scan_id,
-                                scan_name: scan.scan_name,
-                                amount: scan.amount || 0,
-                            })),
-                            documents: (itemBlock.documents || []).map((d) => d.path || d),
-                            remarks: itemBlock.remarks || "",
-                            total_amount: blockTotal,
-                            action: itemBlock.id ? 2 : 1 // 1: New, 2: Update
-                        };
-                    });
-
-                    // Append deleted items with action 3
-                    deletedCaseReportItemIds.value.forEach(id => {
-                        items.push({
-                            id: id,
-                            case_report_item_id: id,
-                            action: 3 // 3: Delete
+                            return {
+                                id: itemBlock.id || null,
+                                case_report_item_fk_id: itemBlock.id || null,
+                                scan_type_id: itemBlock.scan_type_id,
+                                scan_types_fk_id: itemBlock.scan_types_fk_id,
+                                scans: (itemBlock.selected_scans || []).map(scan => ({
+                                    scan_fk_id: scan.scan_fk_id,
+                                    scan_name: scan.scan_name,
+                                    amount: scan.amount || 0,
+                                })),
+                                documents: (itemBlock.documents || []).map((d) => d.path || d),
+                                remarks: itemBlock.remarks || "",
+                                total_amount: blockTotal,
+                                action: itemBlock.id ? 2 : 1
+                            };
                         });
-                    });
 
-                    return items;
-                })(),
+                        deletedCaseReportItemIds.value.forEach(id => {
+                            items.push({ id: id, case_report_item_fk_id: id, action: 3 });
+                        });
+                        return items;
+                    })()
+                }
             };
 
-            // Only send invoice fields if we are explicitly generating or if it already exists
-            if (options.generateInvoice || form.invoice_id) {
-                payload.invoice_date = form.invoice_date || (() => {
-                    const d = new Date();
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                })();
-                payload.discount_amount = form.discount_amount || 0;
-                payload.tax_amount = form.tax_amount || 0;
-                payload.notes = form.notes || "";
+            // Invoice setup
+            const hasInvoiceItems = (form.invoice_items || []).length > 0;
+            const validNewPayments = (form.payments || []).filter(p => parseFloat(p.amount) > 0 && p.payment_method_fk_id);
 
-                // Construct invoice items with action codes
+            if (hasInvoiceItems || options.generateInvoice || form.invoice_id) {
                 const invoiceItems = (form.invoice_items || []).map((item) => ({
-                    id: item.id || null, // Map to id for backend
-                    invoice_item_id: item.id || null, // Keeping both for compatibility with user request
-                    case_report_item_id: item.case_report_item_id || null,
-                    scan_id: item.scan_id || null,
+                    id: item.id || null,
+                    invoice_fk_id: form.invoice_id || null, // Changed from invoice_item_fk_id
+                    case_report_item_fk_id: item.case_report_item_fk_id || null,
+                    scan_fk_id: item.scan_fk_id || null,
                     description: item.description,
                     scan_type_name: item.scan_type_name || null,
-                    amount: item.amount,
-                    action: item.id ? 2 : 1 // 1: New, 2: Update
+                    amount: parseFloat(item.amount) || 0,
+                    action: item.id ? 2 : 1
                 }));
 
-                // Append deleted items with action 3
                 deletedInvoiceItemIds.value.forEach(id => {
-                    invoiceItems.push({
-                        id: id,
-                        invoice_item_id: id,
-                        action: 3 // 3: Delete
-                    });
+                    invoiceItems.push({ id: id, invoice_fk_id: form.invoice_id || id, action: 3 });
                 });
 
-                payload.invoice_items = invoiceItems;
+                payload.invoice_details = {
+                    invoice_id: form.invoice_no || null,
+                    case_report_fk_id: form.id || null,
+                    patient_fk_id: form.patient_fk_id || null,
+                    branch_fk_id: caseBranchId,
+                    sub_total: subTotal.value || 0,
+                    discount_amount: form.discount_amount || 0,
+                    discount_fk_id: form.discount_fk_id !== 'custom' ? form.discount_fk_id : null,
+                    tax_amount: form.tax_amount || 0,
+                    total_amount: totalAmount.value || 0,
+                    paid_amount: totalPaid.value || 0,
+                    status: form.status || "pending",
+                    invoice_date: form.invoice_date || (() => {
+                        const d = new Date();
+                        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                    })(),
+                    notes: form.notes || "",
+                    invoice_items: invoiceItems
+                };
+
+                if (validNewPayments.length > 0) {
+                    payload.payment_details = {
+                        payment_id: form.payment_id || null, // newly generated ID
+                        invoice_fk_id: form.invoice_id || null,
+                        payment_date: validNewPayments[0].payment_date || new Date().toISOString().split('T')[0],
+                        payment_details: {
+                            notes: validNewPayments[0].notes || "",
+                            payments: validNewPayments.map(p => ({
+                                payment_method_fk_id: p.payment_method_fk_id,
+                                amount: parseFloat(p.amount)
+                            }))
+                        }
+                    };
+                }
             }
 
             let response;
             if (isEdit) {
                 response = await axios.put(`/api/v1/case-reports/${form.id}`, payload);
             } else {
-                if (!payload.branch_id && authUser.value?.branch_id) {
-                    payload.branch_id = authUser.value.branch_id;
-                }
                 response = await axios.post("/api/v1/case-reports", payload);
             }
 
@@ -693,21 +786,21 @@ export function useCaseReportForm(isEdit = false) {
                     form.invoice_items = (updatedData.invoice.items || []).map(item => {
                         let key = resolveItemKey(item, updatedData.items);
 
-                        if (!key && item.case_report_item_id) {
-                            const cri = (updatedData.items || []).find(i => String(i.id) === String(item.case_report_item_id));
+                        if (!key && item.case_report_item_fk_id) {
+                            const cri = (updatedData.items || []).find(i => String(i.id) === String(item.case_report_item_fk_id));
                             if (cri && cri.scan_details) {
                                 const scans = Array.isArray(cri.scan_details) ? cri.scan_details : [cri.scan_details];
                                 const firstScan = scans[0];
                                 if (firstScan) {
-                                    key = `${String(cri.id)}-${String(cri.scan_type_id)}-${String(item.scan_id || firstScan.scan_id || firstScan.id)}`;
+                                    key = `${String(cri.id)}-${String(cri.scan_types_fk_id)}-${String(item.scan_fk_id || firstScan.scan_fk_id || firstScan.id)}`;
                                 }
                             }
                         }
 
                         return {
                             id: item.id,
-                            case_report_item_id: item.case_report_item_id,
-                            scan_id: item.scan_id,
+                            case_report_item_fk_id: item.case_report_item_fk_id,
+                            scan_fk_id: item.scan_fk_id,
                             description: item.description,
                             scan_type_name: item.scan_type_name || null,
                             amount: item.amount,

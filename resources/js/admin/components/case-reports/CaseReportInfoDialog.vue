@@ -31,7 +31,7 @@
                         Case Report Details
                       </h3>
                       <div class="flex items-center gap-2 mt-1 opacity-90">
-                        <span class="text-xs font-bold uppercase tracking-wider opacity-60">SRF No:</span>
+                        <span class="text-xs font-bold uppercase tracking-wider opacity-60">Case Id:</span>
                         <span class="text-sm font-bold">{{
                           report?.case_id
                         }}</span>
@@ -103,7 +103,7 @@
                       <div class="flex justify-between items-start">
                         <span class="text-xs font-semibold text-slate-500">Gender</span>
                         <span class="text-sm font-medium text-slate-700">{{
-                          report?.patient?.gender?.gender_name || "N/A"
+                          report?.patient?.gender?.gender_name || report?.patient?.gender_name || "N/A"
                         }}</span>
                       </div>
                     </div>
@@ -128,6 +128,12 @@
                         }}</span>
                       </div>
                       <div class="flex justify-between items-start">
+                        <span class="text-xs font-semibold text-slate-500">Referer ID</span>
+                        <span class="text-sm font-medium text-slate-700">{{
+                          report?.referer?.referer_id || "N/A"
+                        }}</span>
+                      </div>
+                      <div class="flex justify-between items-start">
                         <span class="text-xs font-semibold text-slate-500">Type</span>
                         <span class="text-sm font-medium text-primary">{{
                           report?.referer?.referer_type?.name || "N/A"
@@ -146,17 +152,37 @@
                 <!-- Case Metadata Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <!-- Scanning Info -->
-                  <div class="bg-slate-50/50 p-5 rounded-3xl border border-slate-100 space-y-2">
-                    <div class="flex items-center gap-2 text-slate-400">
-                      <ClockIcon class="h-3.5 w-3.5" />
-                      <span class="text-[10px] font-bold uppercase tracking-wider">Scanning Completion</span>
-                    </div>
-                    <div class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <span>{{
+                  <div
+                    class="bg-slate-50/50 p-5 rounded-3xl border border-slate-100 flex flex-col justify-center space-y-3">
+                    <!-- Scanning Date -->
+                    <div class="flex justify-between items-center text-sm">
+                      <div class="flex items-center gap-2 text-slate-500">
+                        <CalendarIcon class="h-4 w-4" />
+                        <span class="font-medium">Scanning Date</span>
+                      </div>
+                      <span class="font-bold text-slate-900">{{
                         report?.scanning_date ? formatDate(report.scanning_date) : "N/A"
                       }}</span>
-                      <span v-if="report?.check_in" class="text-xs font-medium text-slate-400">{{ report.check_in
-                        }}</span>
+                    </div>
+
+                    <div class="w-full h-px bg-slate-200/60 my-1"></div>
+
+                    <!-- Timings -->
+                    <div class="grid grid-cols-2 gap-4">
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Check In</span>
+                        <div class="flex items-center gap-1.5 text-slate-700 font-medium">
+                          <ClockIcon class="h-3.5 w-3.5" />
+                          <span>{{ report?.check_in || "---" }}</span>
+                        </div>
+                      </div>
+                      <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Check Out</span>
+                        <div class="flex items-center gap-1.5 text-slate-700 font-medium">
+                          <ClockIcon class="h-3.5 w-3.5" />
+                          <span>{{ report?.check_out || "---" }}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -279,11 +305,11 @@
                           </td>
                           <td class="px-4 py-3 text-sm text-slate-600">
                             <div class="flex flex-wrap gap-1.5">
-                              <span v-for="scan in (item.scans_with_names || [])" :key="scan.scan_id"
+                              <span v-for="scan in extractScanNames(item)" :key="scan.id"
                                 class="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100/50 text-slate-700 text-[10px] font-bold border border-slate-200/60 shadow-sm hover:shadow-md hover:bg-white transition-all duration-300 transform hover:-translate-y-0.5 cursor-default">
-                                {{ scan.scan_name }}
+                                {{ scan.name }}
                               </span>
-                              <span v-if="!item.scans_with_names?.length" class="text-slate-400 italic text-[10px]">No
+                              <span v-if="!extractScanNames(item).length" class="text-slate-400 italic text-[10px]">No
                                 specific scans
                                 listed</span>
                             </div>
@@ -451,5 +477,20 @@ const isImage = (path) => {
   if (!path) return false;
   const ext = path.split(".").pop().toLowerCase();
   return ["jpg", "jpeg", "png", "webp", "gif"].includes(ext);
+};
+
+const extractScanNames = (item) => {
+  if (!item || !item.scan_details) return [];
+  const details = typeof item.scan_details === 'string' ? JSON.parse(item.scan_details) : item.scan_details;
+
+  // Handle both array of objects and single object format
+  const scansArray = Array.isArray(details) ? details : [details];
+
+  return scansArray
+    .filter(s => s && s.scan_fk_id)
+    .map((s, index) => ({
+      id: s.scan_fk_id || index,
+      name: s.scan_name || 'Scan ' + s.scan_fk_id
+    }));
 };
 </script>

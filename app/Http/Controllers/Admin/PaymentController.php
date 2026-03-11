@@ -6,24 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\Invoice;
 use App\Services\InvoiceService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
+    protected $paymentService;
     protected $invoiceService;
 
-    public function __construct(InvoiceService $invoiceService)
+    public function __construct(PaymentService $paymentService, InvoiceService $invoiceService)
     {
+        $this->paymentService = $paymentService;
         $this->invoiceService = $invoiceService;
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'invoice_id' => 'required|exists:invoices,id',
-            'payment_method_id' => 'required|exists:payment_methods,id',
-            'amount' => 'required|numeric|min:0.01',
+        $data = $request->validate([
+            'invoice_fk_id' => 'required|exists:invoices,id',
+            'payment_details' => 'required|string', // Expecting JSON string
             'payment_date' => 'required|date',
             'notes' => 'nullable|string',
         ]);
@@ -31,33 +33,12 @@ class PaymentController extends Controller
         try {
             DB::beginTransaction();
 
-            $payment = Payment::create([
-                'payment_id' => $this->generatePaymentId(),
-                'invoice_id' => $request->invoice_id,
-                'payment_method_id' => $request->payment_method_id,
-                'amount' => $request->amount,
-                'payment_date' => $request->payment_date,
-                'notes' => $request->notes,
-            ]);
-
-            $invoice = $payment->invoice;
-            
-            // Increment paid_amount
-            $invoice->paid_amount += $payment->amount;
-
-            // Optional: validation to prevent paid_amount from exceeding total_amount
-            if ($invoice->paid_amount > $invoice->total_amount) {
-                // You might want to allow overpayment or throw an error
-                // For now, let's just proceed as requested, but we could cap it
-            }
-
-            $invoice->save();
-
-            $this->invoiceService->updateStatus($invoice);
+            $invoice = Invoice::findOrFail($data['invoice_fk_id']);
+            $payment = $this->paymentService->createOrUpdatePayment($invoice, $data);
 
             DB::commit();
 
-            return response()->json($payment->load('paymentMethod'), 201);
+            return response()->json($payment, 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Failed to record payment', 'error' => $e->getMessage()], 500);
@@ -66,10 +47,10 @@ class PaymentController extends Controller
 
     public function index(Request $request)
     {
-        $query = Payment::with(['invoice', 'paymentMethod']);
+        $query = Payment::query();
 
-        if ($request->has('invoice_id')) {
-            $query->where('invoice_id', $request->invoice_id);
+        if ($request->has('invoice_fk_id')) {
+            $query->where('invoice_fk_id', $request->invoice_fk_id);
         }
 
         if ($request->filled('from_date') && $request->filled('to_date')) {
@@ -89,17 +70,7 @@ class PaymentController extends Controller
     {
         return response()->json([
             'success' => true,
-            'next_payment_id' => $this->generatePaymentId()
+            'next_payment_id' => $this->paymentService->generatePaymentId()
         ]);
-    }
-
-    /**
-     * Generate a sequential payment_id in the format PAY0001.
-     */
-    private function generatePaymentId(): string
-    {
-        $last = Payment::withTrashed()->whereNotNull('payment_id')->orderBy('id', 'desc')->first();
-        $nextId = $last ? ((int) substr($last->payment_id, 3)) + 1 : 1;
-        return 'PAY' . str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
     }
 }

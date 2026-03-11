@@ -35,7 +35,7 @@ class ReportService
         $unfilteredCaseIds = (clone $query)->pluck('id');
 
         // Apply Scan Type Filter for the final listing
-        $this->applyScanTypeFilter($query, $filters['scan_type_id'] ?? 'all');
+        $this->applyScanTypeFilter($query, $filters['scan_types_fk_id'] ?? 'all');
 
         $query->orderBy('scanning_date', 'desc');
 
@@ -106,7 +106,7 @@ class ReportService
     {
         if ($scanTypeId && $scanTypeId !== 'all') {
             $query->whereHas('items', function ($q) use ($scanTypeId) {
-                $q->where('scan_type_id', $scanTypeId);
+                $q->where('scan_types_fk_id', $scanTypeId);
             });
         }
     }
@@ -118,9 +118,9 @@ class ReportService
     {
         return ScanType::select('id', 'name')
             ->get()->map(function ($type) use ($caseIds) {
-                $count = CaseReportItem::whereIn('case_report_id', $caseIds)
-                    ->where('scan_type_id', $type->id)
-                    ->distinct('case_report_id')
+                $count = CaseReportItem::whereIn('case_report_fk_id', $caseIds)
+                    ->where('scan_types_fk_id', $type->id)
+                    ->distinct('case_report_fk_id')
                     ->count();
                 return [
                     'id' => $type->id,
@@ -219,8 +219,8 @@ class ReportService
 
         // 1. Define base query scope with common filters (Date, Branch, Search)
         $baseQuery = DB::table('case_report_items as cri')
-            ->join('case_reports as cr', 'cri.case_report_id', '=', 'cr.id')
-            ->join('referers as r', 'cr.referer_id', '=', 'r.id')
+            ->join('case_reports as cr', 'cri.case_report_fk_id', '=', 'cr.id')
+            ->join('referers as r', 'cr.referer_fk_id', '=', 'r.id')
             ->whereNull('cri.deleted_at')
             ->whereNull('cr.deleted_at')
             ->whereNull('r.deleted_at');
@@ -237,11 +237,11 @@ class ReportService
 
         // 3. Calculate Global Column Totals and Scan Types for the entire filtered set
         $globalStatsQuery = (clone $baseQuery)
-            ->join('scan_types as st', 'cri.scan_type_id', '=', 'st.id')
+            ->join('scan_types as st', 'cri.scan_types_fk_id', '=', 'st.id')
             ->select(
                 'st.id as scan_type_id',
                 'st.name as scan_type_name',
-                DB::raw('COUNT(DISTINCT cri.case_report_id) as scan_count')
+                DB::raw('COUNT(DISTINCT cri.case_report_fk_id) as scan_count')
             )
             ->groupBy('st.id', 'st.name');
 
@@ -270,14 +270,14 @@ class ReportService
 
         // 5. Fetch Matrix Data only for the current page referers
         $matrixData = (clone $baseQuery)
-            ->join('scan_types as st', 'cri.scan_type_id', '=', 'st.id')
+            ->join('scan_types as st', 'cri.scan_types_fk_id', '=', 'st.id')
             ->whereIn('r.id', $currentPageRefererIds)
             ->select(
                 'r.id as referer_id',
                 'r.name as referer_name',
                 'st.id as scan_type_id',
                 'st.name as scan_type_name',
-                DB::raw('COUNT(DISTINCT cri.case_report_id) as scan_count')
+                DB::raw('COUNT(DISTINCT cri.case_report_fk_id) as scan_count')
             )
             ->groupBy('r.id', 'r.name', 'st.id', 'st.name')
             ->get();
@@ -490,8 +490,8 @@ class ReportService
         $recent_reports = $recentReportsQuery->get();
 
         $scanStatsQuery = DB::table('case_report_items')
-            ->join('case_reports', 'case_report_items.case_report_id', '=', 'case_reports.id')
-            ->join('scan_types', 'case_report_items.scan_type_id', '=', 'scan_types.id')
+            ->join('case_reports', 'case_report_items.case_report_fk_id', '=', 'case_reports.id')
+            ->join('scan_types', 'case_report_items.scan_types_fk_id', '=', 'scan_types.id')
             ->select('scan_types.name', DB::raw('count(*) as total'));
 
         if ($branchId) {
@@ -515,9 +515,9 @@ class ReportService
     public function getRefererScanFlatData(array $filters = []): array
     {
         $query = DB::table('case_report_items as cri')
-            ->join('case_reports as cr', 'cri.case_report_id', '=', 'cr.id')
-            ->join('referers as r', 'cr.referer_id', '=', 'r.id')
-            ->join('scan_types as st', 'cri.scan_type_id', '=', 'st.id')
+            ->join('case_reports as cr', 'cri.case_report_fk_id', '=', 'cr.id')
+            ->join('referers as r', 'cr.referer_fk_id', '=', 'r.id')
+            ->join('scan_types as st', 'cri.scan_types_fk_id', '=', 'st.id')
             ->whereNull('cri.deleted_at')
             ->whereNull('cr.deleted_at')
             ->whereNull('r.deleted_at')
