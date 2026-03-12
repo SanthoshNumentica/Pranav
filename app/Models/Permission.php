@@ -65,8 +65,8 @@ class Permission extends SpatiePermission
         $actionName = array_pop($parts);
         $moduleName = implode('-', $parts);
 
-        $module = Module::where('name', $moduleName)->first();
-        $action = Action::where('name', $actionName)->first();
+        $module = Module::whereRaw('LOWER(name) = ?', [strtolower($moduleName)])->first();
+        $action = Action::whereRaw('LOWER(name) = ?', [strtolower($actionName)])->first();
 
         if (!$module || !$action) {
             throw \Spatie\Permission\Exceptions\PermissionDoesNotExist::create($name, $guardName ?? 'web');

@@ -20,6 +20,7 @@ export function useCaseReportState(isEdit = false, authUser, branches) {
         patient_place: "",
         gender_fk_id: "",
         age: "",
+        patient_dob: "",
         send_whatsapp_patient: true,
         send_whatsapp_referer: true,
         whatsapp_no_patient: "",

@@ -70,6 +70,7 @@ export function useCaseReportApi(
             form.patient_place = data.patient?.place || "";
             form.gender_fk_id = data.patient?.gender_fk_id?.toString() || "";
             form.age = data.patient?.age || "";
+            form.patient_dob = data.patient?.dob ? data.patient.dob.split('T')[0] : "";
 
             if (data.referer && !referers.value.find(r => r.id === data.referer.id)) {
                 referers.value.push(data.referer);
@@ -97,7 +98,7 @@ export function useCaseReportApi(
                 path: typeof path === 'string' ? path : path.path
             }));
             const groupedItems = [];
-            
+
             (data.items || []).forEach(item => {
                 const scans = item.scans_with_names && item.scans_with_names.length > 0
                     ? item.scans_with_names
@@ -250,7 +251,7 @@ export function useCaseReportApi(
                     whatsapp_no: form.send_whatsapp_patient ? form.whatsapp_no_patient : null,
                     gender_fk_id: form.gender_fk_id || null,
                     place: form.patient_place || "",
-                    age: form.age || null
+                    dob: form.patient_dob || null
                 },
                 referer_details: {
                     referer_fk_id: form.referer_fk_id || null,

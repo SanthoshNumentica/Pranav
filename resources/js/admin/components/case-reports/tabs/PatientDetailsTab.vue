@@ -138,6 +138,7 @@
               Age
             </label>
             <input v-model.number="form.age" type="number" placeholder="Age" :disabled="!canEdit"
+              @input="handleAgeInput"
               class="w-full rounded-xl py-2.5 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed" />
           </div>
 
@@ -193,8 +194,51 @@
             <label class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 ml-1">
               City / Place
             </label>
-            <input v-model="form.patient_place" type="text" placeholder="City" :disabled="!canEdit"
-              class="w-full rounded-xl py-2.5 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed" />
+            <div class="relative z-50">
+              <Combobox v-model="form.patient_place" as="div" class="relative" @update:modelValue="(val) => form.patient_place = val">
+                <div class="relative">
+                  <ComboboxInput
+                    class="w-full rounded-xl py-2.5 px-4 text-sm border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-medium disabled:opacity-70 disabled:cursor-not-allowed"
+                    :displayValue="(val) => val"
+                    placeholder="City"
+                    :disabled="!canEdit"
+                    @input="cityQuery = $event.target.value; form.patient_place = $event.target.value"
+                    @change="cityQuery = $event.target.value"
+                  />
+                  <ComboboxButton class="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <ChevronsUpDownIcon class="h-4 w-4 text-slate-400" aria-hidden="true" />
+                  </ComboboxButton>
+                </div>
+                <TransitionRoot
+                  leave="transition ease-in duration-100"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                  @after-leave="cityQuery = ''"
+                >
+                  <ComboboxOptions class="absolute mt-2 max-h-60 w-full overflow-auto rounded-xl bg-white py-2 text-sm shadow-xl ring-1 ring-black/5 focus:outline-none z-50 divide-y divide-slate-50">
+                    <div v-if="filteredCities.length === 0 && cityQuery !== ''"
+                      class="relative cursor-default select-none py-4 px-4 text-center">
+                      <p class="text-[11px] text-slate-400">
+                        No matching cities. You can type to add custom address.
+                      </p>
+                    </div>
+                    <ComboboxOption
+                      v-for="city in filteredCities"
+                      :key="city.id"
+                      :value="city.name"
+                      v-slot="{ selected, active }"
+                    >
+                      <li class="relative cursor-pointer select-none py-2.5 pl-4 pr-4 transition-colors"
+                        :class="{ 'bg-primary/5': active, 'bg-white': !active }">
+                        <span class="block truncate" :class="{ 'font-bold text-primary': selected, 'text-slate-700': !selected }">
+                          {{ city.name }}
+                        </span>
+                      </li>
+                    </ComboboxOption>
+                  </ComboboxOptions>
+                </TransitionRoot>
+              </Combobox>
+            </div>
           </div>
         </div>
       </div>
@@ -253,6 +297,11 @@ const emit = defineEmits(["new-patient", "next"]);
 
 const query = ref("");
 const selectedPatient = ref(null);
+
+// City Search
+const cities = ref([]);
+const cityQuery = ref("");
+const isFetchingCities = ref(false);
 
 // Initialize selectedPatient if form has value
 watch(
@@ -352,13 +401,45 @@ const fetchTitles = async () => {
   }
 };
 
-onMounted(fetchTitles);
+const fetchCities = async () => {
+  isFetchingCities.value = true;
+  try {
+    const response = await axios.get("/api/v1/masters/cities?status=active&nopaginate=1");
+    cities.value = response.data.data;
+  } catch (err) {
+    console.error("Failed to fetch cities", err);
+  } finally {
+    isFetchingCities.value = false;
+  }
+};
+
+const filteredCities = computed(() => {
+  if (cityQuery.value === "") return cities.value;
+  return cities.value.filter((city) =>
+    city.name?.toLowerCase().includes(cityQuery.value.toLowerCase())
+  );
+});
+
+onMounted(() => {
+  fetchTitles();
+  fetchCities();
+});
 
 const genders = [
   { id: 1, gender_name: "MALE" },
   { id: 2, gender_name: "FEMALE" },
   { id: 3, gender_name: "OTHER" }
 ];
+
+const handleAgeInput = () => {
+  if (!props.form.age && props.form.age !== 0) {
+    props.form.patient_dob = "";
+    return;
+  }
+  const today = new Date();
+  const birthYear = today.getFullYear() - props.form.age;
+  props.form.patient_dob = `${birthYear}-01-01`;
+};
 
 const handleNext = async () => {
   // If a patient is selected, sync any edited details before moving on
@@ -374,8 +455,8 @@ const handleNext = async () => {
         payload.whatsapp_no = props.form.whatsapp_no_patient;
       if (props.form.gender_fk_id)
         payload.gender_fk_id = props.form.gender_fk_id;
-      if (props.form.age)
-        payload.age = props.form.age;
+      if (props.form.patient_dob)
+        payload.dob = props.form.patient_dob;
 
       if (Object.keys(payload).length > 0) {
         await axios.put(
@@ -399,6 +480,7 @@ const clearPatientData = () => {
   props.form.whatsapp_no_patient = "";
   props.form.gender_fk_id = "";
   props.form.age = "";
+  props.form.patient_dob = "";
   props.form.patient_place = "";
   selectedPatient.value = null;
   query.value = "";
@@ -429,8 +511,10 @@ const handlePatientSelect = (patient) => {
       const diff = Date.now() - birthDate.getTime();
       const ageDate = new Date(diff);
       props.form.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      props.form.patient_dob = patient.dob.split('T')[0];
     } else {
       props.form.age = "";
+      props.form.patient_dob = "";
     }
   } else {
     clearPatientData();
