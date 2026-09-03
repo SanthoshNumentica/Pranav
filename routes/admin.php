@@ -139,6 +139,10 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('payments', PaymentController::class)->only(['index', 'store']);
 
         // Master Data for Invoices
+        Route::get('masters/payment-methods', [MasterController::class, 'paymentMethods']);
+        Route::post('masters/payment-methods', [MasterController::class, 'storePaymentMethod']);
+        Route::put('masters/payment-methods/{id}', [MasterController::class, 'updatePaymentMethod']);
+        Route::delete('masters/payment-methods/{id}', [MasterController::class, 'destroyPaymentMethod']);
         Route::post('masters/payment-methods/{id}/status', [MasterController::class, 'updatePaymentMethodStatus']);
 
         Route::get('masters/cities', [MasterController::class, 'cities']);
