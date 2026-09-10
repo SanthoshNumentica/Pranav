@@ -1,5 +1,4 @@
 <?php
-// cspell:ignore appkey authkey
 
 namespace App\Services;
 
@@ -64,12 +63,12 @@ class WhatsAppService
         }
 
         // Send whatsapp message
-        $result = $this->sendWhatsAppMessage($mobileNo, $message);
+        $result = $this->sendWhatsAppMessage($mobileNo, $message, 'TEXT', '', $data);
         $decoded = json_decode($result['response'] ?? '', true);
 
         $senderNumber = $decoded['data']['from'] ?? '';
 
-        if (isset($decoded['data']['status_code']) && (int) $decoded['data']['status_code'] === 200) {
+        if ($result['status'] === true || (isset($decoded['data']['status_code']) && (int) $decoded['data']['status_code'] === 200)) {
             $whatsappLog->status = 'sent';
         } else {
             $whatsappLog->status = 'failed';
@@ -90,30 +89,41 @@ class WhatsAppService
     /**
      * Send message directly to WhatsApp API
      */
-    public function sendWhatsAppMessage($mobileNo, $message, $type = 'TEXT', $file = '', $templateId = ''): array
+    public function sendWhatsAppMessage($mobileNo, $message, $type = 'TEXT', $file = '', $data = []): array
     {
-        if (config('app.env') !== 'production') {
+        if (!app()->environment('production')) {
             $mobileNo = config('services.whatsapp.test_number', '919790124351');
+            if (!str_starts_with($mobileNo, '91')) {
+                $mobileNo = '91' . $mobileNo;
+            }
         }
 
-        $payload = [
-            'appkey' => config('services.whatsapp.appkey'),
-            'authkey' => config('services.whatsapp.authkey'),
-            'to' => $mobileNo,
-            'message' => $message,
-        ];
+        $phoneNumberId = config('services.whatsapp.phone_number_id');
+        $bearerToken = config('services.whatsapp.bearer_token');
 
         $url = config('services.whatsapp.api_url');
 
+        $payload = [
+            'from_phone_number_id' => $phoneNumberId,
+            'phone_number' => $mobileNo,
+            'template_name' => 'patient_scan_available',
+            'template_language' => 'en',
+            'field_1' => $data['doctorName'] ?? 'Doctor',
+            'field_2' => $data['patientName'] ?? 'Patient',
+            'field_3' => $data['reportId'] ?? 'ID',
+            'field_4' => $data['reportDate'] ?? date('d-m-Y'),
+            'button_0' => $data['shareLink'] ?? config('app.url'),
+        ];
+
         try {
             $response = Http::withHeaders([
-                'Accept' => '/',
+                'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-                'appkey' => config('services.whatsapp.appkey'),
+                'Authorization' => "Bearer {$bearerToken}",
             ])->withoutVerifying()->post($url, $payload);
 
             $body = trim($response->body());
-            $success = str_contains(strtolower($body), 'true');
+            $success = $response->successful();
 
             return [
                 'status' => $success,

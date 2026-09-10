@@ -434,7 +434,8 @@ class CaseReportService
             'patientName' => $caseReport->patient->name ?? 'Patient',
             'reportId' => $caseReport->case_id,
             'reportDate' => $caseReport->created_at->format('d-m-Y'),
-            'shareLink' => config('app.url') . '/case-reports/view-dicom?token=' . $caseReport->sharing_token,
+            // Send ONLY the query string as the variable, since the base URL must be static in the template
+            'shareLink' => '?token=' . $caseReport->sharing_token,
         ];
 
         // 3. Send to each recipient

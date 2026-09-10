@@ -46,10 +46,10 @@ return [
         'redirect' => env('APP_URL') . '/login/facebook/callback',
     ],
     'whatsapp' => [
-        'appkey' => env('WHATSAPP_APPKEY'),
-        'authkey' => env('WHATSAPP_AUTHKEY'),
         'api_url' => env('WHATSAPP_URL'),
         'test_number' => env('TEST_WHATSAPP'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'bearer_token' => env('WHATSAPP_BEARER_TOKEN'),
     ],
 
 
